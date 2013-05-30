@@ -123,43 +123,58 @@ class Rule:
 		return self.__str__()
 
 	def __str__(self):
-		repr_list = (["[%s,%s]" % (i,j) for (i,j) in self.spans])
-		return ("[%s,%s] -> %s" % 
-			(self.root[0], self.root[1], " ".join(repr_list)))
+		repr_list = (["%s,%s" % (i+1,j) for (i,j) in self.spans])
+		return ("%s,%s -> %s" % 
+			(self.root[0]+1, self.root[1], " ".join(repr_list)))
 
-class Words:
+class Alignments():
 	"""
-	A class that represents a sentence using a
-	list of words. You can calculate all rules
-	over permutations using the 'rules' method.
-	You just pass in a list of permutations now,
-	so this no longer actually contains a class
-	context (making it a collection of functions
-	really)
+	A class that represents alignments. A string that represents
+	an alignment in the usual form is passed, during initialization
+	the corresponding set-permutation is passed. With this set-permutation
+	all valid spans can be computed, as well as all the rules respected
+	by the alignment. It is assumed that the position of the first word is 0.
 	"""
+	def __init__(self, alignment, source_sentence):
+		self.alignment = alignment
+		self.ssentence = source_sentence
+		self.make_spermutation()
 
-	def spans(self, permutation):
+	def make_spermutation(self):
+		"""
+		Creates the set-permutation that corresponds
+		with the alignment. If there are unaligned words
+		at the targetside, the numbers are shifted such
+		that the set-permutation constitutes a contiguous
+		range of integers.
+		"""
+		link_list = self.alignment.split()
+		#check how many words the sentence has and preallocate list
+		nr_of_words = int(link_list[-1].split('-')[0])+1
+		permutation = [[] for x in xrange(0,nr_of_words)]
+		#create set-permutation
+		for link in link_list:
+			sword, tword = link.split('-')
+			permutation[int(sword)].append(int(tword))
+		self.spermutation = permutation
+
+
+	def spans(self):
 		"""
 		Returns a generator with all valid spans 
-		from the given permutation. The given
-		permutation should of course contain
-		all the elements in the current
-		word set.
-
-		The given permutation argument is a set
-		permutation: a list of lists, where the
-		nested lists consist of positions in
-		the original string.
+		for the alignment.
 		"""
 
 		"""
-		Now, using a vaguely brute-force like
-		approach, calculate all spans and check
+		Currenty this a vaguely brute-force like
+		approach is taken:  calculate all spans and check
 		if they're valid. There aren't actually
 		that many spans, so this should still
-		be pretty fast.
-		"""
-		l = len(permutation) + 1
+		be pretty fast. However, this should be adapted later
+		to also account for alignments with unaligned words
+		and partial sets
+		"""		
+		l = len(self.spermutation) + 1
 		for i in xrange(0, l):
 			for j in xrange(i + 1, l):
 				"""
@@ -170,7 +185,7 @@ class Words:
 				(and doesn't require allocating an additional list).
 				"""
 				uniq = set()
-				for sublist in permutation[i:j]:
+				for sublist in self.spermutation[i:j]:
 					for item in sublist:
 						uniq.add(item)
 
@@ -192,7 +207,7 @@ class Words:
 				if valid:
 					yield (i, j)
 
-	def rules(self, permutation):
+	def rules(self):
 		"""
 		Creates a graph of all valid spans, and
 		calculates all paths between span endpoints.
@@ -201,11 +216,11 @@ class Words:
 		rules in the permutation.
 		"""
 		# Create nodes for all positions between words
-		nodes = [Node(i) for i in xrange(0, len(permutation) + 1)]
+		nodes = [Node(i) for i in xrange(0, len(self.spermutation) + 1)]
 		spans = []
 		
 		# Construct the graph by creating the edges
-		for (i,j) in self.spans(permutation):
+		for (i,j) in self.spans():
 			nodes[i].link_to(nodes[j])
 			spans.append((i,j))
 	
@@ -220,19 +235,27 @@ class Words:
 				yield Rule((i, j), path)
 
 
-def static_test():
-	w = Words()
-	permutation = [[3], [5], [2], [4], [1]]
-
-	for rule in w.rules(permutation):
+def test1():
+	alignment = '0-0 1-1 2-2 2-3 3-5 4-4'
+	sentence = 'My dog likes eating sausages'
+	a1 = Alignments(alignment,sentence)
+	if a1.spermutation == [[0],[1],[2,3],[5],[4]]:
+		print('s-permutation correct')
+	for rule in a1.rules():
 		print rule
 
-def static_test_2():
-	w = Words()
-	permutation = [[i] for i in xrange(0, 40)]
-	n = 0
 
-	for rule in w.rules(permutation):
+""" These tests do currently not work as classes are changed and 
+s-permutations are supposed to be accompanied by"""
+
+def static_test_2():
+	alignment = ""
+	sentence = ""
+	fake_alignment = Alignments(alignment,sentence)
+	permutation = [[i] for i in xrange(0, 40)]	
+	fake_alignment.spermutation = permutation	
+	n = 0
+	for rule in fake_alignment.rules():
 		n += 1
 		print "%s"% (rule)
 
