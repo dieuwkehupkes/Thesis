@@ -1,31 +1,30 @@
 """
-Calculates trees of spans in a permutated sentence
-using a graph approach.
-(Wait, I just realized I'm not responsible for explaining
- this, go ahead Djoek ;-])
+Computes a Context Free grammar that can generate all possible
+trees for an alignment. The alignment is represented as a so-called
+set-permutation.
 
-Say we have a b c d e
-Permutated to c e b d a
+So for instance alignment '0-0 1-1 2-2 2-3 3-5 4-4',
+will be represented as set-permutation: [[0],[1],[2,3],[5],[4]]
 
-So we get:
-0 1 2 3 4 5
- c e b d a
+A span is allowed according to the alignment if it constitutes a
+contiguous sequence on the target side, and there are other no links
+to the targetside positions than the ones in the span. The spans are
+left exclusive and right inclusive. The valid spans, besides the
+wordspansm for the running example would thus be:
 
-Let's represent the spans using the
-positions between the words. The valid
-spans then are:
-[i,i+1]
-[0,4]
-[0,5]
+(0,2], (0,3], (0,5], (1,3], (1,5], (2,5] and (4,5]
 
-Now let's model this as a graph, where
-the positions between the words are the
-vertices. There is a directed edge from
-i to j if [i,j] is a valid span.
+The CFG that generates all trees with root (0,5] and leafnodes
+(0,1], (1,2], (2,3], (3,4], (4,5] is computed by modelling the
+alignment as a graph, where the positios between the words are 
+the vertices and valid spans (i,j) are represented as directed
+edges from vertice i to vertice j. Every path from one vertice 
+to another will now correspond to a rule in our context free
+grammar.
 
-Every path from 1 to n then corresponds
-to a path in the tree that we're looking for.
+Explain how the rules are scored
 """
+
 class Node:
 	"""
 	Defines a node in a directed graph.
@@ -102,9 +101,10 @@ class Rule:
 	Defines a rule from one span to a set
 	of consecutive spans which's union
 	forms it. This is mostly for convenient
-	displaying.
+	displaying, but in this class also the
+	'probabilities' to the rules are assigned.
 	"""
-	def __init__(self, root, path):
+	def __init__(self, root, path,span_relations):
 		"""
 		Initialize a new rule as its root span
 		and the path in the graph (consisting
@@ -118,14 +118,30 @@ class Rule:
 			spans.append((path[i].value, path[i+1].value))
 
 		self.spans = spans
+		self.span_relations = span_relations
+		self.probability()
+
+	def probability(self):
+		"""
+		Compute the probability of a rule given
+		the span relations we want to have in
+		the rule.
+		"""
+		probability = 1
+		for key in self.span_relations:
+			if key in self.spans:
+				for dependent in self.span_relations[key]:
+					if dependent in self.spans:
+						probability = probability * 0.1
+		self.probability = "[" + str(probability) + "]"
 
 	def __repr__(self):
 		return self.__str__()
 
 	def __str__(self):
-		repr_list = (["%s,%s" % (i+1,j) for (i,j) in self.spans])
-		return ("%s,%s -> %s" % 
-			(self.root[0]+1, self.root[1], " ".join(repr_list)))
+		repr_list = (["%sN%s" % (i,j) for (i,j) in self.spans])
+		return ("%sN%s -> %s %s" % 
+			(self.root[0], self.root[1], " ".join(repr_list), self.probability))
 
 class Alignments():
 	"""
@@ -156,8 +172,31 @@ class Alignments():
 		for link in link_list:
 			sword, tword = link.split('-')
 			permutation[int(sword)].append(int(tword))
-		self.spermutation = permutation
+		print permutation
+		self.spermutation = self.shift_permutation(permutation)
 
+	def shift_permutation(self,permutation):
+		"""
+		Shift the numbers in the permutation such
+		that it becomes a proper s-permutation by
+		picking all unique elements from the permutation,
+		sort them in a list and replace the items
+		in the permutation by their position in the
+		list
+		"""
+		uniq = []
+		for worditem in permutation:
+			for alignitem in worditem:
+				if not alignitem in uniq:
+					uniq.append(alignitem)
+		uniq.sort()
+		spermutation = []
+		for worditem in permutation:
+			new_worditem = []
+			for alignitem in worditem:
+				new_worditem.append(uniq.index(alignitem))
+			spermutation.append(new_worditem)
+		return spermutation
 
 	def spans(self):
 		"""
@@ -207,7 +246,7 @@ class Alignments():
 				if valid:
 					yield (i, j)
 
-	def rules(self):
+	def rules(self, span_relations):
 		"""
 		Creates a graph of all valid spans, and
 		calculates all paths between span endpoints.
@@ -232,18 +271,39 @@ class Alignments():
 			
 				# Build up the rule as list of spans between
 				# nodes.
-				yield Rule((i, j), path)
+				yield Rule((i, j), path,span_relations)
+
+	def lexrules(self):
+		"""
+		Returns an iterator with the terminal rules
+		of the grammar (i.e. that tells you the span
+		corresponding to a word)
+		"""
+		from nltk import tokenize
+		sent = self.ssentence.split()	#maybe use the tokenize function for this
+		length = len(sent)
+		for i in xrange(0,len(sent)):
+			rulestr = str(i) + "N" + str(i+1) + " -> '" + sent[i] + "' [1.0]"
+			yield rulestr	
 
 
 def test1():
 	alignment = '0-0 1-1 2-2 2-3 3-5 4-4'
 	sentence = 'My dog likes eating sausages'
 	a1 = Alignments(alignment,sentence)
+	for span in a1.spans():
+		print span
+	print a1.spermutation
 	if a1.spermutation == [[0],[1],[2,3],[5],[4]]:
 		print('s-permutation correct')
-	for rule in a1.rules():
+	for rule in a1.rules([]):
 		print rule
 
+def shifttest():
+	alignment = '0-1 1-7 1-4 2-3 3-2'
+	sentence = 'I do not care'
+	a1 = Alignments(alignment,sentence)
+	print a1.spermutation
 
 """ These tests do currently not work as classes are changed and 
 s-permutations are supposed to be accompanied by"""
