@@ -1,51 +1,59 @@
-import nltk
 from get_deprels import *
-from graph import *
+from alignments import *
+from graph_alignment import *
 from nltk import ViterbiParser
-from nltk import *
-from nltk import grammar
 from nltk.grammar import *
 
-class Main():
+"""
+Something weird happens when you do two tests in a row
+"""
+
+class Scoring():
 	"""
-	Compute the compositionality score of an alignment
+	Compute the compositionality score of an alignment.
 	"""
 	def __init__(self, alignment, sentence, depfile):
+		"""
+		During initialization an alignment, a corresponding
+		sentence and a string with dependencies is passed.
+		A cfg generating all HATs is created, the dependency
+		parse is used to score the different rules.
+		The adapted viterbi parser from the nltk toolkit is
+		used to parse the sentence and obtain the score.
+		"""
+		self.alignment_initialize(alignment, sentence)
+		self.dependencies_initialize(depfile)
+		parses = []
+		for parse in self.parse():
+			print parse
+			parses.append(parse)
+		self.score = self.score(parses[0])
+
+	def alignment_initialize(self, alignment, sentence):
+		self.alignment = Alignments(alignment,sentence)
 		self.sentence = sentence
-		# Create a dependencies object and extract the span-relations		
+
+	def dependencies_initialize(self, depfile):
 		self.dependencies = Dependencies(depfile)
 		self.dependencies.get_spanrels()
-		# Create an Alignments object, print the cfg rules
-		self.alignment = Alignments(alignment,sentence)
-		parses = self.parse()
-		for parse in parses:		
-			evaluation = self.evaluate(parse)
-			print evaluation
 
-	def list_rules(self):
-		rules = []
-		for rule in self.alignment.rules(self.dependencies.spanrels):
-			rules.append(str(rule))
-		for rule in self.alignment.lexrules():
-			rules.append(str(rule))
-		return rules
-
-	
 	def parse(self):
-		from nltk import grammar	
-		tokens = self.sentence.split()
-		sentence_length = len(tokens)
-		startsymbol = "0N"+str(sentence_length)
+		from nltk import grammar
+		#create a nonterminal symbol
+		startsymbol = "0N"+str(self.alignment.lengthS)
 		start = Nonterminal(startsymbol)
-		rules = self.list_rules()
+		#create the production rules for parsing, this could be faster, change later
+		rules = self.alignment.list_rules(self.dependencies.spanrels)
 		productions = parse_grammar(rules,grammar.standard_nonterm_parser,probabilistic=True, encoding=None)[1]
 		grammar = WeightedGrammar(start,productions)
+		#Create the parser and parse the sentences		
 		parser = ViterbiParser(grammar)
 		parser.trace(0)
+		tokens = self.sentence.split()
 		parses = parser.nbest_parse(tokens)
 		return parses
 
-	def evaluate(self,parse):
+	def score(self,parse):
 		import math
 		probability = parse.prob()
 		rules_used = - math.log10(probability)
@@ -54,10 +62,18 @@ class Main():
 		return score
 
 
-def test():
+def test1():
 	sentence = 'my dog likes eating sausage'
 	alignment = '0-0 1-1 2-2 2-3 3-5 4-4'
 	depfile = 'dep_parse'
-	Main(alignment, sentence,depfile)
+	scoring = Scoring(alignment, sentence, depfile)
+	print scoring.score
+	print "Obtained correct score for sentence:", scoring.score == 1.0
 
+def test2():
+	sentence = "european growth is inconceivable without solidarity ."
+	alignment = "0-0 1-1 2-2 3-3 4-4 5-5 6-6"
+	depfile = 'dep_parse2'
+	scoring1 = Scoring(alignment, sentence, depfile)
+	print scoring.score
 
