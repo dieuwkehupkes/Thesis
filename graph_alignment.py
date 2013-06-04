@@ -28,7 +28,7 @@ class Node:
 		paths to the given node. These paths
 		are calculated recursively.
 		"""
-#		print "\tsearching path from", self, "to", node
+	#	print "\tsearching path from", self, "to", node
 		if node == self:
 			# Reached our destination, stop searching.
 #			print "reached destination"
@@ -37,7 +37,6 @@ class Node:
 
 		nid = str(node)
 		if nid in self.reachable:
-#			print "we already tracked paths from", self, "to", node
 			# Already tracked paths to this point once
 			if not self.reachable[nid]:
 				# We've previously determined the node to be

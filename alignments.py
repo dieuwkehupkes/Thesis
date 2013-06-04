@@ -41,7 +41,8 @@ class Alignments:
 		lengthS = lengthS + 1
 		self.lengthT = lengthT+1
 		if lengthS > self.lengthS:
-			raise ValueError("Alignments has more words than sentence")
+			print "Alignments has more words than sentence, skipped"
+#			raise ValueError("Alignments has more words than sentence")
 		elif lengthS < self.lengthS:
 			print "Caution: sentence does not have the same length as alignment, are there", self.lengthS - lengthS, "unaligned words at the end of the sentence?"
 		return set(links)
@@ -60,16 +61,11 @@ class Alignments:
 		#Use a shift reduce algorithm to find phrase pairs
 		loopList = []
 		for y in xrange(0,self.lengthS):
-#			print 'y = ', y
 			loopList.append(y)
 			for x in reversed(loopList):
-#				print '\tx = ', x
 				u_xy = self.maxspan((x,y))
-#				print 'u',str((x,y)), '= ', u_xy
 				l_xy = self.minspan((x,y))
-#				print 'l',str((x,y)), '= ', l_xy
 				f_xy = (F_links[u_xy] - F_links[l_xy-1]) - (E_links[y] - E_links[x-1])
-#				print "f",x,y, "=", f_xy
 				if f_xy == 0:
 					yield (x,y+1)
 					#for number in xrange(x+1,y):
@@ -160,10 +156,11 @@ class Alignments:
 		spans = []
 		
 		# Construct the graph by creating the edges
+		print 'finding spans'
 		for (i,j) in self.spans():
 			nodes[i].link_to(nodes[j])
 			spans.append((i,j))
-	
+		print 'finding rules'
 		for (i,j) in spans:
 			for path in nodes[i].paths_to(nodes[j]):
 				if not path or len(path) == 2:
@@ -198,7 +195,7 @@ class Alignments:
 
 
 """
-Testing functinos for different kinds of alignments.
+Testing functions for different kinds of alignments.
 """
 
 def test():
@@ -211,14 +208,7 @@ def test():
 	for rule in a1.rules([]):
 		therules.append(str(rule))
 	rules_man = ['0N5 -> 0N1 1N5 [1]','0N5 -> 0N2 2N5 [1]', '0N5 -> 0N3 3N5 [1]', '0N5 -> 0N1 1N2 2N5 [1]', '0N5 -> 0N1 1N3 3N5 [1]', '0N5 -> 0N2 2N3 3N5 [1]', '0N5 -> 0N3 3N4 4N5 [1]', '0N5 -> 0N1 1N2 2N3 3N5 [1]', '0N5 -> 0N1 1N3 3N4 4N5 [1]', '0N5 -> 0N2 2N3 3N4 4N5 [1]', '0N5 -> 0N1 1N2 2N3 3N4 4N5 [1]', '1N5 -> 1N2 2N5 [1]', '1N5 -> 1N3 3N5 [1]', '1N5 -> 1N2 2N3 3N5 [1]', '1N5 -> 1N3 3N4 4N5 [1]', '1N5 -> 1N2 2N3 3N4 4N5 [1]', '2N5 -> 2N3 3N5 [1]', '2N5 -> 2N3 3N4 4N5 [1]', '0N3 -> 0N1 1N3 [1]', '0N3 -> 0N2 2N3 [1]', '0N3 -> 0N1 1N2 2N3 [1]', '0N2 -> 0N1 1N2 [1]', '1N3 -> 1N2 2N3 [1]', '3N5 -> 3N4 4N5 [1]']
-	rules_fp = set(therules) - set(rules_man)
-	rules_fn = set(rules_man) - set(therules)
-	print "rules not found by program:"
-	for rule in rules_fn:
-		print rule
-	print "rules found by program that didn't exist:"
-	for rule in rules_fp:
-		print rule
+	print "Rules found by program match manually found rules:", set(rules_man) == set(therules)
 
 def test1():
 	"""

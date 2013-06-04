@@ -13,31 +13,30 @@ class Dependencies():
 	The first position in the sentence is 1.
 	"""
 
-	def __init__(self, filename):
+	def __init__(self, dependency_list):
 		"""
 		Initializes a dictionary with the dependencies
-		extracted from a file containing 1 sentence. Entries
+		from an inputed list of dependencies. Entries
 		of the dictionary will be of the form:
 
 			pos_head: [pos_dependent, reltype]
 		"""
 		self.nr_of_deps = -1
-		self.deps = self.set_dependencies(filename)
+		self.deps = self.set_dependencies(dependency_list)
 
-	def set_dependencies(self,filename):
+	def set_dependencies(self,dependency_list):
 		"""
 		Read in a file and create a dictionary
 		with its dependencies
 		"""
-		dependency_file = open(filename,'r')
 		deps = {}
-		for line in dependency_file:
+		for relation in dependency_list:
 			self.nr_of_deps += 1
 			# Find the type of relation
-			relb = re.match('[a-z\_]*\(',line)
+			relb = re.match('[a-z\_]*\(',relation)
 			rel = relb.group(0).strip('(')
 			# Find head and dependent
-			headdep = re.findall('-[0-9]*',line)
+			headdep = re.findall('-[0-9]*',relation)
 			if len(headdep) != 2:
 				raise NameError('check line, more than 2 dependencies detected')
 			head = int(headdep[0].strip('-'))
@@ -46,7 +45,6 @@ class Dependencies():
 			# and add dependency
 			deps[head] = deps.get(head,[])
 			deps[head].append([dep,rel])
-		dependency_file.close()
 		return deps
 
 	def set_wordspans(self):
@@ -130,12 +128,13 @@ class Dependencies():
 """
 Testing
 """
-def test():
-	filename = 'dep_parse'
-	d = Dependencies(filename)
+def test1():
+	dependencies = ['nn(growth-2, european-1)','nsubj(inconceivable-4, growth-2)','cop(inconceivable-4, is-3)','root(ROOT-0, inconceivable-4)','prep(inconceivable-4, without-5)','pobj(without-5, solidarity-6)']
+	d = Dependencies(dependencies)
 	d.get_spanrels()
 	print d.wordspans
 	print d.spanrels
 	print d.nr_of_deps
-	#d.print_spans()
+	#MANUALLY CREATE OUTPUT AND OUTPUT IF IT IS THE SAME AS PROGRAMS OUTPUT
+
   
