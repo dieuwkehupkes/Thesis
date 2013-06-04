@@ -1,3 +1,24 @@
+class Waypoint:
+	"""
+	Defines a waypoint in a one-directional path. This
+	allows us to save memory by not having to copy path
+	arrays for every path.
+	"""
+	def __init__(self, node, link = None):
+		"""
+		Creates a new waypoint, call with the
+		node it represents and a link to the
+		next waypoint.
+		"""
+		self.node = node
+		self.link = link
+		# We can statically calculate length from
+		# existing link.
+		self.length = 1 if not link else len(link) + 1	
+
+	def __len__(self):
+		return self.length
+
 class Node:
 	"""
 	Defines a node in a directed graph.
@@ -32,7 +53,7 @@ class Node:
 		if node == self:
 			# Reached our destination, stop searching.
 #			print "reached destination"
-			yield [self]
+			yield Waypoint(self)
 			return
 
 		nid = str(node)
@@ -59,7 +80,7 @@ class Node:
 				if path:
 					# Yay, we found a path :)
 					# Add to known paths and return
-					full_path = [self] + path
+					full_path = Waypoint(self, path)
 					paths.append(full_path)	
 					yield full_path
 		
@@ -92,9 +113,12 @@ class Rule:
 		"""
 		self.root = root
 		spans = []
-
-		for i in xrange(0, len(path) - 1):
-			spans.append((path[i].value, path[i+1].value))
+			
+		waypoint = path
+		while waypoint.link:
+			spans.append((waypoint.node.value, 
+				waypoint.link.node.value))
+			waypoint = waypoint.link
 
 		self.spans = spans
 		self.span_relations = span_relations
