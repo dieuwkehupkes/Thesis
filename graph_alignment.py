@@ -40,36 +40,35 @@ class Node:
 #			print "we already tracked paths from", self, "to", node
 			# Already tracked paths to this point once
 			if not self.reachable[nid]:
-#				print "node was unreachable"
-				# Node is unreachable from here, cancel
-				# search.
+				# We've previously determined the node to be
+				# unreachable from here; cancel search.	
 				yield False
 			else:
 				for path in self.reachable[nid]:
 					yield path
 			return
 		
-		self.reachable[nid] = reachable = []
-#		print "add", nid, "to reachable. Reachable from", self, '=', self.reachable		
+		# Create a list of paths to this node 	
+		paths = []
 
-		if len(self.links) == 0:
-#			print "no more edges, no path"
-			# No more edges; no path
-			yield False 
-
-		for link in self.links:
-			if link <= node:
-				for path in link.paths_to(node):
-					if path:
-#						print "found a path, add to known paths and return"
-						# Yay, we found a path :)
-						# Add to known paths and return
-						full_path = [self] + path
-						reachable.append(full_path)	
-#						print self.reachable
-						yield full_path
-					else:
-						self.reachable[nid] = False
+		# No use searching through links with a larger
+		# value than the one we're looking for
+		# Important note: this is specific to this algorithm,
+		# NOT generic graph search.
+		for link in (l for l in self.links if l.value <= node.value):
+			for path in link.paths_to(node):
+				if path:
+					# Yay, we found a path :)
+					# Add to known paths and return
+					full_path = [self] + path
+					paths.append(full_path)	
+					yield full_path
+		
+		if paths:
+			self.reachable[nid] = paths
+		else:
+			self.reachable[nid] = False
+			yield False
 
 	def __repr__(self):
 		return self.__str__()
