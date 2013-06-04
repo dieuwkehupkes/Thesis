@@ -36,7 +36,7 @@ class Dependencies():
 			relb = re.match('[a-z\_]*\(',relation)
 			rel = relb.group(0).strip('(')
 			# Find head and dependent
-			headdep = re.findall('-[0-9]*',relation)
+			headdep = re.findall('-[0-9]*[0-9]',relation)
 			if len(headdep) != 2:
 				raise NameError('check line, more than 2 dependencies detected')
 			head = int(headdep[0].strip('-'))

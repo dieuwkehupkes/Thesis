@@ -156,11 +156,11 @@ class Alignments:
 		spans = []
 		
 		# Construct the graph by creating the edges
-		print 'finding spans'
+	#	print 'finding spans'
 		for (i,j) in self.spans():
 			nodes[i].link_to(nodes[j])
 			spans.append((i,j))
-		print 'finding rules'
+	#	print 'finding rules'
 		for (i,j) in spans:
 			for path in nodes[i].paths_to(nodes[j]):
 				if not path or len(path) == 2:

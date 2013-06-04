@@ -49,7 +49,7 @@ class Node:
 		paths to the given node. These paths
 		are calculated recursively.
 		"""
-	#	print "\tsearching path from", self, "to", node
+#		print "\tsearching path from", self, "to", node
 		if node == self:
 			# Reached our destination, stop searching.
 #			print "reached destination"
@@ -135,7 +135,7 @@ class Rule:
 			if key in self.spans:
 				for dependent in self.span_relations[key]:
 					if dependent in self.spans:
-						probability = probability * 0.1
+						probability = probability * 2
 		self.probability = "[" + str(probability) + "]"
 
 	def __repr__(self):

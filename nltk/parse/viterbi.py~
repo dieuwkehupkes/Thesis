@@ -203,12 +203,12 @@ class ViterbiParser(ParserI):
                 c = constituents.get((span[0], span[1], production.lhs()))
                 if self._trace > 1:
                     if c is None or c != tree:
-                        if c is None or c.prob() > tree.prob():
+                        if c is None or c.prob() < tree.prob():
                             print('   Insert:', end=' ')
                         else:
                             print('  Discard:', end=' ')
                         self._trace_production(production, p, span, len(tokens))
-                if c is None or c.prob() > tree.prob():
+                if c is None or c.prob() < tree.prob():
                     constituents[span[0], span[1], production.lhs()] = tree
                     changed = True
 
