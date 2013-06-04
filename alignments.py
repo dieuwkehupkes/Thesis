@@ -204,7 +204,7 @@ Testing functinos for different kinds of alignments.
 def test():
 	alignment = '0-0 1-1 2-2 2-3 3-5 4-4'
 	sentence = 'My dog likes eating sausages'
-	a1 = Alignment(alignment, sentence)
+	a1 = Alignments(alignment, sentence)
 	#for span in a1.spans():
 	#	print span
 	therules = []
@@ -230,7 +230,7 @@ def test1():
 	print "\nManually constructed span list:"	
 	spanlist_man = [(0,1), (0,2), (0,3), (0,4), (0,5), (1,2), (1,3), (1,4), (1,5), (2,3), (2,4), (2,5), (3,4), (3,5), (4,5)]
 	print spanlist_man
-	s = Alignment(alignment, '0 1 2 3 4')
+	s = Alignments(alignment, '0 1 2 3 4')
 	spans = s.spans()
 	spanlist = []	
 	for span in spans:
@@ -251,7 +251,7 @@ def test2():
 	spanlist_man = [(0,1), (0,2), (0,3), (1,2), (0,6), (2,3), (2,6), (3,4), (3,6), (4,5),(5,6)]
 	spanlist_man.sort()
 	print spanlist_man
-	s = Alignment(alignment, '0 1 2 3 4 5')
+	s = Alignments(alignment, '0 1 2 3 4 5')
 	spans = s.spans()
 	spanlist = []	
 	for span in spans:
@@ -273,7 +273,7 @@ def test3():
 	spanlist_man = [(0,1), (0,2), (0,3), (0,4), (0,5), (1,2), (1,3), (1,4), (1,5), (2,3), (2,4), (2,5), (3,4), (3,5), (4,5)]
 	spanlist_man.sort()
 	print spanlist_man
-	s = Alignment(alignment, '0 1 2 3 4')
+	s = Alignments(alignment, '0 1 2 3 4')
 	spans = s.spans()
 	spanlist = []	
 	for span in spans:
@@ -295,7 +295,7 @@ def test4():
 	spanlist_man = [(0,1), (0,2), (0,5), (1,2), (1,3), (1,4), (2,3), (2,4), (3,4), (3,5), (4,5)]
 	spanlist_man.sort()
 	print spanlist_man
-	s = Alignment(alignment, '0 1 2 3 4')
+	s = Alignments(alignment, '0 1 2 3 4')
 	spans = s.spans()
 	spanlist = []	
 	for span in spans:

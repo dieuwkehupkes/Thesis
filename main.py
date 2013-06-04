@@ -40,18 +40,30 @@ class Scoring():
 	def parse(self):
 		from nltk import grammar
 		#create a nonterminal symbol
-		startsymbol = "0N"+str(self.alignment.lengthS)
+		tokens = self.sentence.split()
+		startsymbol = "0N"+str(len(tokens))
 		start = Nonterminal(startsymbol)
 		#create the production rules for parsing, this could be faster, change later
+		self.list_rules(self.dependencies.spanrels)
+		self.test_rules()
 		rules = self.alignment.list_rules(self.dependencies.spanrels)
 		productions = parse_grammar(rules,grammar.standard_nonterm_parser,probabilistic=True, encoding=None)[1]
+	#	print productions
 		grammar = WeightedGrammar(start,productions)
 		#Create the parser and parse the sentences		
 		parser = ViterbiParser(grammar)
 		parser.trace(0)
-		tokens = self.sentence.split()
 		parses = parser.nbest_parse(tokens)
 		return parses
+
+	def list_rules(self,spanrels):
+		print "nt-rules"
+		for rule in self.alignment.rules(spanrels):
+			print rule
+		print "lexical rules"
+		for rule in self.alignment.lexrules():
+			print rule
+
 
 	def score(self,parse):
 		import math
