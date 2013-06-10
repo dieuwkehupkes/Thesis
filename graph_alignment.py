@@ -1,3 +1,6 @@
+import nltk
+from nltk.grammar import *
+
 class Waypoint:
 	"""
 	Defines a waypoint in a one-directional path. This
@@ -123,6 +126,8 @@ class Rule:
 		self.spans = spans
 		self.span_relations = span_relations
 		self.probability()
+		self.rhs()
+		self.lhs()
 
 	def probability(self):
 		"""
@@ -136,12 +141,24 @@ class Rule:
 				for dependent in self.span_relations[key]:
 					if dependent in self.spans:
 						probability = probability * 2
-		self.probability = "[" + str(probability) + "]"
+		self.probability = probability
+		
+	def lhs(self):
+		lhs = "%s-%s" % (self.root[0], self.root[1])
+#		self.lhs = Nonterminal(lhs)
+		self.lhs = lhs
+		
+	def rhs(self):
+		rhs_list = (["%s-%s" % (i,j) for (i,j) in self.spans])
+#		rhs = []
+#		for item in rhs_list:
+#			rhs.append(Nonterminal(item))
+		self.rhs = rhs_list
 
 	def __repr__(self):
 		return self.__str__()
 
 	def __str__(self):
-		repr_list = (["%sN%s" % (i,j) for (i,j) in self.spans])
-		return ("%sN%s -> %s %s" % 
-			(self.root[0], self.root[1], " ".join(repr_list), self.probability))
+		return ("%s -> %s [%s]" % 
+			(self.lhs, " ".join(self.rhs), self.probability))
+

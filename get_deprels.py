@@ -47,6 +47,16 @@ class Dependencies():
 			deps[head].append([dep,rel])
 		return deps
 
+	def comp_score(self):
+		"""
+		Returns the number of words that is head
+		of another word, thereby giving a measure of
+		the level of compositionality of the parse
+		"""
+		nr_heads = len(self.deps.keys())
+		comp_score = nr_heads/float(self.nr_of_deps+1)
+		return comp_score
+
 	def set_wordspans(self):
 		"""
 		Compute the span of each word and store it in a
@@ -111,9 +121,6 @@ class Dependencies():
 			for dependent in self.deps[key]:
 				spanrels[(key-1,key)].append(self.wordspans[dependent[0]])
 		self.spanrels = spanrels
-	
-	def nr_of_deps(self):
-		return self.nr_of_deps
  
 	def print_spans(self):
 		print self.wordspans, '\n'
@@ -128,13 +135,33 @@ class Dependencies():
 """
 Testing
 """
+
 def test1():
-	dependencies = ['nn(growth-2, european-1)','nsubj(inconceivable-4, growth-2)','cop(inconceivable-4, is-3)','root(ROOT-0, inconceivable-4)','prep(inconceivable-4, without-5)','pobj(without-5, solidarity-6)']
+	dependencies = ['nn(President-2, Mr-1)','nsubj(welcome-6, President-2)','nsubj(welcome-6, I-4)','aux(welcome-6, would-5)','root(ROOT-0, welcome-6)','det(action-8, some-7)','dobj(welcome-6, action-8)','prep(action-8, in-9)','det(area-11, this-10)','pobj(in-9, area-11)]']
 	d = Dependencies(dependencies)
 	d.get_spanrels()
-	print d.wordspans
-	print d.spanrels
-	print d.nr_of_deps
-	#MANUALLY CREATE OUTPUT AND OUTPUT IF IT IS THE SAME AS PROGRAMS OUTPUT
+	manual_spanrels= {(1,2): [(0,1)],(5,6): [(0,2),(3,4),(4,5), (6,11)], (7,8):[(6,7),(8,11)],(8,9): [(9,11)], (10,11): [(9,10)]}
+	print "Program output matches manual output = ", d.spanrels == manual_spanrels
 
-  
+
+def print_scores():
+	dependencies = 'Data/europarl.dependencies.en.head100'
+	scores = open('scores', 'w')
+	deps = open(dependencies, 'r')
+	new_line = deps.readline()
+	while new_line != '':
+		dependency_list = []
+		while new_line != '\n':
+			dependency_list.append(new_line)
+			new_line = deps.readline()
+		d = Dependencies(dependency_list)
+		score = str(d.comp_score())
+		scores.write(score +'\n')
+		new_line = deps.readline()
+	scores.close()
+
+
+def analyse_test1():
+	dependencies = ['nsubj(up-3, it-1)','cop(up-3, is-2)','root(ROOT-0, up-3)','prep(up-3, to-4)','det(States-7, the-5)','nn(States-7, Members-6)','pobj(to-4, States-7)','cc(States-7, and-8)','det(Community-10, the-9)','conj(States-7, Community-10)','aux(take-12, to-11)','xcomp(up-3, take-12)','det(initiatives-15, the-13)','amod(initiatives-15, necessary-14)','nsubj(achieve-17, initiatives-15)','aux(achieve-17, to-16)','xcomp(take-12, achieve-17)','dobj(achieve-17, this-18)']
+	d = Dependencies(dependencies)
+	print d.comp_score()

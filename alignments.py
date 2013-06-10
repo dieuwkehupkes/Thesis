@@ -1,4 +1,6 @@
 from graph_alignment import *
+#import nltk
+#from ntlk.grammar import *
 
 class Alignments:
 	"""
@@ -182,16 +184,22 @@ class Alignments:
 		sent = self.sentence.split()	#maybe use the tokenize function for this
 		length = len(sent)
 		for i in xrange(0,len(sent)):
-			rulestr = str(i) + "N" + str(i+1) + " -> '" + sent[i] + "' [1.0]"
-			yield rulestr	
+			lhs = Nonterminal(str(i) + "-" + str(i+1))
+			rhs = [sent[i]]
+			probability = 1.0
+			yield WeightedProduction(lhs, rhs, prob=probability)
 
-	def list_rules(self,spanrels):
-		rules = []
+	def list_productions(self,spanrels):
+		productions = []
 		for rule in self.rules(spanrels):
-			rules.append(str(rule))
+			# Create list to create rhs Nonterminals
+			rhs_list = []
+			for rhs in rule.rhs:
+				rhs_list.append(Nonterminal(rhs))
+			productions.append(WeightedProduction(Nonterminal(rule.lhs), rhs_list, prob=rule.probability))
 		for rule in self.lexrules():
-			rules.append(str(rule))
-		return rules
+			productions.append(rule)
+		return productions
 
 
 """
@@ -202,13 +210,14 @@ def test():
 	alignment = '0-0 1-1 2-2 2-3 3-5 4-4'
 	sentence = 'My dog likes eating sausages'
 	a1 = Alignments(alignment, sentence)
-	#for span in a1.spans():
-	#	print span
+#	productions = a1.list_productions([])
 	therules = []
 	for rule in a1.rules([]):
 		therules.append(str(rule))
-	rules_man = ['0N5 -> 0N1 1N5 [1]','0N5 -> 0N2 2N5 [1]', '0N5 -> 0N3 3N5 [1]', '0N5 -> 0N1 1N2 2N5 [1]', '0N5 -> 0N1 1N3 3N5 [1]', '0N5 -> 0N2 2N3 3N5 [1]', '0N5 -> 0N3 3N4 4N5 [1]', '0N5 -> 0N1 1N2 2N3 3N5 [1]', '0N5 -> 0N1 1N3 3N4 4N5 [1]', '0N5 -> 0N2 2N3 3N4 4N5 [1]', '0N5 -> 0N1 1N2 2N3 3N4 4N5 [1]', '1N5 -> 1N2 2N5 [1]', '1N5 -> 1N3 3N5 [1]', '1N5 -> 1N2 2N3 3N5 [1]', '1N5 -> 1N3 3N4 4N5 [1]', '1N5 -> 1N2 2N3 3N4 4N5 [1]', '2N5 -> 2N3 3N5 [1]', '2N5 -> 2N3 3N4 4N5 [1]', '0N3 -> 0N1 1N3 [1]', '0N3 -> 0N2 2N3 [1]', '0N3 -> 0N1 1N2 2N3 [1]', '0N2 -> 0N1 1N2 [1]', '1N3 -> 1N2 2N3 [1]', '3N5 -> 3N4 4N5 [1]']
+	rules_man = ['0-5 -> 0-1 1-5 [1]','0-5 -> 0-2 2-5 [1]', '0-5 -> 0-3 3-5 [1]', '0-5 -> 0-1 1-2 2-5 [1]', '0-5 -> 0-1 1-3 3-5 [1]', '0-5 -> 0-2 2-3 3-5 [1]', '0-5 -> 0-3 3-4 4-5 [1]', '0-5 -> 0-1 1-2 2-3 3-5 [1]', '0-5 -> 0-1 1-3 3-4 4-5 [1]', '0-5 -> 0-2 2-3 3-4 4-5 [1]', '0-5 -> 0-1 1-2 2-3 3-4 4-5 [1]', '1-5 -> 1-2 2-5 [1]', '1-5 -> 1-3 3-5 [1]', '1-5 -> 1-2 2-3 3-5 [1]', '1-5 -> 1-3 3-4 4-5 [1]', '1-5 -> 1-2 2-3 3-4 4-5 [1]', '2-5 -> 2-3 3-5 [1]', '2-5 -> 2-3 3-4 4-5 [1]', '0-3 -> 0-1 1-3 [1]', '0-3 -> 0-2 2-3 [1]', '0-3 -> 0-1 1-2 2-3 [1]', '0-2 -> 0-1 1-2 [1]', '1-3 -> 1-2 2-3 [1]', '3-5 -> 3-4 4-5 [1]']
 	print "Rules found by program match manually found rules:", set(rules_man) == set(therules)
+#	print "rules not found", set(therules)-set(rules_man)
+#	print "rules found", set(rules_man) - set(therules)
 
 def test1():
 	"""
