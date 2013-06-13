@@ -1,17 +1,15 @@
 from scoring import *
 import sys #Adapt later such that files and parameters can be entered via commandline
 
-#all_dependencies = 'Data/europarl.dependencies.en.head100'
-#all_sentences = 'Data/europarl-v7.nl-en.en.head100'
-#all_alignments = 'Data/europarl-v7-alignments.en-ne.head100'
-#scores = 'Data/results'
-#trees = 'Data/trees'
+#all_dependencies = 'Testing/test_dependency.2'
+#all_sentences = 'Testing/test_sentence.2'
+#all_alignments = 'Testing/test_alignment.2'
+#scores = 'Testing/test_results.2'
+#tree_file = 'Testing/test_trees.2'
 
 if len(sys.argv) != 6:
 	raise ValueError('nr of arguments incorrect, usage:\n python main.py dependency_file sentence_file alignment_file print_scores_to print_trees_to')
 
-for argument in sys.argv:
-	print argument
 
 all_dependencies = sys.argv[1]
 all_sentences = sys.argv[2]
@@ -48,8 +46,12 @@ while new_alignment != '':
 		new_dependent = dependency_file.readline()
 	#score sentence
 	sentence_length = len(new_sentence.split())
-	if sentence_length < 21:
-		scoring = Scoring(new_alignment, new_sentence, dependency_list)
+	if sentence_length < 20:
+		print 'Initializing Dependencies'
+		dependencies = Dependencies(dependency_list)
+		# preferred relations
+		relations = dependencies.get_comp_spanrels()
+		scoring = Scoring(new_alignment, new_sentence, relations)
 		results.write(str(scoring.score)+'\n')
 		parse = str(scoring.parse)
 		trees.write(parse +'\n\n')
@@ -61,9 +63,12 @@ while new_alignment != '':
 	new_sentence = sentence_file.readline()
 	new_dependent = dependency_file.readline()
 
-#average = total_score/parsed_sentences
+average = total_score/parsed_sentences
 print 'average score:', average
 
+dependency_file.close()
+sentence_file.close()
+alignment_file.close()
 results.close()
 trees.close()
 
