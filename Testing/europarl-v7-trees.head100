@@ -1,0 +1,615 @@
+(0-8
+  (0-1 next)
+  (1-2 ,)
+  (2-3 we)
+  (3-4 have)
+  (4-5 flags)
+  (5-7 (5-6 of) (6-7 convenience))
+  (7-8 .)) (p=16)
+
+(0-6
+  (0-1 this)
+  (1-2 is)
+  (2-3 no)
+  (3-4 longer)
+  (4-5 tolerable)
+  (5-6 .)) (p=8)
+
+(0-9
+  (0-1 finally)
+  (1-2 ,)
+  (2-3 there)
+  (3-4 is)
+  (4-8 (4-5 the) (5-6 lack) (6-7 of) (7-8 transparency))
+  (8-9 .)) (p=32)
+
+(0-6
+  (0-1 this)
+  (1-2 is)
+  (2-3 no)
+  (3-4 longer)
+  (4-5 tolerable)
+  (5-6 .)) (p=8)
+
+(0-18
+  (0-1 finally)
+  (1-2 we)
+  (2-3 must)
+  (3-4 ensure)
+  (4-17
+    (4-5 that)
+    (5-11
+      (5-6 all)
+      (6-7 the)
+      (7-8 parties)
+      (8-11
+        (8-9 responsible)
+        (9-11 (9-10 for) (10-11 disasters))))
+    (11-12 contribute)
+    (12-13 to)
+    (13-17
+      (13-14 repairing)
+      (14-15 the)
+      (15-16 damage)
+      (16-17 caused)))
+  (17-18 .)) (p=16384)
+
+(0-11
+  (0-1 I)
+  (1-2 am)
+  (2-3 thinking)
+  (3-4 specifically)
+  (4-5 of)
+  (5-6 Total-Fina)
+  (6-7 in)
+  (7-8 the)
+  (8-9 present)
+  (9-10 instance)
+  (10-11 .)) (p=32)
+
+(0-15
+  (0-2 (0-1 quite) (1-2 clearly))
+  (2-3 ,)
+  (3-4 we)
+  (4-5 are)
+  (5-6 now)
+  (6-7 paying)
+  (7-8 the)
+  (8-9 price)
+  (9-14
+    (9-10 for)
+    (10-14
+      (10-11 our)
+      (11-12 lack)
+      (12-14 (12-13 of) (13-14 concern))))
+  (14-15 .)) (p=2048)
+
+(0-12
+  (0-2 (0-1 so) (1-2 today))
+  (2-3 we)
+  (3-4 find)
+  (4-5 ourselves)
+  (5-6 in)
+  (6-11
+    (6-7 a)
+    (7-8 state)
+    (8-9 of)
+    (9-11 (9-10 utter) (10-11 confusion)))
+  (11-12 .)) (p=256)
+
+(0-13
+  (0-6
+    (0-1 the)
+    (1-2 question)
+    (2-3 of)
+    (3-4 flags)
+    (4-5 of)
+    (5-6 convenience))
+  (6-7 must)
+  (7-8 be)
+  (8-9 reviewed)
+  (9-12 (9-10 within) (10-12 (10-11 the) (11-12 IMO)))
+  (12-13 .)) (p=256)
+
+(0-19
+  (0-1 it)
+  (1-2 is)
+  (2-3 up)
+  (3-10
+    (3-4 to)
+    (4-10
+      (4-5 the)
+      (5-6 Members)
+      (6-7 States)
+      (7-8 and)
+      (8-10 (8-9 the) (9-10 Community))))
+  (10-18
+    (10-11 to)
+    (11-12 take)
+    (12-15
+      (12-13 the)
+      (13-14 necessary)
+      (14-15 initiatives))
+    (15-16 to)
+    (16-17 achieve)
+    (17-18 this))
+  (18-19 .)) (p=65536)
+
+(0-11
+  (0-1 this)
+  (1-2 omission)
+  (2-3 must)
+  (3-4 be)
+  (4-5 remedied)
+  (5-6 as)
+  (6-7 a)
+  (7-8 matter)
+  (8-9 of)
+  (9-10 urgency)
+  (10-11 .)) (p=32)
+
+(0-10
+  (0-2 (0-1 the) (1-2 Commission))
+  (2-3 is)
+  (3-4 displaying)
+  (4-5 intolerable)
+  (5-6 inertia)
+  (6-7 and)
+  (7-8 unacceptable)
+  (8-9 shortcomings)
+  (9-10 .)) (p=64)
+
+(0-13
+  (0-1 it)
+  (1-2 is)
+  (2-3 now)
+  (3-4 scheduled)
+  (4-5 for)
+  (5-6 July)
+  (6-7 ,)
+  (7-8 this)
+  (8-9 must)
+  (9-10 be)
+  (10-11 brought)
+  (11-12 forward)
+  (12-13 .)) (p=256)
+
+(0-15
+  (0-8
+    (0-1 the)
+    (1-2 terms)
+    (2-5 (2-3 of) (3-5 (3-4 the) (4-5 regulations)))
+    (5-8 (5-6 to) (6-7 be) (7-8 enforced)))
+  (8-9 must)
+  (9-10 be)
+  (10-11 particularly)
+  (11-12 clear)
+  (12-13 and)
+  (13-14 strict)
+  (14-15 .)) (p=8192)
+
+(0-12
+  (0-1 I)
+  (1-2 shall)
+  (2-3 mention)
+  (3-5 (3-4 three) (4-5 issues))
+  (5-11
+    (5-6 that)
+    (6-8 (6-7 our) (7-8 group))
+    (8-9 feels)
+    (9-11 (9-10 are) (10-11 priorities)))
+  (11-12 .)) (p=1024)
+
+(0-12
+  (0-1 this)
+  (1-2 could)
+  (2-3 be)
+  (3-4 of)
+  (4-5 a)
+  (5-6 maximum)
+  (6-7 of)
+  (7-8 15)
+  (8-9 years)
+  (9-11 (9-10 of) (10-11 age))
+  (11-12 .)) (p=64)
+
+(0-11
+  (0-1 thus)
+  (1-2 ,)
+  (2-3 the)
+  (3-4 Erika)
+  (4-5 was)
+  (5-6 refused)
+  (6-7 access)
+  (7-8 to)
+  (8-9 American)
+  (9-10 waters)
+  (10-11 .)) (p=32)
+
+(0-17
+  (0-8
+    (0-1 if)
+    (1-4 (1-2 the) (2-3 European) (3-4 Community))
+    (4-5 had)
+    (5-6 done)
+    (6-8 (6-7 the) (7-8 same)))
+  (8-9 ,)
+  (9-12 (9-10 a) (10-11 great) (11-12 disaster))
+  (12-13 would)
+  (13-14 have)
+  (14-15 been)
+  (15-16 avoided)
+  (16-17 .)) (p=16384)
+
+(0-5
+  (0-1 and)
+  (1-2 now)
+  (2-4 (2-3 the) (3-4 Erika))
+  (4-5 .)) (p=8)
+
+(0-5 (0-1 whose) (1-2 turn) (2-3 is) (3-4 next) (4-5 ?)) (p=4)
+
+(0-6
+  (0-1 and)
+  (1-2 this)
+  (2-3 is)
+  (3-4 the)
+  (4-5 result)
+  (5-6 .)) (p=16)
+
+(0-17
+  (0-1 as)
+  (1-2 an)
+  (2-3 elected)
+  (3-4 representative)
+  (4-5 for)
+  (5-6 the)
+  (6-7 Loire-Atlantique)
+  (7-8 region)
+  (8-9 ,)
+  (9-10 unfortunately)
+  (10-11 ,)
+  (11-12 I)
+  (12-13 can)
+  (13-14 testify)
+  (14-16 (14-15 to) (15-16 this))
+  (16-17 .)) (p=512)
+
+(0-16
+  (0-8
+    (0-1 there)
+    (1-2 is)
+    (2-4 (2-3 nothing) (3-4 natural))
+    (4-5 about)
+    (5-8 (5-6 these) (6-7 recurring) (7-8 disasters)))
+  (8-9 ,)
+  (9-10 they)
+  (10-11 are)
+  (11-15
+    (11-12 the)
+    (12-13 result)
+    (13-15 (13-14 of) (14-15 fate)))
+  (15-16 .)) (p=4096)
+
+(0-8
+  (0-1 they)
+  (1-2 are)
+  (2-3 the)
+  (3-4 result)
+  (4-7 (4-5 of) (5-7 (5-6 human) (6-7 thoughtlessness)))
+  (7-8 .)) (p=64)
+
+(0-9
+  (0-1 what)
+  (1-2 we)
+  (2-3 have)
+  (3-4 here)
+  (4-5 is)
+  (5-6 an)
+  (6-7 ecological)
+  (7-8 disaster)
+  (8-9 .)) (p=64)
+
+(0-11
+  (0-1 the)
+  (1-2 Erika)
+  (2-3 disaster)
+  (3-4 must)
+  (4-5 be)
+  (5-6 the)
+  (6-7 last)
+  (7-8 in)
+  (8-9 the)
+  (9-10 series)
+  (10-11 .)) (p=64)
+
+(0-13
+  (0-1 first)
+  (1-2 of)
+  (2-3 all)
+  (3-4 ,)
+  (4-5 we)
+  (5-6 must)
+  (6-7 shed)
+  (7-9 (7-8 some) (8-9 light))
+  (9-12 (9-10 on) (10-12 (10-11 this) (11-12 shipwreck)))
+  (12-13 .)) (p=512)
+
+(0-6
+  (0-1 we)
+  (1-2 know)
+  (2-5 (2-3 what) (3-4 actually) (4-5 happened))
+  (5-6 .)) (p=16)
+
+(0-18
+  (0-1 this)
+  (1-2 would)
+  (2-3 be)
+  (3-4 a)
+  (4-5 minimum)
+  (5-6 requirement)
+  (6-7 ,)
+  (7-8 I)
+  (8-9 believe)
+  (9-10 ,)
+  (10-17
+    (10-11 on)
+    (11-17
+      (11-12 the)
+      (12-13 dawn)
+      (13-17
+        (13-14 of)
+        (14-17
+          (14-15 the)
+          (15-16 third)
+          (16-17 millennium)))))
+  (17-18 .)) (p=8192)
+
+(0-16
+  (0-1 I)
+  (1-2 have)
+  (2-3 also)
+  (3-4 tabled)
+  (4-5 a)
+  (5-6 resolution)
+  (6-7 on)
+  (7-8 this)
+  (8-9 subject)
+  (9-10 on)
+  (10-11 behalf)
+  (11-12 of)
+  (12-13 the)
+  (13-14 EDD)
+  (14-15 Group)
+  (15-16 .)) (p=128)
+
+(0-13
+  (0-1 we)
+  (1-2 urgently)
+  (2-3 require)
+  (3-5 (3-4 a) (4-5 directive))
+  (5-6 if)
+  (6-7 we)
+  (7-8 are)
+  (8-9 to)
+  (9-10 reduce)
+  (10-12 (10-11 these) (11-12 risks))
+  (12-13 .)) (p=512)
+
+(0-18
+  (0-1 this)
+  (1-2 is)
+  (2-3 the)
+  (3-4 only)
+  (4-5 way)
+  (5-17
+    (5-6 of)
+    (6-17
+      (6-7 affording)
+      (7-8 the)
+      (8-9 victims)
+      (9-10 the)
+      (10-11 opportunity)
+      (11-12 to)
+      (12-13 make)
+      (13-14 their)
+      (14-15 claims)
+      (15-16 for)
+      (16-17 compensation)))
+  (17-18 .)) (p=2048)
+
+(0-18
+  (0-1 however)
+  (1-2 ,)
+  (2-3 we)
+  (3-4 must)
+  (4-5 aim)
+  (5-6 higher)
+  (6-7 in)
+  (7-8 the)
+  (8-9 long-term)
+  (9-10 ,)
+  (10-12 (10-11 let) (11-12 there))
+  (12-17
+    (12-13 be)
+    (13-14 no)
+    (14-15 mistake)
+    (15-17 (15-16 about) (16-17 that)))
+  (17-18 .)) (p=4096)
+
+(0-15
+  (0-1 in)
+  (1-2 other)
+  (2-3 words)
+  (3-4 ,)
+  (4-5 we)
+  (5-6 need)
+  (6-7 real)
+  (7-8 cost-effectiveness)
+  (8-14
+    (8-9 for)
+    (9-14
+      (9-10 our)
+      (10-11 entire)
+      (11-12 energy)
+      (12-13 supply)
+      (13-14 system)))
+  (14-15 .)) (p=512)
+
+(0-5
+  (0-1 many)
+  (1-2 thanks)
+  (2-4 (2-3 for) (3-4 this))
+  (4-5 .)) (p=8)
+
+(0-15
+  (0-3 (0-1 the) (1-2 damage) (2-3 suffered))
+  (3-4 ,)
+  (4-8
+    (4-5 also)
+    (5-6 in)
+    (6-8 (6-7 ecological) (7-8 terms)))
+  (8-9 ,)
+  (9-10 cannot)
+  (10-11 be)
+  (11-12 expressed)
+  (12-13 in)
+  (13-14 money)
+  (14-15 .)) (p=2048)
+
+(0-12
+  (0-1 hence)
+  (1-2 also)
+  (2-3 this)
+  (3-4 joint)
+  (4-5 debate)
+  (5-11
+    (5-6 involving)
+    (6-11
+      (6-7 transport)
+      (7-8 and)
+      (8-9 environmental)
+      (9-10 management)
+      (10-11 Members)))
+  (11-12 .)) (p=512)
+
+(0-16
+  (0-1 could)
+  (1-2 I)
+  (2-3 highlight)
+  (3-15
+    (3-4 a)
+    (4-5 few)
+    (5-6 points)
+    (6-15
+      (6-7 which)
+      (7-8 have)
+      (8-9 also)
+      (9-10 been)
+      (10-11 touched)
+      (11-12 upon)
+      (12-15
+        (12-13 by)
+        (13-15 (13-14 the) (14-15 Commissioner)))))
+  (15-16 ?)) (p=8192)
+
+(0-19
+  (0-1 first)
+  (1-7
+    (1-2 of)
+    (2-7
+      (2-3 all)
+      (3-4 ,)
+      (4-7 (4-5 the) (5-6 port-state) (6-7 control))))
+  (7-8 ,)
+  (8-18
+    (8-9 according)
+    (9-18
+      (9-10 to)
+      (10-11 which)
+      (11-16
+        (11-12 25)
+        (12-13 %)
+        (13-16
+          (13-14 of)
+          (14-16 (14-15 all) (15-16 ships))))
+      (16-17 require)
+      (17-18 inspection)))
+  (18-19 .)) (p=16384)
+
+(0-7
+  (0-1 but)
+  (1-2 this)
+  (2-3 is)
+  (3-4 not)
+  (4-6 (4-5 in) (5-6 place))
+  (6-7 .)) (p=32)
+
+(0-12
+  (0-2 (0-1 Mr) (1-2 President))
+  (2-3 ,)
+  (3-4 I)
+  (4-5 would)
+  (5-6 welcome)
+  (6-7 some)
+  (7-8 action)
+  (8-11 (8-9 in) (9-11 (9-10 this) (10-11 area)))
+  (11-12 .)) (p=256)
+
+(0-16
+  (0-2 (0-1 Mr) (1-2 President))
+  (2-3 ,)
+  (3-4 we)
+  (4-5 have)
+  (5-6 already)
+  (6-7 had)
+  (7-9 (7-8 this) (8-9 discussion))
+  (9-10 so)
+  (10-12 (10-11 many) (11-12 times))
+  (12-15 (12-13 in) (13-15 (13-14 the) (14-15 past)))
+  (15-16 .)) (p=8192)
+
+(0-8
+  (0-1 so)
+  (1-2 what)
+  (2-3 are)
+  (3-4 we)
+  (4-5 to)
+  (5-6 do)
+  (6-7 now)
+  (7-8 ?)) (p=16)
+
+(0-11
+  (0-1 I)
+  (1-2 will)
+  (2-3 tell)
+  (3-4 you)
+  (4-10
+    (4-5 a)
+    (5-6 few)
+    (6-7 things)
+    (7-10 (7-8 we) (8-9 should) (9-10 do)))
+  (10-11 .)) (p=512)
+
+(0-8
+  (0-1 of)
+  (1-2 course)
+  (2-3 ,)
+  (3-4 we)
+  (4-5 need)
+  (5-6 double-hulled)
+  (6-7 vessels)
+  (7-8 .)) (p=8)
+
+(0-9
+  (0-1 so)
+  (1-2 what)
+  (2-3 do)
+  (3-8
+    (3-4 we)
+    (4-5 need)
+    (5-6 to)
+    (6-7 happen)
+    (7-8 immediately))
+  (8-9 ?)) (p=64)
+

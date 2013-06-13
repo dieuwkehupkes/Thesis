@@ -145,7 +145,7 @@ class Alignments:
 			return max(alignment_links)
 
 
-	def rules(self, span_relations):
+	def rules(self, span_relations, labels = {}):
 		"""
 		Creates a graph of all valid spans, and
 		calculates all paths between span endpoints.
@@ -171,10 +171,10 @@ class Alignments:
 			
 				# Build up the rule as list of spans between
 				# nodes.
-				yield Rule((i, j), path,span_relations)
+				yield Rule((i, j), path,span_relations, labels)
 
 
-	def lexrules(self):
+	def lexrules(self, labels = {}):
 		"""
 		Returns an iterator with the terminal rules
 		of the grammar (i.e. that tells you the span
@@ -184,20 +184,21 @@ class Alignments:
 		sent = self.sentence.split()	#maybe use the tokenize function for this
 		length = len(sent)
 		for i in xrange(0,len(sent)):
-			lhs = Nonterminal(str(i) + "-" + str(i+1))
+			lhs_string = labels.get((i,i+1),str(i) + "-" + str(i+1))
+			lhs = Nonterminal(lhs_string)
 			rhs = [sent[i]]
 			probability = 1.0
 			yield WeightedProduction(lhs, rhs, prob=probability)
 
-	def list_productions(self,spanrels):
+	def list_productions(self,spanrels, labels = {}):
 		productions = []
-		for rule in self.rules(spanrels):
+		for rule in self.rules(spanrels, labels):
 			# Create list to create rhs Nonterminals
 			rhs_list = []
 			for rhs in rule.rhs:
 				rhs_list.append(Nonterminal(rhs))
 			productions.append(WeightedProduction(Nonterminal(rule.lhs), rhs_list, prob=rule.probability))
-		for rule in self.lexrules():
+		for rule in self.lexrules(labels):
 			productions.append(rule)
 		return productions
 

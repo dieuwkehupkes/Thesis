@@ -1,0 +1,11 @@
+(0-4
+  (0-1 resumption)
+  (1-4 (1-2 of) (2-4 (2-3 the) (3-4 session)))) (p=4)
+
+(0-8
+  (0-1 approval)
+  (1-4 (1-2 of) (2-4 (2-3 the) (3-4 minutes)))
+  (4-8
+    (4-5 of)
+    (5-8 (5-6 the) (6-7 previous) (7-8 sitting)))) (p=16)
+

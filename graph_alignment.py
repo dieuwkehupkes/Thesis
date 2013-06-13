@@ -107,7 +107,7 @@ class Rule:
 	displaying, but in this class also the
 	'probabilities' to the rules are assigned.
 	"""
-	def __init__(self, root, path,span_relations):
+	def __init__(self, root, path,span_relations, labels = {}):
 		"""
 		Initialize a new rule as its root span
 		and the path in the graph (consisting
@@ -124,6 +124,7 @@ class Rule:
 			waypoint = waypoint.link
 
 		self.spans = spans
+		self.labels = labels
 		self.span_relations = span_relations
 		self.probability()
 		self.rhs()
@@ -144,12 +145,12 @@ class Rule:
 		self.probability = probability
 		
 	def lhs(self):
-		lhs = "%s-%s" % (self.root[0], self.root[1])
+		lhs = self.labels.get((self.root[0],self.root[1]), "%s-%s" % (self.root[0],self.root[1]))
 #		self.lhs = Nonterminal(lhs)
 		self.lhs = lhs
 		
 	def rhs(self):
-		rhs_list = (["%s-%s" % (i,j) for (i,j) in self.spans])
+		rhs_list = ([self.labels.get((i,j),"%s-%s" % (i,j)) for (i,j) in self.spans])
 #		rhs = []
 #		for item in rhs_list:
 #			rhs.append(Nonterminal(item))

@@ -1,0 +1,20 @@
+#A program to convert the manual alignments to the correct format
+
+a = open('en-fr_1-100.wa', 'r')
+a_new = open('en-fr_manual.100','w')
+
+sentence = 1
+new_line = a.readline()
+
+while new_line != "":
+	link_list = new_line.split()
+	if link_list[0] == str(sentence):
+		a_new.write(link_list[1]+'-'+link_list[2]+' ')
+	else:
+		a_new.write('\n'+link_list[1]+'-'+link_list[2]+' ')
+		sentence += 1
+	new_line = a.readline()
+
+	
+a.close()
+a_new.close()
