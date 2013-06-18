@@ -1,4 +1,4 @@
-from graph_alignment import *
+from graph_alignment3 import *
 #import nltk
 #from ntlk.grammar import *
 
@@ -145,7 +145,7 @@ class Alignments:
 			return max(alignment_links)
 
 
-	def rules(self, span_relations, labels = {}):
+	def rules(self, span_relations = {}, labels = {}):
 		"""
 		Creates a graph of all valid spans, and
 		calculates all paths between span endpoints.
@@ -173,6 +173,29 @@ class Alignments:
 				# nodes.
 				yield Rule((i, j), path,span_relations, labels)
 
+
+	def hat_rules(self, span_relations = {}, labels = {}):
+		"""
+		A generator is returned for all the valid HAT-rules
+		"""
+		# Create nodes for all positions between words
+		nodes = [Node(i) for i in xrange(0, self.lengthS + 1)]
+		spans = []
+		
+		# Construct the graph by creating the edges
+	#	print 'finding spans'
+		for (i,j) in self.spans():
+			nodes[j].link_to(nodes[i])
+			spans.append((i,j))
+		for (i,j) in spans:
+			for path in nodes[i].shortest_paths_to(nodes[j]):
+#				print path
+				if not path or len(path) == 2:
+					# No rule possible, or path points to itself
+					continue
+			
+				yield Rule((i,j),path,span_relations,labels)
+		
 
 	def lexrules(self, labels = {}):
 		"""
@@ -207,7 +230,7 @@ class Alignments:
 Testing functions for different kinds of alignments.
 """
 
-def test():
+def test_rules():
 	alignment = '0-0 1-1 2-2 2-3 3-5 4-4'
 	sentence = 'My dog likes eating sausages'
 	a1 = Alignments(alignment, sentence)
@@ -219,6 +242,18 @@ def test():
 	print "Rules found by program match manually found rules:", set(rules_man) == set(therules)
 #	print "rules not found", set(therules)-set(rules_man)
 #	print "rules found", set(rules_man) - set(therules)
+
+def test_hatrules():
+	alignment = '0-0 1-1 2-2 2-3 3-5 4-4'
+	sentence = 'My dog likes eating sausages'
+	a1 = Alignments(alignment, sentence)
+	therules = []
+	for rule in a1.hat_rules():
+		therules.append(str(rule))
+	rules_man = ['0-5 -> 0-1 1-5 [1]','0-5 -> 0-2 2-5 [1]', '0-5 -> 0-3 3-5 [1]', '1-5 -> 1-2 2-5 [1]', '1-5 -> 1-3 3-5 [1]', '2-5 -> 2-3 3-5 [1]', '0-3 -> 0-1 1-3 [1]', '0-3 -> 0-2 2-3 [1]', '0-2 -> 0-1 1-2 [1]', '1-3 -> 1-2 2-3 [1]', '3-5 -> 3-4 4-5 [1]']
+	print "Rules found by program match manually found rules:", set(rules_man) == set(therules)
+#	print "rules found extra", set(therules)-set(rules_man)
+#	print "rules not found", set(rules_man) - set(therules)
 
 def test1():
 	"""

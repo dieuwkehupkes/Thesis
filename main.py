@@ -51,7 +51,8 @@ while new_alignment != '':
 		dependencies = Dependencies(dependency_list)
 		# preferred relations
 		relations = dependencies.get_comp_spanrels()
-		scoring = Scoring(new_alignment, new_sentence, relations)
+		labels = dependencies.labels()
+		scoring = Scoring(new_alignment, new_sentence, relations, labels)
 		results.write(str(scoring.score)+'\n')
 		parse = str(scoring.parse)
 		trees.write(parse +'\n\n')
@@ -65,6 +66,7 @@ while new_alignment != '':
 
 average = total_score/parsed_sentences
 print 'average score:', average
+results.write("\n\nAverage  score: " + str(average))
 
 dependency_file.close()
 sentence_file.close()

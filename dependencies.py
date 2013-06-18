@@ -149,7 +149,9 @@ class Dependencies():
  		labels = {}
  		for key in self.deps:
  			for dependent in self.deps[key]:
- 				labels[self.wordspans[dependent[0]]] = dependent[1]
+ 				span_dependent = self.wordspans[dependent[0]]
+ 				span_string = "-[%s,%s]" % (span_dependent[0], span_dependent[1])
+ 				labels[span_dependent] = dependent[1]+span_string
  		return labels
  		
  

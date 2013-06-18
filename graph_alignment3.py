@@ -122,6 +122,8 @@ class Node:
 		from self to intermediate nodes.
 		"""
 		
+#		print 'find shortest paths from', self, 'to', node
+		
 		if node in self.shortest_paths:
 			# already computed the shortest path to this node
 			for path in self.shortest_paths[node]:
@@ -146,9 +148,8 @@ class Node:
 		while (not depth_finished or self not in visited):
 			# search until there are no more nodes at
 			# current depth, then move to next depth
-#			print 'in main loop'
+#			print 'searching for depth', depth
 			while reachable[depth]:
-#				print 'in loop for depth', depth
 				# We start with exploring this distance
 				depth_finished = False
 				# explore the first closest node
@@ -253,15 +254,20 @@ class Rule:
 
 def test1():
 	#create sample graph
-	nodes = [Node(i) for i in xrange(1,6)]
-	links = [(1,2),(1,3),(2,3),(2,5),(3,4),(3,5),(4,5)]
+	nodes = [Node(i) for i in xrange(0,5)]
+	links = [(0,1),(0,2),(1,2),(1,4),(2,3),(2,4),(3,4),(0,4)]
 	for (i,j) in links:
-		nodes[i-1].link_to(nodes[j-1])
+		nodes[i].link_to(nodes[j])
 	#find all paths
+	path_list = []
 	for (i,j) in links:
-		paths = nodes[i-1].paths_to(nodes[j-1])
+		paths = nodes[i].paths_to(nodes[j])
 		for path in paths:
-			print Rule([i,j],path)
+			path_list.append(str(path))
+	man_paths = [[0,1,2,3,4],[0,1,2,4], [0,2,3,4], [0,2,4], [0,1,4],[1,2,3,4],[1,2,4], [0,1,2], [2,3,4], [0,1],[1,2],[2,3],[3,4],[2,4],[0,2],[1,4],[0,4]]
+	man_pathlist = [str(i) for i in man_paths]
+	print set(path_list) == set(man_pathlist)
+#			print Rule([i,j],path)
 		
 #	paths = nodes[0].paths_to(nodes[4])
 #	for path in paths:
@@ -271,23 +277,32 @@ def test1():
 
 def test2():
 	#create sample graph
-	nodes = [Node(i) for i in xrange(1,6)]
-	links = [(1,2),(1,3),(2,3),(2,5),(3,4),(3,5),(4,5),(1,5)]
+	nodes = [Node(i) for i in xrange(0,5)]
+	links = [(0,1),(0,2),(1,2),(1,4),(2,3),(2,4),(3,4),(0,4)]
 	for (i,j) in links:
-		nodes[j-1].link_to(nodes[i-1])
-	spans = [(1,2), (2,3) , (3,4), (4,5), (1,5), (1,3), (2,5), (3,5)]
-	for (i,j) in spans:
-		paths = nodes[i-1].shortest_paths_to(nodes[j-1])
+		nodes[j].link_to(nodes[i])
+	#find all paths
+	path_list = []
+	for (i,j) in links:
+		paths = nodes[i].shortest_paths_to(nodes[j])
 		for path in paths:
-			print Rule([i,j],path)
+			path_list.append(str(path))
+	man_paths = [[0,1],[1,2],[2,3],[3,4],[0,1,4], [0,2,4], [0,1,2], [1,2,4],[2,3,4]]
+	man_pathlist = [str(i) for i in man_paths]
+	print set(path_list) == set(man_pathlist)
+
 
 def test3():
-	nodes = [Node(i) for i in xrange(1,6)]
-	spans = [(1,2),(1,3),(1,4),(1,5),(2,3),(2,4),(2,5),(3,4),(3,5),(4,5)]
-	for (i,j) in spans:
+	nodes = [Node(i) for i in xrange(0,5)]
+	links = [(0,1),(0,2),(0,3),(0,4),(1,2),(1,3),(1,4),(2,3),(2,4),(3,4)]
+	for (i,j) in links:
 		nodes[j].link_to(nodes[i])
-	paths = []
-	for (i,j) in spans:
-		for path in nodes[i-1].shortest_paths_to(nodes[j-1]):
-			print Rule([i,j],path)
-
+	#find all paths
+	path_list = []
+	for (i,j) in links:
+		paths = nodes[i].shortest_paths_to(nodes[j])
+		for path in paths:
+			path_list.append(str(path))
+	man_paths = [[0,1],[1,2],[2,3],[3,4],[0,1,4],[0,2,4],[0,3,4],[0,1,3],[0,2,3],[1,2,4],[1,3,4], [0,1,2],[1,2,3],[2,3,4]]
+	man_pathlist = [str(i) for i in man_paths]
+	print set(path_list) == set(man_pathlist)
