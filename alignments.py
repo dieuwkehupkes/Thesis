@@ -1,4 +1,4 @@
-from graph_alignment3 import *
+from graph_alignment import *
 #import nltk
 #from ntlk.grammar import *
 
@@ -213,18 +213,6 @@ class Alignments:
 			probability = 1.0
 			yield WeightedProduction(lhs, rhs, prob=probability)
 
-	def list_productions(self,spanrels, labels = {}):
-		productions = []
-		for rule in self.rules(spanrels, labels):
-			# Create list to create rhs Nonterminals
-			rhs_list = []
-			for rhs in rule.rhs:
-				rhs_list.append(Nonterminal(rhs))
-			productions.append(WeightedProduction(Nonterminal(rule.lhs), rhs_list, prob=rule.probability))
-		for rule in self.lexrules(labels):
-			productions.append(rule)
-		return productions
-
 
 """
 Testing functions for different kinds of alignments.
@@ -239,7 +227,7 @@ def test_rules():
 	for rule in a1.rules([]):
 		therules.append(str(rule))
 	rules_man = ['0-5 -> 0-1 1-5 [1]','0-5 -> 0-2 2-5 [1]', '0-5 -> 0-3 3-5 [1]', '0-5 -> 0-1 1-2 2-5 [1]', '0-5 -> 0-1 1-3 3-5 [1]', '0-5 -> 0-2 2-3 3-5 [1]', '0-5 -> 0-3 3-4 4-5 [1]', '0-5 -> 0-1 1-2 2-3 3-5 [1]', '0-5 -> 0-1 1-3 3-4 4-5 [1]', '0-5 -> 0-2 2-3 3-4 4-5 [1]', '0-5 -> 0-1 1-2 2-3 3-4 4-5 [1]', '1-5 -> 1-2 2-5 [1]', '1-5 -> 1-3 3-5 [1]', '1-5 -> 1-2 2-3 3-5 [1]', '1-5 -> 1-3 3-4 4-5 [1]', '1-5 -> 1-2 2-3 3-4 4-5 [1]', '2-5 -> 2-3 3-5 [1]', '2-5 -> 2-3 3-4 4-5 [1]', '0-3 -> 0-1 1-3 [1]', '0-3 -> 0-2 2-3 [1]', '0-3 -> 0-1 1-2 2-3 [1]', '0-2 -> 0-1 1-2 [1]', '1-3 -> 1-2 2-3 [1]', '3-5 -> 3-4 4-5 [1]']
-	print "Rules found by program match manually found rules:", set(rules_man) == set(therules)
+	print set(rules_man) == set(therules)
 #	print "rules not found", set(therules)-set(rules_man)
 #	print "rules found", set(rules_man) - set(therules)
 
@@ -251,7 +239,7 @@ def test_hatrules():
 	for rule in a1.hat_rules():
 		therules.append(str(rule))
 	rules_man = ['0-5 -> 0-1 1-5 [1]','0-5 -> 0-2 2-5 [1]', '0-5 -> 0-3 3-5 [1]', '1-5 -> 1-2 2-5 [1]', '1-5 -> 1-3 3-5 [1]', '2-5 -> 2-3 3-5 [1]', '0-3 -> 0-1 1-3 [1]', '0-3 -> 0-2 2-3 [1]', '0-2 -> 0-1 1-2 [1]', '1-3 -> 1-2 2-3 [1]', '3-5 -> 3-4 4-5 [1]']
-	print "Rules found by program match manually found rules:", set(rules_man) == set(therules)
+	print set(rules_man) == set(therules)
 #	print "rules found extra", set(therules)-set(rules_man)
 #	print "rules not found", set(rules_man) - set(therules)
 
@@ -261,19 +249,19 @@ def test1():
 	unaligned words
 	"""
 	alignment = '0-0 1-1 2-2 3-3 4-4'
-	print 'alignment: ', alignment
-	print "\nManually constructed span list:"	
+#	print 'alignment: ', alignment
+#	print "\nManually constructed span list:"	
 	spanlist_man = [(0,1), (0,2), (0,3), (0,4), (0,5), (1,2), (1,3), (1,4), (1,5), (2,3), (2,4), (2,5), (3,4), (3,5), (4,5)]
-	print spanlist_man
+#	print spanlist_man
 	s = Alignments(alignment, '0 1 2 3 4')
 	spans = s.spans()
 	spanlist = []	
 	for span in spans:
 		spanlist.append(span)
 	spanlist.sort()
-	print "\nSpan list constructetd by program:"
-	print spanlist
-	print "\nEqual: ", spanlist == spanlist_man
+#	print "\nSpan list constructetd by program:"
+#	print spanlist
+	print spanlist == spanlist_man
 
 def test2():
 	"""
@@ -281,20 +269,20 @@ def test2():
 	no unaligned words on source nor targetside.
 	"""
 	alignment = '0-5 1-4 1-6 2-3 3-0 3-2 4-1 5-0 5-2'
-	print 'alignment: ', alignment
-	print "\nManually constructed span list:"	
+#	print 'alignment: ', alignment
+#	print "\nManually constructed span list:"	
 	spanlist_man = [(0,1), (0,2), (0,3), (1,2), (0,6), (2,3), (2,6), (3,4), (3,6), (4,5),(5,6)]
 	spanlist_man.sort()
-	print spanlist_man
+#	print spanlist_man
 	s = Alignments(alignment, '0 1 2 3 4 5')
 	spans = s.spans()
 	spanlist = []	
 	for span in spans:
 		spanlist.append(span)
 	spanlist.sort()
-	print "\nSpan list constructetd by program:"
-	print spanlist
-	print "\nEqual: ", spanlist == spanlist_man
+#	print "\nSpan list constructetd by program:"
+#	print spanlist
+	print spanlist == spanlist_man
 
 
 def test3():
@@ -303,20 +291,20 @@ def test3():
 	unaligned words
 	"""
 	alignment = '1-1 2-2 4-4'
-	print 'alignment:', alignment
-	print "\nManually constructed span list:"	
+#	print 'alignment:', alignment
+#	print "\nManually constructed span list:"	
 	spanlist_man = [(0,1), (0,2), (0,3), (0,4), (0,5), (1,2), (1,3), (1,4), (1,5), (2,3), (2,4), (2,5), (3,4), (3,5), (4,5)]
 	spanlist_man.sort()
-	print spanlist_man
+#	print spanlist_man
 	s = Alignments(alignment, '0 1 2 3 4')
 	spans = s.spans()
 	spanlist = []	
 	for span in spans:
 		spanlist.append(span)
 	spanlist.sort()
-	print "\nSpan list constructetd by program:"
-	print spanlist
-	print "\nEqual: ", spanlist == spanlist_man
+#	print "\nSpan list constructetd by program:"
+#	print spanlist
+	print spanlist == spanlist_man
 
 	
 def test4():
@@ -325,18 +313,18 @@ def test4():
 	with aligned words on both and target side.
 	"""
 	alignment = '0-2 2-0 0-4 4-4 4-5'
-	print 'alignment: ', alignment
-	print "\nManually constructed span list:"	
+#	print 'alignment: ', alignment
+#	print "\nManually constructed span list:"	
 	spanlist_man = [(0,1), (0,2), (0,5), (1,2), (1,3), (1,4), (2,3), (2,4), (3,4), (3,5), (4,5)]
 	spanlist_man.sort()
-	print spanlist_man
+#	print spanlist_man
 	s = Alignments(alignment, '0 1 2 3 4')
 	spans = s.spans()
 	spanlist = []	
 	for span in spans:
 		spanlist.append(span)
 	spanlist.sort()
-	print "\nSpan list constructed by program:"
-	print spanlist
-	print "\nEqual: ", spanlist == spanlist_man
+#	print "\nSpan list constructed by program:"
+#	print spanlist
+	print spanlist == spanlist_man
 

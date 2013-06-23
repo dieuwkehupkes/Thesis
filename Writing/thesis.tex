@@ -74,21 +74,18 @@ Chapter \ref{chapter:impl} give more information on the implementation of the re
 
 \chapter{Background}
 
-Make a nice introductory statement to this chapter. Provide theoretical background, the field in which this research is conducted blabla.
-
-
-\section{(Statistical) (Machine) Translation}
-%Maybe I can write this section really in the light of compositionality
-%Some background description of SMT, do I need this, what for?
-A short section that gives some information about the field this research is conducted in, and helps to see the relevance of this work on a larger scale
-% Explain how Machine Translation started
-% Explain how we went from word based to phrase based to rule based?
-% Explain the current status of the use of compositionality in translation?
-
-
+%Explain that translation is a very complex problem, blablabla, 
 
 
 \section{Compositional Translation}
+
+%Explain that compositional translation assumes that language is compositional and that we need a short introduction to this. (use Janssen)
+
+\subsection{Compositionality of Language}
+
+\subsection{Compositional Translation}
+
+%Explain shortly what translation is: meaning preservance
 
 The method of compositional translation is based on the idea that sentences that are each others translation do not only have the same meaning, but have also a similar semantic structure. 
 
@@ -113,6 +110,52 @@ The meaning of an expression is a function of the meaning of its parts and synta
 
 
 %I feel like somewhere I also need to say that translation is a relation between languages in this framework and that the grammars therefore need to be isomorphic (i.e. basic expressions and rules need to have translation-equivalents in the other language)
+
+
+\section{Compositionality in (S)MT}
+
+%Tell how many different models have been developed over the last 20 years.
+This section does not aim for a completely overview, but is merely meant to give an impression of the work that has been done in this field.
+
+%Explain that in the early days of machine translation all kinds of approaches were tried: direct translation in which input is mapped to output, transfer methods, interlingua methods (but all rule based)
+
+% interlingua methods very popular at some point (seems to fundamentally solve the problem), but language is so rich that it is hard to capture --> translation memory systems
+% Then: data driven methods = statistical machine translation
+% First SMT models were word-based i.e. not compositional at all
+% emergence of phrase based models
+
+%From Quirk&Menezes 2006:
+%Improvement for many issues: better handling of idomatic translation, local reordering phenomena (un sapore buono, een goede smaak), local contextual information (e.g. with determiners)
+% Still a lot of problems, along with the practical problems of large phrase tables, still no solution for global reordering, no straight forward probability distribution of phrases, partioning limitations, non contiguous phrases
+
+%Several problems solved by different approaches, somehow explain what criteria are used to decice wich once to present. 
+%Solutions: rule based + syntactically informed SMT + transfer methods
+%THING WELL ABOUT WHICH APPROACHES I WANT TO DESCRIBE HERE
+%Options:
+% hierarchical phrases Chiang with pro's and con's (+ practical problem of size model)
+% incorporation of syntactical information
+	% Treelets/dependency approach quirk/menezes
+%Synchronous context free grammars, ITG Wu
+
+%Maybe I can argue that I will just present the general techniques, and that some approaches that combine more of them (give some references) will not be further discussed
+
+%Rosetta moet ook nog ergens
+
+\chapter{An empirical Study}
+
+%Main goal in all these things is finding the method to map source structures to target structures. Several mappings tried (previous chapter), but it might be a good idea to take a step back and wonder: what sort of function do we need, and is it possible to find such a function.
+%Say something about the organisation (semantics --> syntax --> syntax --> semantics) but that this is to complicated and also theoretically it is not so trivial that the distinction between syntax and semantics is this clear (e.g. in such a system the syntax needs to be semantically oriented). Thus we look at direct mapping from structures to structures (in which structures the structures are supposedly somewhere in the middle of semantics and syntax)
+% The problem here is twofold in a sense: we do not know if it is possible to find structures such that a mapping is possible, and if so, we also do not know what these structures are. We will empirically investigate one type of mapping (is this true) and this would be sufficient for blabla
+% The main assumption that lies behind compositional translation manifests itself in this in two ways: the way in which the structures are formed (things that are translated into each other form the possible 'parts'), the mapping
+% Say something about this mapping, I have to think about this, mapping of structures without the labels is not bijective, not very restrictive (nodes may appear or disappear on the other sied)
+
+
+
+
+\chapter{Theory}
+
+Intro 
+
 
 \section{Translation Structures?}
 
@@ -143,6 +186,8 @@ Naturally, a mapping from source to target words is not given for a translation\
 
 %The first ones to define this? I don't know I keep running into this reference when people are talking about phrases \cite{och2004alignment}
 
+%Maybe tell that such phrase pairs are used in many models in some way or another: Quirk&Menezes MTU's, Banch et al tuples
+
 
 The phrases consistent with the alignment are thus phrases whose translation is also a phrase. Note that in this context the word `phrase' denotes any arbitrary sequence of words that is contiguous, and it not restricted to linguistic phrases. For instance, the phrases consistent with the alignment in Figure \ref{fig:alignment} (the dot aside) are: ([0,0], [1,1], [2,3], [4,4], [5,5], [0,1], [2,3], [4,5], [1,3], [0,4], [2,5], [0,5]). In which [x,y] includes all words from position $x$ to position $y$. Note that the word 'like' does not form a phrase on its own, as it translates into two non-adjacent words in the Dutch target sentence.\\
 The number of phrases in an alignment is dependent on the type of alignment (anders).
@@ -168,6 +213,7 @@ The number of phrases in an alignment is dependent on the type of alignment (and
 %Say that every alignment can be assigned at least one compositional structure this way (although it might be a structure that is completely flat), and is therefore less strict than the definition of fox. Often many structures can be assigned. Maybe iets zeggen over hoeveel, en iets over empirische analyse Khalil en Gideon.
 
 %\subsection{Hierarchical Alignment Trees}\label{sec:hats}
+% Describe how powerful HATs are
 
 \section{Dependency Grammar}
 
@@ -301,10 +347,22 @@ Open source implementation that consists of different parts
 
 The only thing that is thus required is an evaluation metric
 
-\chapter{Empirical}
+%Show that graph algorithm is sound and complete
+
+\chapter{Results}
+
+We conducted experiments on both manual and automatically aligned corpora. The dataset used in the experimens can be found in table \ref{table:datasets}
+
+\begin{table}\label{table:datasets}
+\begin{tabular}{cccc}
+Name corpus & section & size & alignments\\
+\end{tabular}
+\caption{Datasets}
+\end{table}
 
 \section{Datasets}
 
+Describe which experiments were done with which dataset. Describe
 Tell something about datasets, preparation, blabla
 %Denk dat ik dit toch net iets anders wil doen, zodat ik alle resultaten in 1 tabel kan zetten enzo
 
@@ -314,7 +372,7 @@ Describe which experiments were done (with which datasets, which metrics..)
 
 \section{Results}
 
-\begin{table}\label{tab:scores}
+\begin{table}\label{table:scores}
 \begin{tabular}{llll}
 Experiment 1 & metric 1 & dataset 1 & 0.84\\
 Experiment 2 & metric 2 & dataset 1 & 0.52\\
@@ -390,6 +448,16 @@ future work: source reordering, treebank to learn translation structure
 % Bouw iets in in dat dependency programma dat oneindige recursie tegengaat
 
 % Bouw meer checks in die kijken of de input wel consistent is
+
+% Zeg ergens iets over dat vertalers ook vaak de keuze maken om iets niet letterlijk te vertalen, maar dat we er hier vanuit gaan dat dit wel gebeurt (of iig zo letterlijk mogelijk)
+
+%Say something about partitioning problem with phrase based MT??
+
+% Make a comment about reordering?
+
+% A compositional approach ideally takes care of several problems at the same time
+
+% Ergens moet ik ook nog de vraag stellen of we de semantiek en de syntax echt apart nodig hebben (zoals in Rosetta). 
 
 \bibliography{thesisDH}
 

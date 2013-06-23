@@ -154,6 +154,13 @@ class Dependencies():
  				labels[span_dependent] = dependent[1]+span_string
  		return labels
  		
+ 	def label_count(self):
+ 		label_count = {}
+ 		for key in self.deps:
+ 			for dependent in self.deps[key]:
+ 				label = dependent[1]
+ 				label_count[label] = label_count.get(label,0) + 1
+ 		return label_count
  
 	def print_spans(self):
 		print self.wordspans, '\n'
@@ -170,12 +177,14 @@ def test1():
 	dependencies = ['nn(President-2, Mr-1)','nsubj(welcome-6, President-2)','nsubj(welcome-6, I-4)','aux(welcome-6, would-5)','root(ROOT-0, welcome-6)','det(action-8, some-7)','dobj(welcome-6, action-8)','prep(action-8, in-9)','det(area-11, this-10)','pobj(in-9, area-11)]']
 	d = Dependencies(dependencies)
 	spanrels = d.get_spanrels()
+	print d.deps
 	manual_spanrels= {(1,2): [(0,1)],(5,6): [(0,2),(3,4),(4,5), (6,11)], (7,8):[(6,7),(8,11)],(8,9): [(9,11)], (10,11): [(9,10)]}
 	print "Program output matches manual output spanrels: ", spanrels == manual_spanrels
 	comp_spanrels = d.get_comp_spanrels()
 	manual_comp_spanrels = {(5,6): [(0,2), (6,11)], (7,8):[(8,11)],(8,9): [(9,11)]}
 	print "Program output matches manual output comp_spanrels: ", comp_spanrels == manual_comp_spanrels
-	print d.labels()
+	print d.label_count()
+#	print d.labels()
 
 def print_scores():
 	dependencies = 'Data/europarl-v7.dependencies.head100'
