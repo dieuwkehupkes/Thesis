@@ -59,6 +59,7 @@ class Main():
 			raise ValueError("Metric does not exist")
 		# Create a scoring object and parse the sentence
 		scoring = Scoring(new[0],new[1], relations, labels)
+		print 'creating grammar'
 		if treetype == 'all':
 			productions = scoring.alignment.rules(relations,labels)
 		elif treetype == 'hats':
@@ -66,6 +67,7 @@ class Main():
 		else:
 			raise NameError("Type of tree does not exist")
 		grammar = scoring.grammar(productions)
+		print 'parse sentence'
 		parse = scoring.parse(grammar)
 		score = scoring.score(parse)
 		return parse, score
@@ -76,6 +78,7 @@ class Main():
 		trees to two different files. 
 		A maximum sentence length can be specified
 		"""
+		self.reset_pointer()
 		parsed_sentences = 0
 		total_score = 0
 		trees = open(treefile, 'w')
@@ -84,25 +87,65 @@ class Main():
 		while new:
 			print parsed_sentences + 1
 			sentence_length = len(new[1].split())
+			print 'sentence length ', sentence_length
 			if sentence_length < max_length:
 				tree, score = self.score(new, metric, treetype)
 				trees.write(str(tree) + '\n\n')
 				results.write(str(score) + '\n')
-				parsed_sentences += 1
 				total_score += score
 			else:
-				results.write("No result, sentence longer than" + max_length + "words\n")
+				results.write("No result, sentence longer than" + str(max_length) + "words\n")
+			parsed_sentences += 1
 			new = self.next()
 		average = total_score/parsed_sentences
 		print 'average score:', average
 		results.write("\n\nAverage  score: " + str(average))
-		#Close all files
+		trees.close()
+		results.close()
+	
+	def reset_pointer(self):
+		self.dependency_file.seek(0)
+		self.sentence_file.seek(0)
+		self.alignment_file.seek(0)
+		
+	
+	def relation_count(self, max_length):
+		"""
+		Counts occurences of all relations
+		sentences shorter than max_length.
+		As this uses readline, do not execute
+		after executing other functions that
+		loop through file.
+		"""
+		parsed_sentences = 0
+		self.reset_pointer()
+		relations = {}
+		new = self.next()
+		while new:
+			sentence_length = len(new[1].split())
+			if sentence_length < max_length:
+				dependencies = Dependencies(new[2])
+				new_relations = dependencies.label_count()
+				for key in new_relations:
+					relations[key] = relations.get(key, 0) + new_relations[key]
+			new = self.next()
+			parsed_sentences += 1
+		return relations
+		
+	def close_all(self):
 		self.dependency_file.close()
 		self.sentence_file.close()
 		self.alignment_file.close()
-		trees.close()
-		results.close()
-
+	
+	def print_dict(self, dictionary, filename):
+		"""
+		Print the contents of a dictionary
+		to a file.
+		"""
+		f = open(filename, 'w')
+		for key in dictionary:
+			f.write(key + '\t' + str(dictionary[key]) + '\n')
+		f.close()
 
 # Execution
 if len(sys.argv) != 6:
@@ -115,11 +158,13 @@ scores = sys.argv[4]
 tree_file = sys.argv[5]
 
 #Other variables:
-metric, treetype, max_length = 1, 'hats', 20
+metric, treetype, max_length = 1, 'hats', 35
 
 main = 	Main(all_alignments, all_sentences, all_dependencies)
 main.score_all(tree_file, scores, max_length, metric, treetype)
-
+relations = main.relation_count(20)
+main.print_dict(relations, 'relations')
+main.close_all()
 
 
 
