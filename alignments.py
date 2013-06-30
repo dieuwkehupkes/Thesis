@@ -193,7 +193,6 @@ class Alignments:
 				if not path or len(path) == 2:
 					# No rule possible, or path points to itself
 					continue
-			
 				yield Rule((i,j),path,span_relations,labels)
 		
 
@@ -302,14 +301,14 @@ def test3():
 	for span in spans:
 		spanlist.append(span)
 	spanlist.sort()
-#	print "\nSpan list constructetd by program:"
+#	print "\nSpan list constructed by program:"
 #	print spanlist
 	print spanlist == spanlist_man
 
 	
 def test4():
 	"""
-	Test for a no monotone many-to-many alignment,
+	Test for a non monotone many-to-many alignment,
 	with aligned words on both and target side.
 	"""
 	alignment = '0-2 2-0 0-4 4-4 4-5'

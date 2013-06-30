@@ -297,11 +297,21 @@ At least write how HATs can account for phenomena as ne ... pas.
 
 We have now described the set of structures that we will investigate
 Explain we want to pick one structure for each sentence, such that the set of structures for all sentences is consistent. 
-Explain we will start out from the idea that we are supposed to have some idea about the semantical structure of sentences, say we will start out from dependency grammars. 
-Explain that there may be several reasons that dependency structures depart from HATs, mention 
+Explain we will start out from the idea that we are supposed to have some idea about the semantical structure of sentences, say we will start out from dependency grammars. \citep{schubert1987metataxis}
+Explain that there may be several reasons that dependency structures depart from HATs, but that the main problem we expect is that dependency structures are flatter than hats, because they are not focussed on being maximal (i.e. if a verb has 4 distinct arguments the branching factor will be 5 and not lower, even if they can also be combined in stages, because there is no real linguistic reason to do this). For a small set, we will therefore also consider all structures letting go the minimal branching factor (computationally expensive) and see if this does anything for the result. If this is the case, it might be worth considering labels that are derived by applying a CCG like method to the dependency labels.
+
+% So I guess I should think exactly what I want to do.
+% Firstly, note that HATs receive a rather low score, then show that considering all trees actually yields a rather high score (with manual alignments), this is an upperbound to what can be reached
+% thus considering other labels might be fruitful
+% Investigation of which labels are generally preserved in the HATs (I think I will write a small bash-script to do this given a list of labels and their counts and a file with parse trees)
+% See what conclusions we can draw from this
+% Define all CCG like labels and check their consistency with the alignments (i.e. upperbound, all trees)
+% parse with all labels or selected labels (HATs)
+% Once again output preservance
+
+\chapter{Implementation}
 
 
-\chapter{Theory}
 
 \section{Dependency Grammar}
 
