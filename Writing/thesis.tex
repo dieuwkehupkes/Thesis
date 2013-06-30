@@ -14,9 +14,11 @@
 \author{}
 \title{}
 \newtheoremstyle{indented}{8pt}{8pt}{\addtolength{\leftskip}{2.5em}}{}{\bfseries}{.}{.5em}{}
-\theoremstyle{indented}
+\theoremstyle{definition}
 \newtheorem{metric}{Metric}
 \newtheorem{notion}{Notion}
+\theoremstyle{plain}
+\newtheorem{definition}{Definition}
 
 \begin{document}
 \maketitle
@@ -138,52 +140,63 @@ Over the last decade, an enormous amount of models have been presented, many of 
 \item hierarchical phrases (\cite{chiang2005hierarchical}), improvement over standard phrase based machine translation model, practical problems ($\mathcal{O}(n)$ possible rules) + probability model not clear
 \item incorporation source language syntactical information
 \item ITG Wu
+\item what's in a translation rule \cite{galley2004s}
 \end{enumerate}
 
-\chapter{The Theoretical Backbone of Transfer Models}
+\section{The theoretical backbone of transfer models}
 
-The authors of syntax-based translation models rarely mention or investigate the assumptions underlying the transfer framework. As seen in the previous chapter, such models attempt to find structural representations of sentences in different languages and a function that maps representations of sentences in one language to representations of sentences in another iff the sentences are each others translations. Whether perfect representations and mapping actually exist is seldom questioned (ander woord), and the models are evaluated based on the performance of an implementation that often, due to computational reasons, not even displays the full power of the theoretical model. Furthermore, often different strategies are combined, which makes the evaluation of the separate parts even fuzzier. The current work deviates from this research, in presenting an exploration of the underlying assumptions. Such an analysis is of theoretical importance, but also gives an estimate of how far syntax-based translation models can actually bring us. Current chapter will first present a theoretical analysis of the main assumption behind syntax-based models and will subsequently discuss the implications of different sub-assumptions for syntax-based machine translation. After this, a proposal to empirically investigate such assumptions will follow.
-
-\section{Assumptions}
-
-Previously was stated that the main assumption behind transfer-based translation models is ....
-As it happens, this assumption is equivalent to the well known principle of compositionality of translation:
+As seen in the previous section, syntax-based models attempt to find structural representations of sentences in different languages and a function that maps the representations of sentences in one language to the representations of sentences in another if and only if the sentences are each others translation. That such representations and mappings do exist is implicitly assumed. The overarching assumption is equivalent to a the well known principle of compositionality of translation:
 
 \begin{quote}
 Two expressions are each others translation if they are built up from parts which are each other's translation, by means of translation-equivalent rules (ref??)
 \end{quote}
 
-From the principle, the transfer method follows rather directly, but the implication in the other direction also holds: (explain why).
+Evidently, if translation between any two languages obeys this principle, representational systems and mappings between them can be found, but the implication in the other direction is also valid. CONVINCINGLY EXPLAIN WHY!
+As mentioned before, the principle hinges on several smaller assumptions about both language and translation.
+
+% Get link to next section
+
 %What are the assumptions that are implicit in this principle?
 % -translation is literal
 % -language is compositional
 % -languages have a similar semantical structure
 
+%introduce grammar as term for obtaining representations, maybe I want to switch these two sections??
 
-\subsection{Compositionality of Language}
+\subsection{Grammars}
 
-%Explain something about compositionality of language, maybe say something about the critics on it, definitely mention that it highly depends on the grammar and the basic units
+One of the assumptions most obviously present in the principle of compositionality of translation is that languages itself are compositional. Compositionality is a property possessed by most designed languages. The meaning of an expression in a logical language, for instance can be unambiguously determined by considering the atoms and the rule used to combine them. For programming languages a similar statement can be made. As for translation, there exists a principle describing this property:
 
-\subsection{Compositionality of Translation}
+\begin{quote}
+Meaning of an expression is a function of the meaning of its parts and syntactic rule by which they are combined \cite{partee1984compositionality}
+\end{quote}
 
-% Shortly get to compositional translation (previously mentioned principle),
-% explain the assumption (translation should be meaning preserving but also form preserving, example landsbergen
+Although the compositionality of some parts of natural language is undeniable, we can understand sentences we have never heard because we know the words in it and we are familiar with the methods that can be used to combine them, many have argued against compositionality of natural language as a whole. Note that the principle as presented before is very unspecific, and its validity for a certain language is highly dependent on the notion of parts, meanings and rules in this language. A detailed description of the arguments in the compositionality debate will not add much to the current work, 
+blabla explain why
+%arguments often focus on rare exceptions and contextual ambiguities. function doesn't have to be bijective
+%Explain that current work doesn't focus on resolving ambiguities, and also that such things are maybe different for translation?
+% Take something from the \cite{janssen1996compositionality} article to explain that compositionality is quite strong, depending on the grammar and the building blocks --> idiomatic expressions
+%An often heard counterargument is the existence of so called idiomatic expressions, whose meaning cannot be derived from the words in it.
+%compositionality is formally quite strong
+
+In this paper, \citeauthor{janssen1996compositionality} also shows that although not every grammar is suitable for compositional meaning assignment, the class of languages that can be analysed is not restricted, nor are the meanings that can be assigned: any recursively enumerable language can be generated by a compositional grammar, and any semantics can be dealt with in a compositional way. \textit{Finding} algebra's that describe the meaning and syntax of a language is of course not a trivial task.
+
+\subsection{Mappings}
+
+Apart from assumptions about the languages involved, the principle of compositionality of translation also makes assumptions about the translation process itself. First of all, it assumes that translation should not only preserve meaning, but also form (as much as possible). In other words, it assumes that translation is literal. Generally, this is helpful when deciding about the adequacy of a translation. An example that illustrates this is the following: \textit{all ravens are black} is an adequate translation of the Dutch \textit{alle raven zijn zwart}, but the logical equivalent sentence \textit{if something is not black it is not a raven} is not \citep{landsbergen1989power}.  However, even without regarding idiomatic translations, that will be considered later, a translator can have many reasons to prefer a more free translation, even if a literal alternative is present. Although this is a real issue in practice, machine translation is by far not developed enough to be concerned with style issues and throughout this paper will be assumed that translation is as literal as possible. A similar simplification is made regarding ambiguity ... (explain)
+% say something about discussion compositionality of translation??
 % then start the discussion with examples that show that translation is not 'compositional'
 
-The principle of compositionality of translation captures the intuition that translation should not only preserve meaning, but also the form (as much as possible). 
-Example \cite{landsbergen1989power}: \textit{all ravens are black} is an adequate translation of the Dutch \textit{alle raven zijn zwart}, but the logical equivalent sentence \textit{if something is not black it is not a raven} is not.
+Example \cite{landsbergen1989power}: 
 
 
-
+%%
 
 
 % Wat moet er nog in het stuk hier:
 % Iets over hoe idiomatische vertalingen hierin passen
 % Aannames die gemaakt worden
 % De kracht van compositioneel vertalen
-% Furthermore, it assumes that translations are literal, which is in practice often not the case (example?). Even without regarding idiomatic translations, translators often prefer a more free translations, even if a literal alternative is present.
-% Explain how it relates to the discussion of compositionality (at least notice) and explain why we are not discussing that here
-
 
 %for more examples, refer to landsbergen
 
@@ -191,47 +204,50 @@ Example \cite{landsbergen1989power}: \textit{all ravens are black} is an adequat
 
 
 
-\section{Empirical Studies}
+\chapter{An Empirical Study}
 
-%
-Others have investigated other parts of the assumption
+In articles about syntax-based translation models the assumptions discussed in the previous chapter are are rarely mentioned, let alone questioned. Moreover, the evaluation of the models presented is based on the performance of an implemented version of them that is often, due to computational reasons, not even completely equivalent to the version presented. Furthermore, the hybrid nature of models makes the evaluation of the transfer part even fuzzier, as it is not clear which parts of the model are responsible for the results. The current work deviates from this research, in presenting an exploration of the underlying assumptions. Such an analysis is of theoretical importance, but can also serve as an estimate of how far syntax-based translation models can actually bring us and possibly even give information on how to do so.
 
-\subsection{Phrasal Cohesion}
+%anders
+As mentioned before, there are several sub-assumptions to investigate. The primary focus of this paper is on algorithmically finding a source side representational system that could in theory be suitable for compositional translation, working from a translation corpus of parallel sentences. In contrast to earlier work on this topic, which will be discussed in section (ref section), we will not start out with a standard syntactic formalism and check its suitability as representational system. Rather, we will consider all possible structures of a sentence that satisfy the requirement that they allow compositional translation, and test if it is possible to extract a consistent set containing a unique structure for every sentence in the corpus.\footnote{Note that the only way to check if the corpus is indeed consistent is to find a labelling that can cover the whole corpus}. A detailed description of the analysis will presented in section (..), after a discussion of related literature.
 
+\section{Related Work}
 
-\cite{fox2002phrasal} investigated if syntactic phrases tend to stay together during translation from French to English.
-%Explain how this has to do with compositionality
-%Explain how she did this
-%Mention issue of phrasal translation
-%Discuss her results --> interpret which assumptions exactly she investigate (that were previously mentioned), what can be excluded given her experiment)
+%Somehow introduce related work
 
+%This section needs to be rewritten, but does say approximately what I want
+\cite{fox2002phrasal} investigated if phrases that are constituents in the source sentence are coherent in the target sentence, by counting how often there was an overlap between the target side spans two phrases are translated in (the span of a phrase being defined as the pair [x,y] in which x is the minimum position a word in the span is aligned to, and y the maximum position. (anders) In other words, she tested the suitability of constituent grammars as a source side representation. 
+% explain what exactly she did
+% give a short summary of her results
 
-\subsection{Direct Correspondence Assumption}
+A manual analysis of the head crossings in the S-alignment lead to the conclusion that most of the found crossings were caused by errors in parsing or translation (16 out of 86 and 5 out of 86, respectively), and non literal translations in cases a more literal version was also valid (29 our of 86).
+% discuss what else she did
+% short discussion of the results (and her manual analysis)
+% ne ... pas causing errors even though this could be captured in a rule (or maybe say this only later?)
 
-Even more directly related to this work is the empirical study presented by \cite{hwa2002evaluating}. \citeauthor{hwa2002evaluating} empirically evaluate the \textit{Direct correspondence assumption (DCA)}, the assumption that for two sentences that are each others translation, the syntactic relations in one sentence directly map to the syntactic relations in the other. %Explain similarity with compositionality of translation principle
+Another ... is the empirical study presented by \cite{hwa2002evaluating}. \citeauthor{hwa2002evaluating} empirically evaluate the \textit{Direct correspondence assumption (DCA)}, the assumption that for two sentences that are each others translation, the syntactic relations in one sentence directly map to the syntactic relations in the other.
+
+ %Explain similarity with compositionality of translation principle
 %Explain that Hwa argues that the DCA cannot account for some well known and fundamental linguistic facts
 %Explain that this is also what they show
 %Explain what she does after (making linguistic adaptations)
 %Discuss results --> no bijective relation between dependeny parses
 
 
+\section{This Work}
 
-
-
-\chapter{Theory}
-
-Intro 
-
-
-\section{Translation Structures?}
-
-%Investigation of compositionality: see if we can find compositional structures. Explain the restrictions that compositionality puts on these structures, and how these can be seen/found in data
-We will define this set of structures.
+Also the current work will present an evaluation based on alignments. We will explain how by, starting with explaining the basic concepts used, and ending with a complete description of the process followed (anders).
+consists of .. subsections blabla
 
 \subsection{Alignments}
 
-%Dit moet anders, maar weet nog even niet hoe, in Khalil paper staat ook een definitie zie ik nu.
-An alignment is a mapping between the words of a sentence in one language, and the words in its translation in another. Given a source sentence $s = s_0 \ldots s_n$ and its translation $t = t_0 \ldots t_m$, an alignment $a$ is a set of pairs $(x,y)$ with $x\in \{0,1,\ldots,n\}$ and $y\in \{0,1,\ldots,m\}$ that describes which source position is translated to which target position. Words can align to several words on the other side, as well as none, which yields different types of alignments. A one to one alignment is an alignment in which no word or source or target side is aligned to more than one word, in a many-to-one alignment target words may have links to more than one source side position. The alignment in Figure \ref{fig:alignment} is a one-to-many alignment, as the word 'likes' is aligned to both 'houdt' and 'van', but no target position that has more than one link. (anders) The least restrictive kind of alignment is the many-to-many alignment, in which both source and target words may have multiple alignment links. An alignment in which the source and target words are in the same order is called a monotonic alignment.
+The precise definition of a word alignment used throughout this paper is the following:
+
+\begin{definition}
+Given a source sentence $s = s_0 \ldots s_n$ and its translation $t = t_0 \ldots t_m$, an alignment $a$ is a set of pairs $(x,y)$ with $x\in \{0,1,\ldots,n\}$ and $y\in \{0,1,\ldots,m\}$ such that $(x,y)\in a$ iff $s_x$ is translated into $s_y$.
+\end{definition}
+
+Words can align to several words on the other side, as well as none, which yields different types of alignments. A one to one alignment is an alignment in which no word or source or target side is aligned to more than one word, in a many-to-one alignment target words may have links to more than one source side position. The alignment in Figure \ref{fig:alignment} is a one-to-many alignment, as the word 'likes' is aligned to both 'houdt' and 'van', but no target position that has more than one link. (anders) The least restrictive kind of alignment is the many-to-many alignment, in which both source and target words may have multiple alignment links. An alignment in which the source and target words are in the same order is called a monotonic alignment. 
 
 \begin{figure}[!ht]
 \centering
@@ -240,46 +256,52 @@ An alignment is a mapping between the words of a sentence in one language, and t
 }\label{fig:alignment}
 \end{figure}
 
-Naturally, a mapping from source to target words is not given for a translation\footnote{Even for humans it turns out to be a not so trivial task to find them, maybe ref naar manual corpus}, and devising algorithms to find them is one of the problems in Machine Translation (anders).
+Naturally, a mapping from source to target words is not given for a translation\footnote{Even for humans it turns out to be a not so trivial task to find them (\cite{och2000improved})} and devising algorithms to find them is one of the problems in Machine Translation.
 %Say that there are many approaches but that the IBM tools are still most commonly used
 %Describe IBM alignments: they are a by-product of the word-based IBM models but only many-to-one alignments --> run in both positions and take union, intersection or use other heuristics to obtain alignment
 %Tell that there are some manual corpora available (+references?)
 %Maybe examples of problems in alignments
 
+
 \subsection{Phrase Pairs}
 
-% Describe that the links that describe which source words are translated into which target words also give us information about how larger units are possibly translated into each other (related to the compositionality principle)
-
-%The first ones to define this? I don't know I keep running into this reference when people are talking about phrases \cite{och2004alignment}
-
-%Maybe tell that such phrase pairs are used in many models in some way or another: Quirk&Menezes MTU's, Banch et al tuples
-
-
-The phrases consistent with the alignment are thus phrases whose translation is also a phrase. Note that in this context the word `phrase' denotes any arbitrary sequence of words that is contiguous, and it not restricted to linguistic phrases. For instance, the phrases consistent with the alignment in Figure \ref{fig:alignment} (the dot aside) are: ([0,0], [1,1], [2,3], [4,4], [5,5], [0,1], [2,3], [4,5], [1,3], [0,4], [2,5], [0,5]). In which [x,y] includes all words from position $x$ to position $y$. Note that the word 'like' does not form a phrase on its own, as it translates into two non-adjacent words in the Dutch target sentence.\\
-The number of phrases in an alignment is dependent on the type of alignment (anders).
-%Explain that monotonic alignments do not restrict at all, and a completely monotonic alignment thus has many phrases: \frac{n\times n+1}{2}
-
-%Tell about algorithm for extracting tight phrase pairs efficiently??
+The alignment of a parallel sentence restricts the space of parts possibly used in the translation. Analogous to the phrases used in the original phrase-based translation models \citep{och2004alignment}, a phrase pair is a pair of source and target spans [i,j] and [x,y], respectively, such that at least one word in [i,j] is aligned to at least one word in [x,y], and no words in [i,j] are aligned to words outside [x,y] and vise versa.(anders)The source sentence phrases consistent with the alignment are thus phrases whose translation is also a phrase. Note that in this context the word `phrase' denotes any arbitrary sequence of words that is contiguous, and is thus not restricted to linguistic phrases. For instance, the phrases consistent with the alignment in Figure \ref{fig:alignment} (the dot aside) are: ([0,0], [1,1], [2,3], [4,4], [5,5], [0,1], [2,3], [4,5], [1,3], [0,4], [2,5], [0,5]). In which [x,y] includes all words from position $x$ to position $y$. Note that the word 'like' does not form a phrase on its own, as it translates into two non-adjacent words in the Dutch target sentence. The number of phrases consistent with an alignment depends on the type of alignment and is largest in case of a monotone alignment, that does not restrict the set of possible phrases at all. A completely monotone alignment of a sentence of $n$ words has $\frac{n\times n+1}{2}$ phrases. Note that unaligned words can cause exponential growth in the number of phrases.
+%I feel like something misses here
+\cite{zhang2008extracting} presented an algorithm for efficiently extracting all tight phrases (i.e. phrases that do not start or end with an unaligned word) in $\mathcal{O}(n)$ time.
 
 \subsection{Alignment Trees}
 
-%Explain that on an even larger scale the alignment and phrase pairs also tell us how the whole sentence was possibly composed compositionally. This compositional structure can be represented as a tree, in which the nodes are phrases consistent with the alignment.
-%Example of an alignment tree for 2.1
+Now that the possible `parts' of the translation are defined, also the set of compositional structures according to which the sentence could have been translated. A completely specified translation structure is a tree covering the whole sentence, in which the nodes are phrases consistent with the alignment. We will call such trees alignment trees. Figure \ref{fig:alignment_tree} shows one of the possible alignment trees for the example alignment in figure \ref{fig:alignment}.
 
 \begin{figure}
 \Tree [.[0,6] [.[0,1] [.[0,0] my ] [.[1,1] dog ] ] [.[2,6] [.[2,4] [.[2,2] also ] [.[3,3] likes ] [.[4,4] eating ] ] [.[5,6] [.[5,5] eating ] [.[6,6] sausage ] ] ] ] ]
-\caption{A possible alignment tree for the alignment of Figure \ref{fig:alignment}}
+\caption{A possible alignment tree for the alignment of Figure \ref{fig:alignment} \label{fig:alignment_tree}}
 \end{figure}
 
-% Say something that compares to fox, explain that it is a weaker condition in a sense, because things like 'ne pas' do not necessarily cause crossings
-%Explain interest of such trees to MT (studying recursive properties, reordering, rule based systems)
-% Link to literature about this topic, explanation of literature (I think I need to find references in Khalils 
+An alignment may have many different possible alignment trees. The number of alignment trees can be exponential (?) in the length of the sentence, if no restriction is placed on the branching factor of the nodes. Every alignment can be assigned at least one structure, that is completely flat.
+
+%Maybe iets zeggen over hoeveel, en iets over empirische analyse Khalil en Gideon.
+
+As mentioned in dunno chapter on statistical models factorizing alignments is blablabla
+
+% mention some work on factorizing alignments (chiang, khalil, ...) 
+
+\subsection{Hierarchical Alignment Trees}
+
+In our evaluation we will consider all maximal trees recursively factorizing the alignment (anders), as presented by \cite{simaan2013hats2}.
+Currently I really do not know what I need to write about HATs
+At least write how HATs can account for phenomena as ne ... pas.
 
 
-%Say that every alignment can be assigned at least one compositional structure this way (although it might be a structure that is completely flat), and is therefore less strict than the definition of fox. Often many structures can be assigned. Maybe iets zeggen over hoeveel, en iets over empirische analyse Khalil en Gideon.
+\subsection{Tree Selection}
 
-%\subsection{Hierarchical Alignment Trees}\label{sec:hats}
-% Describe how powerful HATs are
+We have now described the set of structures that we will investigate
+Explain we want to pick one structure for each sentence, such that the set of structures for all sentences is consistent. 
+Explain we will start out from the idea that we are supposed to have some idea about the semantical structure of sentences, say we will start out from dependency grammars. 
+Explain that there may be several reasons that dependency structures depart from HATs, mention 
+
+
+\chapter{Theory}
 
 \section{Dependency Grammar}
 
