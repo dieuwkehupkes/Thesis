@@ -183,13 +183,13 @@ class Alignments:
 		spans = []
 		
 		# Construct the graph by creating the edges
-	#	print 'finding spans'
 		for (i,j) in self.spans():
 			nodes[j].link_to(nodes[i])
 			spans.append((i,j))
 		for (i,j) in spans:
+			print "find spans for (", i, j, ")"
 			for path in nodes[i].shortest_paths_to(nodes[j]):
-#				print path
+				print path
 				if not path or len(path) == 2:
 					# No rule possible, or path points to itself
 					continue
