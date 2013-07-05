@@ -13,12 +13,13 @@
 \bibliographystyle{plainnat}
 \author{}
 \title{}
-\newtheoremstyle{indented}{8pt}{8pt}{\addtolength{\leftskip}{2.5em}}{}{\bfseries}{.}{.5em}{}
+%\newtheoremstyle{indented}{8pt}{8pt}{\addtolength{\leftskip}{2.5em}}{}{\bfseries}{.}{.5em}{}
 \theoremstyle{definition}
 \newtheorem{metric}{Metric}
 \newtheorem{notion}{Notion}
 \theoremstyle{plain}
 \newtheorem{definition}{Definition}
+\def\citepos#1{\citeauthor{#1}'s (\citeyear{#1})}
 
 \begin{document}
 \maketitle
@@ -74,104 +75,143 @@ Chapter give more information on the implementation of the research, while the a
 %Describe the rest
 
 
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%BACKGROUND ON MT AND TRANSFER MODELS
+
 \chapter{Transfer Models in Machine Translation}
 
-Machine translation is a very complex problem, to which many approaches have been tried. In this thesis, we focus on one such approach: the transfer method.   After a short introduction to the beginning of Machine Translation, the focus will thus mainly lay on models that use this method. It does not claim to give a complete overview of these, MT is an enormous field in which many models have been developed, most of which are hybrid in the sense that they borrow from different approaches to complete different parts of translation. For more complete overviews of MT and SMT, the reader is referred to \cite{hutchins1992introduction} (MT), \cite{somers1999review} (EBMT) and \cite{koehn2008statistical} (SMT).
+Machine translation is a very complex problem, to which many approaches have been tried. In this thesis, we focus on one such approach: the transfer method.   After a short introduction to the beginning of Machine Translation (MT), the focus will thus mainly lay on models that use this method. It does not claim to give a complete overview of these. MT is an enormous field in which many models have been developed, most of which are hybrid in the sense that they borrow from different approaches to complete different parts of translation. For more complete overviews of MT and SMT, the reader is referred to \cite{hutchins1992introduction} (MT), \cite{somers1999review} (EBMT) and \cite{koehn2008statistical} (SMT).
 
 
-\section{Early MT(?)}
-Machine Translation was, rising as a field of research almost immediately after the emergence of the first computers, one of the very first problems to be tackled (ander woord) by computers.
+\section{Early Transfer Models}
+Machine translation was, rising as a field of research almost immediately after the emergence of the first computers, one of the very first problems to be tackled (ander woord) by computers.
 %somewhat more general and introductory statements?
 
-In the very first attempts to make translation machines, also called the first generation, the problem was approached in a rather direct way: sentences were treated as structureless sequences of words that can be directly mapped to words in another language. Relations between words or structural aspects of the sentence are not considered. Such a strategy is only reasonable if a translation with a structure identical to the original sentence is possible and this is, unfortunately for researchers in Machine Translation, very often not the case. The direct approach of the first generation models often lead to translations that are incomprehensible, not fluent and often not even meaning preserving.
-%Maybe more about what the problems of the first generation models is?
-The failure of the first generation models lead to a second generation of models, in which translation occurred in stages. An intermediate representation of a sentence in the source language was considered that was supposed to somehow convey the semantic structure of the sentence was mapped to an intermediate representation of the sentence in the target language from which the actual target sentence could be derived. This process of mapping representations in one language to representations in another is called transfer.
+The very first approaches to solve the problem, also called the first generation approaches, were more or less direct: sentences were treated as structureless sequences of words that can be directly mapped to words in another language. In such an approach, relations between words or other structural aspects of the sentence are not considered. Clearly, such a strategy is only reasonable if source and target languages are structured almost identical: a translation whose structure deviates from the structure of the original sentence will never be found. Unfortunately for MT researchers, natural languages are not ordered in this fashion, and the direct approach of the first generation models was not very successful, leading to translations that were incomprehensible, not fluent and often not even meaning preserving.
 
-An extreme case of the transfer method is the one in which the intermediate representation is a universal one. Such a representation, called interlingua, can be seen as a description of the meaning of the sentence independent of any natural language. The transfer part is therefore reduced to zero, and translation consists of translating the sentence to an independent meaning representation and deriving the target sentence from this representation. This is attractive from a theoretical point of view, as it addresses the problem on a fundamental level, but is very hard, especially when the meaning space is unrestricted. Some researchers have succeeded in writing rather successful translation models for very small domains (give examples!!), but these days (anders) finding a formal semantics that can capture all of human language is an independent research field, that has grown apart from machine translation (anders).
+The failure of the first generation models lead to a second generations of models using indirect methods, that laid the groundwork for the models considered in this paper. The main idea of the second generation systems was to use analyse the source sentence into an intermediate representation that was supposed to somehow convey the semantic structure (or `meaning') of the sentence, and map this representation to an intermediate representation in the target language. From this intermediate representation, the translation of the sentence in the target language could be derived. The process of mapping representations in one language to representations in another is called transfer.
 
-The three translation methods described can be pictured in a pyramid, showing how they are related (Figure \ref{fig:triangle}). This pyramid also shows that, although direct translation and interlingua are uiteinden (?) that are not so flexible, the tranfer method can be employed in different ways varying the distance from source and target text to intermediate representation (analysis and generation, respectively), and with this the distance between the intermediate representations. This point will be discussed more extensively in the next chapter.
+An extreme case of the transfer method is the one in which the intermediate representation is a universal one. Such a representation, called interlingua, can be seen as a description of the meaning of the sentence independent of any natural language. The transfer part is therefore reduced to the identity mapping, and translation consists of translating the sentence to an independent meaning representation and deriving the target sentence from this representation. This is attractive from a theoretical point of view, as it addresses the problem on a fundamental level, but is very hard, especially when the meaning space is unrestricted. Some researchers have succeeded in writing rather successful translation models for very small domains (give examples!!), but these days (anders) finding a formal semantics that can capture all of human language is an independent research field, that has grown apart from machine translation (anders).
 
 \begin{figure}[!ht]
 \includegraphics[scale=0.2]{translation_triangle.png}
 \caption{Vauquois pyramid?}\label{fig:triangle}
 \end{figure}
 
-\section{Statistical MT}
+The three translation methods described can be pictured in a pyramid, showing how they are related (Figure \ref{fig:triangle}). This pyramid also shows that, although direct translation and interlingua are two extremes that are not so flexible, the tranfer method can be employed in different ways varying the distance from source and target text to intermediate representation (analysis and generation, respectively), and with this the distance between the intermediate representations. This point will be discussed more extensively in the next chapter.
 
-In the 80's a new line of research was started, that was not primarily based on linguistic knowledge, but on large pairs of text that were translations of each other (parallel corpora). As many of the models developed then were based on analogy, finding examples in the corpus similar to fragments of the sentence to be translated and recombining them, this line of research is often called Example-Based Machine Translation (EBMT). Although in the beginning EBMT seemed to be a rival to the existing more linguistically oriented paradigm, soon people concluded that the two approaches were not actually conflicting and now most models combine the two approaches. The early EBMT models will not be further discussed here. Even though some of them have a nice theoretical founding (maybe mention the special case Furuse \& Iida's hierarchical phrases), most of them are computationally not executable and certainly not scalable. Exceptions to this are the corpus based models that do not match and recombine, but use the corpora to statistically decide on the parameters of their models. The results of early machine translation models, even though no linguistic knowledge was incorporated whatsoever, were a huge improvement over the rule-based models researchers had been developing before, and current state of the art machine translation models still make use of similar techniques. A brief introduction to early SMT models therefore belongs in a work like this.
+\section{Statistical Models}
 
+Driven by the thought that language it too rich to formalize, a new line of research came of the ground, that was not primarily based on linguistic knowledge, but on large pairs of text that were translations of each other (parallel corpora). In the beginning, the corpus based systems seemed to be rival to the existing linguistically oriented paradigm, but soon people concluded that the two approaches were not actually conflicting, and nowadays most models combine the two of them.
 
-%find in somers review if there were relevant models, transfer models, domain and results
-% Really experimental: database size often not clear, sometimes just shown to work for one or two phenomena
-% most methods not interesting for this work, some of them store treestructures and recombine
-% Furuse & Iida’s (1992a, b) (isn't this just like hierarchical phrases
-% Some approaches seem just not so worked out, and are later presented as 'new' (maybe also because of computational problems?
-% Used when the rule based approach was to difficult.
-% the “tree edit distance” (e.g. Noetzel & Selkow 1983; Zhang & Shasha 1997; see also Meyers et al. 1996, 1998) ??
-% p 139: example based transfer
+Corpus based models can be roughly distinguished into two main categories.\footnote{This distinction is theoretically not cut and clear and in this paper mainly suggested to ...} Models of the first category are directly based on analogy, when translating a sentence, they try to find examples in the corpus similar to (fragments of) the sentence and generate a translation by recombining them. This part of machine translation is often called Exemplar Based Machine Translation. Early EBMT models will not be further discussed (a detailed discussion can be found in \cite{somers1999review}). The early MT researchers had the misfortune that computational standards were not as they are today and their models often only treat small sub languages, are computationally not executable and certainly not scalable. Many of the idea's investigated came back in later papers about MT (e.g. consider \citepos{furuse1992example} hierarchical phrases), although it is unclear if they were inspired by earlier papers or just reinvented.\\
+The second category is more interesting to the current work. In models of this category, appositely called statistical machine translation models, parallel corpora are not used to match and recombine, but to statistically decide on the parameters of another model. Even though the first statistical models seemingly took a step back to the direct translation approach again and considered no linguistic information whatsoever, they were (at least result wise) an enormous improvement to any model existing at the time. As these systems were primarily word-based, they do not fall into the category of models discussed in this thesis. However, the models we will discuss are founded on the notions and concepts introduced with these first word-based models, so we will devote a section to them (and their phrase-based extension) nevertheless, before getting back to transfer-models.
 
-\subsection{Word-based models}
+\subsection{Statistical Word-based Models}
 
-The idea to a statistical based was first introduced in 1988 by \citeauthor{brown1988statistical}.
-Explain the idea behind word-based models.
+The first working statistical MT model was presented in 1990, by \cite{brown1990statistical}. This paper was based on earlier work of the same research group \citep{brown1988statistical}, and was further worked out in a later paper \citep{brown1993mathematics} and inspired by Weavers idea \citep{weaver1955translation} to use information theory to reach automatic translation. Their models, now known as `the IBM models' follow the noisy channel approach, modelling the probability $P(t|s)$ that $t$ is the translation of $s$.\footnote{In the literature, this probability is often expressed as $P(e|f)$, as the first IBM models were focussed on translation from French to English. However, this can be quite confusing for the reader, and in this paper we will stick to the more general $t$ for target and $s$ for source.} This probability is then expressed using Bayes' theorem resulting in the following expression (by the authors called The Fundamental Equation of Machine Translation) for the desired translation $\hat{t}$:
 
-\subsection{Phrase-based models}
+\[
+\hat{t} = \operatorname*{arg\,max}_t P(t)P(s|t)
+\]
 
-%Zeg iets in de trant van: huge quality improvement
-the IBM word based models still had the same drawbacks as the first generation of direct translation models: no structure or local context was considered and a large amount of natural language phenomena could therefore not be accounted for. The first phrase-based model (ref???) was a major leap forward. Keeping the generative model identical, using phrases instead of words as basic units of translation allowed the model to use local context during translation. Phrase based models can therefore capture (short) contiguous idiomatic translations, as well as small insertions and deletions and local reordering. (examples?) However, such models still suffer from the fact that no structure is assumed between the basic units of translation (not to mention the fact that phrase-based translation knows several practical problems). Some attempts to directly incorporate syntactical information in the models (for instance by restricting the phrases to be linguistic phrases) did not improve translation quality --> reinforcement of rule based models
+The translation task is now split in two: modelling the translation probability $P(s|t)$, and modelling the language probability $P(t)$. The model for $P(t)$, usually an n-gram model, is meant to account for fluency of the target output. Note that the generative model is standard in information theory, the crux of the model resides in how $P(s|t)$ is modelled. In the IBM models, this distribution is modelled by marginalizing over all possible ways in which the words in $t$ could have been generated by the words in $s$, thus $P(s|t) = \sum_a P(s,a|t)$, in which $a$ describes the mapping from target to source words. The IBM model differ in the complexity of the approximation of the conditional probability $P(s,a|t)$, ranging from a very simple distribution in which $a$ is not considered at all (in which case the probability is independent of word-order) to rather complex ones in which $a$ is dependent on several parameters (for details, see \cite{brown1993mathematics}.
 
-% phenomena in scope of around 3 consecutive words (then data sparseness)
+%\[
+%P(s,a|t) = P(m|t) \prod^{m}_{j=1} P(a_j| a_1^{j-1}, f_1^{j-1},m,t) \times  P(s_j| a_1^{j-1}, f_1^{j-1},m,t)
+%\]
+
+All IBM models require a lexical translation probability (i.e. a dictionary like function that specifies the probability of word $w_s$ translating into $w_t$. These probabilities are not directly observable from the parallel corpus (as it is sentence aligned, and not word aligned) and are learned from the data applying the expectation maximization algorithm, that is proved to converge to a global optimum.
+
+\subsection{Statistical Phrase-based Models}
+
+The statistical IBM models led to a huge improvement in translation quality. However, but they still had the same drawbacks as the first generation of direct translation models: no structure or local context was considered and a large amount of natural language phenomena could therefore not be accounted for. A major leap forward was taken with the introduction of (non linguistic) phrases as basic units in translation models (\cite{wang1998grammar,och1999improved}??). Keeping the architecture (more or less) the same, using phrases instead of words allowed to model to use local context during translation. Phrases based translation models can therefore capture (short) contiguous idiomatic translations, as well as small insertions and deletions and local reordering (examples?). However, such models still suffer from the fact that no structure beyond the phrase level is assumed.\footnote{Moreover, phrase based translation knows many practical problems, that will not be further discussed here.} Attempts to linguistically motivate phrase selection turned out unfruitful \citep{koehn2003statistical} and the focus the MT-world shifted back to more rule-based models.
 
 
 \subsection{Statistical Syntax-based Models}
 
-%Maybe some more general introductiory sentences?
-The new generation of 
-%Synchornous context free grammars
-% Can account for: non-contiguous phrases, global reordering, model structure
+%Misschien ook in een ander licht, vertellen dat verschillende mogelijkheden om structuur te gebruiken zijn geprobeerd: linguistische kennis in phrase-based modellen inbouwen (niet bijzonder succesvol), linguistische structuren proberen te mappen naar elkaar, formele structuren...
 
-Over the last decade, an enormous amount of models have been presented, many of which were hybrid models combining several different strategies. In this section, the focus primarily lies on models that use transfer as strategy to generate translations. These models will be referred to as `syntax-based' models, as they consider the structure of the sentence. Note that in this term the meaning of the word `syntax' can be interpreted both formally and linguistically, and the syntactic analyses of sentences do thus not necessarily correspond to the analysis a linguist would give to the sentence. In this section, a number of syntax-based models will be discussed, decoding will receive no attention. Once again, no claim to completeness is made. 
-%say something like: hard to compare results because of different elements?
+Although the previous section might have suggested differently, the shift of the field to transfer-based models did not happen overnight. Some researchers have been exploring statistical rule-based models even before the first phrase-based model was presented. In this section, we will discuss models that explore structure beyond the phrase-level, with which they can be said to have a transfer-based part. Over the last 15 years, an enormous amount of models have been presented, many of which were hybrid models combining several different strategies. The focus here lies primarily on models in which transfer is the main strategy for generating translation, such models can be said to be `syntax-based' models, as they work with the syntactic structure of the sentence. Note that in this term the word `syntax' can be interpreted both formally and linguistically, and the syntactic analyses of sentences do thus not necessarily correspond to the analysis a linguist would give to the sentence. Without claiming to be complete, we will discuss a number of syntax-based models. Decoding will receive no attention at all.
 
+% Explain what is is based on: motivated by parsing, explain that serious simplifications have to be made to make it computationally feasible
+
+One approach that has received many attention in MT is to learn Synchronous Context Free Grammars (SCFGs) from parallel corpora.
+
+\[
+X \to \langle \gamma , \alpha , \sim \rangle
+\]
+
+In which $\gamma$ and $\alpha$ are sequences of terminals and non terminals in the source and target language, respectively, and $\sim$ is a one-to-one correspondence between the terminals and non terminals in $\gamma$ and those in $\alpha$ (anders).
+
+The models using SCFG's can be roughly categorized in two categories: formal and linguistic (although there are of course models that fall (?) somewhere in the middle of them). We will start by discussing the more formal models, as they constitute a more general category (formal grammars can be restricted using linguistic information, while from a primarily linguistic grammar no formal grammar can be constructed).
+
+
+Explain that grammars can be purely formal or linguistic (and of course things in between), and that the process of deriving them is slightly different.
+
+First discuss formal models (wu, chiang)
+
+Explain that parsing with synchronous grammars is computationally very expensive because binarization of an SCFG is not possible, and that therefore simplifications must be made, explain that we will discuss several models and their simplifications and assumptions
+
+% even stronger: just synchronous grammars, no isomorphism necessary
+
+Then discuss linguistic models
+
+All (?) induction methods use word-alignments
 %suffer from computational problems: minimal rules (more generalization, fewer rules, but not linguistically motivated), all rules (exponentially many --> size restriction)
 
+%Tell that we won't discuss in detail the results of the models, as it is very hard to compare (and a real argument?)
 
 \begin{enumerate}
-\item hierarchical phrases (\cite{chiang2005hierarchical}), improvement over standard phrase based machine translation model, practical problems ($\mathcal{O}(n)$ possible rules) + probability model not clear
-\item incorporation source language syntactical information
-\item ITG Wu
-\item what's in a translation rule \cite{galley2004s}
+\item \cite{wu1997stochastic}: Inversion Transduction Grammar, only one non-terminal category, rules are minimal (in this case binary). Adapts to reordering phenomena in the corpus
+\item \cite{chiang2005hierarchical}: hierarchical phrases. Inducing a grammar from a text without any linguistic annotation, all rules consist of non-terminals with some place-holders + two glue rules are added. Many rules possible --> restricted by making phrases tights, restricting the length of the phrases and the number of non-terminals. Improvement over standard phrase based system
+\item \cite{melamed2004statistical} I am not sure if I should discuss this
+\item \cite{lin2004path} Transfer based on dependency trees (thus source-side linguistic information), performance not better than phrase based models
+\item \cite{yamada2001syntax} transform an input parse tree with the operations node operations reorder (the children), insert and translate (the leafnodes). Parameters are learned from . They evaluate the resulting alignments, not the 
+\item \cite{galley2004s} larger rules are extracted (that map subtrees to subtrees), also empirical analysis, maybe present in related work ?
+\item \cite{alshawi2000learning} finite state, I think not really powerful enough
+\item \cite{quirk2005dependency,quirk2006dependency} I think this one is quite important
+\item \cite{eisner2003learning} also a chunk to chunk mapping (i.e. non isomorphic trees
+\item \cite{poutsma2000data} some suggestions but too small to be significant
+\item \cite{zollmann2006syntax}
 \end{enumerate}
+
 
 \section{The theoretical backbone of transfer models}
 
-As seen in the previous section, syntax-based models attempt to find structural representations of sentences in different languages and a function that maps the representations of sentences in one language to the representations of sentences in another if and only if the sentences are each others translation. That such representations and mappings do exist is implicitly assumed. The overarching assumption is equivalent to a the well known principle of compositionality of translation:
+As seen in the previous section, syntax-based models attempt to find structural representations of sentences in different languages and a function that maps the representations of sentences in one language to the representations of sentences in another if and only if the sentences are each others translation. The types of grammars (the objects generating the representations) and the mappings between them differ from model to model. What these models have all in common, is that they assume that such grammars and mappings exist. In this chapter, we will explain and analyse what the implications of these assumptions are for natural language. We claim that these assumptions are in fact equivalent to the well-known principle of compositionality of translation:
 
 \begin{quote}
 Two expressions are each others translation if they are built up from parts which are each other's translation, by means of translation-equivalent rules (ref??)
 \end{quote}
 
-Evidently, if translation between any two languages obeys this principle, representational systems and mappings between them can be found, but the implication in the other direction is also valid. CONVINCINGLY EXPLAIN WHY!
-As mentioned before, the principle hinges on several smaller assumptions about both language and translation.
+Evidently, if translation between any two languages obeys this principle, representational systems and mappings between them can be found. Conversely if two (tree) representation and a function between them can be found, this function can be seen as a translation-equivalent rule and its input and output as parts and their translation.
 
-% Get link to next section
+The compositionality can be split into 3 main assumptions, which we will treat in the following sections.
+
 
 %What are the assumptions that are implicit in this principle?
 % -translation is literal
 % -language is compositional
 % -languages have a similar semantical structure
 
-%introduce grammar as term for obtaining representations, maybe I want to switch these two sections??
 
-\subsection{Grammars}
+\subsection{Language is Compositional}
 
-One of the assumptions most obviously present in the principle of compositionality of translation is that languages itself are compositional. Compositionality is a property possessed by most designed languages. The meaning of an expression in a logical language, for instance can be unambiguously determined by considering the atoms and the rule used to combine them. For programming languages a similar statement can be made. As for translation, there exists a principle describing this property:
+One of the assumptions most obviously present in the principle of compositionality of translation is that the languages to be translted are themselves compositional. Compositionality is a property possessed by most designed languages. The meaning of an expression in a logical language, for instance can be unambiguously determined by considering the atoms and the rule used to combine them. For programming languages a similar statement can be made. As for translation, there exists a principle describing this property:
 
 \begin{quote}
 Meaning of an expression is a function of the meaning of its parts and syntactic rule by which they are combined \cite{partee1984compositionality}
 \end{quote}
 
-Although the compositionality of some parts of natural language is undeniable, we can understand sentences we have never heard because we know the words in it and we are familiar with the methods that can be used to combine them, many have argued against compositionality of natural language as a whole. Note that the principle as presented before is very unspecific, and its validity for a certain language is highly dependent on the notion of parts, meanings and rules in this language. A detailed description of the arguments in the compositionality debate will not add much to the current work, 
+Although the compositionality of some parts of natural language is undeniable - we can understand sentences we have never heard because we know the words in it and we are familiar with the methods that can be used to combine them - many have argued against compositionality of natural language as a whole. One often heard counter argument is the existence of idiomatic expressions, whose meaning can evidently not be derived from the meaning of its parts. However, the principle is highly underspecified, and the power of a compositional grammar depends a great deal on the notion of parts, meanings and rules in this grammar. That is to say, in principle it is possible to include all idiomatic expressions as basic units in the grammar, even though taking this too far might result in a grammar that is intuitively not as compositional as we would want it to be.
+%Explain that there are more counter arguments, explain why we are not gonna discuss them all (maybe also tell practical issue)
+
+A detailed description of the arguments in the compositionality debate will not add much to the current work, 
 blabla explain why
 %arguments often focus on rare exceptions and contextual ambiguities. function doesn't have to be bijective
 %Explain that current work doesn't focus on resolving ambiguities, and also that such things are maybe different for translation?
@@ -206,42 +246,20 @@ Example \cite{landsbergen1989power}:
 
 \chapter{An Empirical Study}
 
-In articles about syntax-based translation models the assumptions discussed in the previous chapter are are rarely mentioned, let alone questioned. Moreover, the evaluation of the models presented is based on the performance of an implemented version of them that is often, due to computational reasons, not even completely equivalent to the version presented. Furthermore, the hybrid nature of models makes the evaluation of the transfer part even fuzzier, as it is not clear which parts of the model are responsible for the results. The current work deviates from this research, in presenting an exploration of the underlying assumptions. Such an analysis is of theoretical importance, but can also serve as an estimate of how far syntax-based translation models can actually bring us and possibly even give information on how to do so.
+%Misschien moet ik dit toch weer anders presenteren, i.e. eerst presenteer de artikelen die dingen heel resultaat gericht onderzicht zijn (i.e. onderzoek khalilov, wat van die eerdere references, HATs). Dan vertel wat wij gaan onderzoeken.
 
-%anders
-As mentioned before, there are several sub-assumptions to investigate. The primary focus of this paper is on algorithmically finding a source side representational system that could in theory be suitable for compositional translation, working from a translation corpus of parallel sentences. In contrast to earlier work on this topic, which will be discussed in section (ref section), we will not start out with a standard syntactic formalism and check its suitability as representational system. Rather, we will consider all possible structures of a sentence that satisfy the requirement that they allow compositional translation, and test if it is possible to extract a consistent set containing a unique structure for every sentence in the corpus.\footnote{Note that the only way to check if the corpus is indeed consistent is to find a labelling that can cover the whole corpus}. A detailed description of the analysis will presented in section (..), after a discussion of related literature.
+%Although there is very little literature that investigate translation on a theoretical level, there are a few papers that present more result-oriented investigations of data.
 
-\section{Related Work}
+In articles about syntax-based translation models the assumptions discussed in the previous chapter are are rarely mentioned, let alone questioned. Moreover, the evaluation of the models presented is based on the performance of an implemented version of them that is often, due to computational reasons, not even completely equivalent to the version presented. Furthermore, the hybrid nature of models makes the evaluation of the transfer part even fuzzier, as it is not clear which parts of the model are responsible for the results. The current work deviates from this research, in presenting an exploration of the underlying assumptions. Such an analysis is of theoretical importance, but can also serve as an estimate of how far syntax-based translation models can actually bring us and possibly even give information on how to proceed. In this chapter, we will provide the theoretical background for 
+blabla what will we do
 
-%Somehow introduce related work
+\section{Theory}
 
-%This section needs to be rewritten, but does say approximately what I want
-\cite{fox2002phrasal} investigated if phrases that are constituents in the source sentence are coherent in the target sentence, by counting how often there was an overlap between the target side spans two phrases are translated in (the span of a phrase being defined as the pair [x,y] in which x is the minimum position a word in the span is aligned to, and y the maximum position. (anders) In other words, she tested the suitability of constituent grammars as a source side representation. 
-% explain what exactly she did
-% give a short summary of her results
+The current section will describe the concepts used in studying the structure of translation.
 
-A manual analysis of the head crossings in the S-alignment lead to the conclusion that most of the found crossings were caused by errors in parsing or translation (16 out of 86 and 5 out of 86, respectively), and non literal translations in cases a more literal version was also valid (29 our of 86).
-% discuss what else she did
-% short discussion of the results (and her manual analysis)
-% ne ... pas causing errors even though this could be captured in a rule (or maybe say this only later?)
+\subsection{Word Alignments}
 
-Another ... is the empirical study presented by \cite{hwa2002evaluating}. \citeauthor{hwa2002evaluating} empirically evaluate the \textit{Direct correspondence assumption (DCA)}, the assumption that for two sentences that are each others translation, the syntactic relations in one sentence directly map to the syntactic relations in the other.
-
- %Explain similarity with compositionality of translation principle
-%Explain that Hwa argues that the DCA cannot account for some well known and fundamental linguistic facts
-%Explain that this is also what they show
-%Explain what she does after (making linguistic adaptations)
-%Discuss results --> no bijective relation between dependeny parses
-
-
-\section{This Work}
-
-Also the current work will present an evaluation based on alignments. We will explain how by, starting with explaining the basic concepts used, and ending with a complete description of the process followed (anders).
-consists of .. subsections blabla
-
-\subsection{Alignments}
-
-The precise definition of a word alignment used throughout this paper is the following:
+ For our exploration we will use word alignments, a tool (?) also used by many who have tried to model translation with a formal syntax. Word alignments are of crucial importance for an investigation of the recursive properties of translation, as they give information about the possible structure of the translation. The precise definition of a word alignment used throughout this paper is the following:
 
 \begin{definition}
 Given a source sentence $s = s_0 \ldots s_n$ and its translation $t = t_0 \ldots t_m$, an alignment $a$ is a set of pairs $(x,y)$ with $x\in \{0,1,\ldots,n\}$ and $y\in \{0,1,\ldots,m\}$ such that $(x,y)\in a$ iff $s_x$ is translated into $s_y$.
@@ -271,7 +289,7 @@ The alignment of a parallel sentence restricts the space of parts possibly used 
 
 \subsection{Alignment Trees}
 
-Now that the possible `parts' of the translation are defined, also the set of compositional structures according to which the sentence could have been translated. A completely specified translation structure is a tree covering the whole sentence, in which the nodes are phrases consistent with the alignment. We will call such trees alignment trees. Figure \ref{fig:alignment_tree} shows one of the possible alignment trees for the example alignment in figure \ref{fig:alignment}.
+Now that the possible `parts' of the translation are defined, also the set of compositional structures according to which the sentence could have been translated. A completely specified translation structure can be interpreted as a tree covering the whole sentence, in which the nodes are phrases consistent with the alignment. We will call such trees alignment trees. Figure \ref{fig:alignment_tree} shows one of the possible alignment trees for the example alignment in figure \ref{fig:alignment}.
 
 \begin{figure}
 \Tree [.[0,6] [.[0,1] [.[0,0] my ] [.[1,1] dog ] ] [.[2,6] [.[2,4] [.[2,2] also ] [.[3,3] likes ] [.[4,4] eating ] ] [.[5,6] [.[5,5] eating ] [.[6,6] sausage ] ] ] ] ]
@@ -279,12 +297,11 @@ Now that the possible `parts' of the translation are defined, also the set of co
 \end{figure}
 
 An alignment may have many different possible alignment trees. The number of alignment trees can be exponential (?) in the length of the sentence, if no restriction is placed on the branching factor of the nodes. Every alignment can be assigned at least one structure, that is completely flat.
+Although for different reasons, many researchers have focussed on alignment structures.
 
+%Explain all the literature about alignment trees, facorization, permutations blabla (chiang, khalil, get more references khalil)
 %Maybe iets zeggen over hoeveel, en iets over empirische analyse Khalil en Gideon.
 
-As mentioned in dunno chapter on statistical models factorizing alignments is blablabla
-
-% mention some work on factorizing alignments (chiang, khalil, ...) 
 
 \subsection{Hierarchical Alignment Trees}
 
@@ -309,7 +326,65 @@ Explain that there may be several reasons that dependency structures depart from
 % parse with all labels or selected labels (HATs)
 % Once again output preservance
 
+
+
+%anders
+As mentioned before, there are several sub-assumptions to investigate. The primary focus of this paper is on algorithmically finding a source side representational system that could in theory be suitable for compositional translation, working from a translation corpus of parallel sentences. In contrast to earlier work on this topic, which will be discussed in section (ref section), we will not start out with a standard syntactic formalism and check its suitability as representational system. Rather, we will consider all possible structures of a sentence that satisfy the requirement that they allow compositional translation, and test if it is possible to extract a consistent set containing a unique structure for every sentence in the corpus.\footnote{Note that the only way to check if the corpus is indeed consistent is to find a labelling that can cover the whole corpus}. A detailed description of the analysis will presented in section (..), after a discussion of related literature.
+
+
+\section{Related Work}
+
+
+\cite{galley2004s}, \cite{deneefe2007can}
+%Somehow introduce related work
+
+%This section needs to be rewritten, but does say approximately what I want
+\cite{fox2002phrasal} investigated if phrases that are constituents in the source sentence are coherent in the target sentence, by counting how often there was an overlap between the target side spans two phrases are translated in (the span of a phrase being defined as the pair [x,y] in which x is the minimum position a word in the span is aligned to, and y the maximum position. (anders) In other words, she tested the suitability of constituent grammars as a source side representation. 
+% explain what exactly she did
+% give a short summary of her results
+
+A manual analysis of the head crossings in the S-alignment lead to the conclusion that most of the found crossings were caused by errors in parsing or translation (16 out of 86 and 5 out of 86, respectively), and non literal translations in cases a more literal version was also valid (29 our of 86).
+% discuss what else she did
+% short discussion of the results (and her manual analysis)
+% ne ... pas causing errors even though this could be captured in a rule (or maybe say this only later?)
+
+Another ... is the empirical study presented by \cite{hwa2002evaluating}. \citeauthor{hwa2002evaluating} empirically evaluate the \textit{Direct correspondence assumption (DCA)}, the assumption that for two sentences that are each others translation, the syntactic relations in one sentence directly map to the syntactic relations in the other.
+
+ %Explain similarity with compositionality of translation principle
+%Explain that Hwa argues that the DCA cannot account for some well known and fundamental linguistic facts
+%Explain that this is also what they show
+%Explain what she does after (making linguistic adaptations)
+%Discuss results --> no bijective relation between dependeny parses
+
+
 \chapter{Implementation}
+
+
+
+Explain that the main framework scores an alignment according to a given set of preferred relations between nodes that are siblings in the tree, or nodes that are mother and child. Explain that it is designed to be easily extendible for testing different properties of the tree.
+
+Explain that tests were conducted with different evaluation metrics, information about which can be found in the description of the experiments.
+
+%Do not know what level of detail is required here...
+Briefly discuss how: for each alignment a grammar is created that uniquely generates all Recursive Alignment Trees. The different productions of this grammar are assigned a score proportional to the preferred number of mother child relations that it generates. (similar to a probability, but not the same). A parser is used to find the optimal alignment tree (i.e. the alignment tree with the highest number of preferred mother child relations), and its score.
+%Maybe say something about the scoring and how different things can be tested but that one needs to think about scores for the productions
+
+
+\section{Implementation}
+
+Open source implementation that consists of different parts
+
+\begin{itemize}
+\item the part that deals with the dependency relations, extracts different relations from them and assigns labels to spans
+\item part that generates the context free grammars, details about this is implemented? graph approach, spans found by an algorithm similar to Zhangs.. def of phrases is slightly different, an emtpy node can also be a phrase.
+\item parser, external viterbi parser from nltk toolkit \citep{bird2009natural}, slightly adapted such that it can dael with scores that are not probabilities 
+\end{itemize}
+
+The only thing that is thus required is an evaluation metric
+
+%Show that graph algorithm is sound and complete
+
+%Explain what I did (and will do!)
 
 
 
@@ -424,28 +499,7 @@ Unaligned words also all considered. Say that this significantly increases the c
 
 \section{Setup}
 
-Explain that the main framework scores an alignment according to a given set of preferred relations between nodes that are siblings in the tree, or nodes that are mother and child. Explain that it is designed to be easily extendible for testing different properties of the tree.
 
-Explain that tests were conducted with different evaluation metrics, information about which can be found in the description of the experiments.
-
-%Do not know what level of detail is required here...
-Briefly discuss how: for each alignment a grammar is created that uniquely generates all Recursive Alignment Trees. The different productions of this grammar are assigned a score proportional to the preferred number of mother child relations that it generates. (similar to a probability, but not the same). A parser is used to find the optimal alignment tree (i.e. the alignment tree with the highest number of preferred mother child relations), and its score.
-%Maybe say something about the scoring and how different things can be tested but that one needs to think about scores for the productions
-
-
-\section{Implementation}
-
-Open source implementation that consists of different parts
-
-\begin{itemize}
-\item the part that deals with the dependency relations, extracts different relations from them and assigns labels to spans
-\item part that generates the context free grammars, details about this is implemented? graph approach, spans found by an algorithm similar to Zhangs.. def of phrases is slightly different, an emtpy node can also be a phrase.
-\item parser, external viterbi parser from nltk toolkit \citep{bird2009natural}, slightly adapted such that it can dael with scores that are not probabilities 
-\end{itemize}
-
-The only thing that is thus required is an evaluation metric
-
-%Show that graph algorithm is sound and complete
 
 \chapter{Results}
 

@@ -1,6 +1,7 @@
 import nltk
 from nltk.grammar import *
 from sets import Set
+from copy import deepcopy
 
 class Waypoint:
 	"""
@@ -144,63 +145,58 @@ class Node:
 			return
 		
 		#initialize
-		visited = []
+		visited = Set([])
 		depth = 0
-		current_node = node
-		reachable = {0:[node]}
+		reachable = {0:Set([node])}
 		depth_finished = False
 		current_paths = {node: [Waypoint(node)]}
 		
 		while (not depth_finished or self not in visited):
 			# search until there are no more nodes at
-			# current depth, then move to next depth
-#			print 'searching for depth', depth
-			while reachable[depth]:
-#				print 'depth', depth
-#				print reachable[depth]
+			# current depth, then move to next deptht
+			while len(reachable[depth]) > 0:
 				# We start with exploring this distance
 				depth_finished = False
 				# explore the first closest node
-				current_node = reachable[depth][0]
-#				print 'reachable set:', reachable[depth]
-#				print 'current_node', current_node
+				current_node = reachable[depth].pop()
 				# add nodes reachable from current node to
 				# next-depth reachable nodes
-				reachable[depth+1] = reachable.get(depth+1, [])
+				reachable[depth+1] = reachable.get(depth+1, Set([]))
 				for link in (l for l in current_node.links if l.value >= self.value):
-#					print 'link', link
-					if link not in (visited + reachable[depth]):
+					if link not in visited.union(reachable[depth]):
 						# this is the shortest path to link
 						if not (depth == 0 and link == self):
 							# path is not the trivial path
 							# add to reachable depth+1 if not already there
-							reachable[depth+1].append(link)
-#							print 'reachable depth', depth, reachable[depth+1]
+							reachable[depth+1].add(link)
 							new_path = current_paths.get(link,[])
-#							print 'new_path', new_path
 							for path in current_paths[current_node]:
 								new_waypoint = Waypoint(link,path)
 								new_path.append(new_waypoint)
 							current_paths[link] = new_path
-#							print 'current paths', current_paths[link]
-#							print 'paths from', link, 'to', node
-#							print current_paths[link]
 							# store for later use if path is not trivial
 							if depth != 0:
 								link.shortest_paths[node] = new_path
-				reachable[depth].remove(current_node)
-				visited.append(current_node)
-#			print 'diepte', depth
-#			print 'reachable[depth]', reachable[depth]
+				visited.add(current_node)
 			depth_finished = True
 			depth += 1
-#			print 'nog eens diepte', depth
-#			print 'reachable[depth]', reachable[depth]
 		for path in current_paths[self]:
 			yield path
 
 	def __repr__(self):
 		return self.__str__()
+		
+	def __hash__(self):
+		return self.value
+		
+	def __eq__(self, other):
+		if isinstance(other, Node):
+			return self.value == other.value
+		else:
+			return False
+		
+	def __neq__(self, other):
+		return (not self.__eq__(other))
 
 	def __str__(self):
 		return str(self.value)
@@ -319,7 +315,7 @@ def worst_case_test(nr_of_nodes):
 	import time
 	t1 = time.time()
 	nodes = [Node(i) for i in xrange(0,nr_of_nodes)]
-	links = [(i,j) for i in xrange(0,nr_of_nodes) for j in xrange(0,nr_of_nodes) if i<= j]
+	links = [(i,j) for i in xrange(0,nr_of_nodes) for j in xrange(0,nr_of_nodes) if i< j]
 	for (i,j) in links:
 		nodes[j].link_to(nodes[i])
 	path_list = []
