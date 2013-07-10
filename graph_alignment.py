@@ -72,10 +72,8 @@ class Node:
 		paths to the given node. These paths
 		are calculated recursively.
 		"""
-#		print "\tsearching path from", self, "to", node
 		if node == self:
 			# Reached our destination, stop searching.
-#			print "reached destination"
 			yield Waypoint(self)
 			return
 
@@ -112,12 +110,6 @@ class Node:
 		else:
 			self.reachable[nid] = False
 			yield False
-
-#	def __repr__(self):
-#		return self.value
-#		
-#	def __hash__(self):
-#		return self.__repr__()
 
 	def shortest_paths_to(self,node):
 		"""
