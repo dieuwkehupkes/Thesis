@@ -143,8 +143,9 @@ class Dependencies():
 		
  	def labels(self):
  		"""
- 		Create a dictionary that assigns labels to spans,
- 		According to their dependency relation.
+ 		Create a dictionary that assigns labels to spans
+ 		according to their dependency relation. The labels
+ 		are annotated with the span they are modifying
  		"""
  		labels = {}
  		for key in self.deps:
@@ -153,7 +154,72 @@ class Dependencies():
  				span_string = "-[%s,%s]" % (span_dependent[0], span_dependent[1])
  				labels[span_dependent] = dependent[1]+span_string
  		return labels
+ 	
+ 	def pure_labels(self):
+ 		"""
+  		Create a dictionary that assigns labels to spans
+ 		according to their dependency relation.
+ 		"""
+ 		labels = {}
+ 		for key in self.deps:
+ 			for dependent in self.deps[key]:
+ 				span_dependent = self.wordspans[dependent[0]]
+ 				labels[span_dependent] = dependent[1]
+ 		return labels	
+ 	
+ 	
+ 	def samt_labels(self):
+ 		"""
+ 		Create a dictionary that assigns labels to spans
+ 		according to their dependency relations, but also
+ 		assigns labels to spans forming conjunctions of
+ 		relations
+ 		"""
+ 		labels = self.pure_labels()
+ 		for head in self.deps:
+ 			print head
+ 			word_span = (head-1,head)
+ 			labels[word_span] = labels.get(word_span, 'ROOT')
+ 			head_span = self.wordspans[head]
+ 			head_label = labels.get(head_span, 'ROOT')
+ 			dep_list = [word_span]
+ 			for dependent in self.deps[head]:
+ 				dep_span = self.wordspans[dependent[0]]
+ 				dep_list.append(dep_span)
+ 			dep_list.sort()
+ 			begin, end = dep_list[0][0], dep_list[-1][1]
+ 			# Locate position head
+			head_pos = dep_list.index(word_span)
+			#create all labels with \ and /
+			root_label = str(head_label)
+			cur_label = root_label
+			left_emitted = []
+			for i in xrange(head_pos+1):
+				right_emitted = []
+				for j in reversed(xrange(head_pos+1, len(dep_list))):
+					begin_span, end_span = dep_list[i][0],dep_list[j][1]
+					samt_span = (begin_span, end_span)
+					labels[samt_span] = labels.get(samt_span, cur_label)
+					right_emitted.append(labels[dep_list[j]])
+					#update concatenated labels
+					r_label = '+'.join(reversed(right_emitted))
+					l_label = '+'.join(left_emitted)					
+					if i > 0:
+						labels[(begin,begin_span)] = labels.get((begin,begin_span), l_label)
+						labels[(dep_list[j][0], end)] = labels.get((dep_list[j][0],end), r_label)
+					#update label for the next span
+					if i == 0:
+						cur_label = l_label + root_label + "/" + r_label
+					else:
+						cur_label = l_label + "\\" + root_label + "/" + r_label
+				left_emitted.append(labels[dep_list[i]])
+			return labels					
+
+	def print_labels(self,labels):
+		for key in labels:
+			print key, ':\t', labels[key]
  		
+ 	
  	def label_count(self):
  		label_count = {}
  		for key in self.deps:
@@ -186,6 +252,16 @@ def test1():
 	print d.label_count()
 #	print d.labels()
 
+def test2():
+	"labels"
+	dependencies = ['nsubj(give-2, I-1)','root(ROOT-0, give-2)','det(boy-4, the-3)','iobj(give-2, boy-4)','det(flowers-6, some-5)','dobj(give-2, flowers-6)']
+	d = Dependencies(dependencies)
+#	print d.deps
+	labels = d.samt_labels()
+	d.print_labels(labels)
+
+
+
 def print_scores():
 	dependencies = 'Data/europarl-v7.dependencies.head100'
 	scores = open('Testing/europarl-v7.dependencies.head100.compositionality_score', 'w')
@@ -207,8 +283,3 @@ def print_scores():
 	scores.close()
 	print nr_of_deps
 	print total_score/nr_of_deps
-
-def analyse_test1():
-	dependencies = ['nsubj(up-3, it-1)','cop(up-3, is-2)','root(ROOT-0, up-3)','prep(up-3, to-4)','det(States-7, the-5)','nn(States-7, Members-6)','pobj(to-4, States-7)','cc(States-7, and-8)','det(Community-10, the-9)','conj(States-7, Community-10)','aux(take-12, to-11)','xcomp(up-3, take-12)','det(initiatives-15, the-13)','amod(initiatives-15, necessary-14)','nsubj(achieve-17, initiatives-15)','aux(achieve-17, to-16)','xcomp(take-12, achieve-17)','dobj(achieve-17, this-18)']
-	d = Dependencies(dependencies)
-	print d.comp_score()
