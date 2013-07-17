@@ -1,1 +1,11 @@
 *.pyc
+*.aux
+*.bbl
+*.blg
+*.dvi
+*.idx
+*.ilg
+*.ind
+*.log
+*.gz
+*.toc
