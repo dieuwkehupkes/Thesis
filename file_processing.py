@@ -28,6 +28,21 @@ class ProcessFiles():
 			dependency_list.append(new_dependent)
 			new_dependent = self.dependency_file.readline()
 		return new_alignment, new_sentence, dependency_list
+				
+	def check_consistency(self, sentence, dep_list):
+		"""
+		Check whether a list with dependencies is
+		consistent with a sentence.
+		"""
+		words = set([])
+		for relation in dep_list:
+			dependent = re.findall('(?<=\, ).*(?=-[0-9]*\))',relation)
+			words.add(dependent[0])
+		words_sentence = set(sentence.split(' '))
+		if len(words - words_sentence) == 0:
+			return True
+		else:
+			return False
 	
 	def spanrels(self,dependency_list):
 		dependencies = Dependencies(dependency_list)
@@ -50,11 +65,6 @@ class ProcessFiles():
 		all trees over the alignments 'hats' only the HATs.
 		@param new: a list [alignment, sentence, list with dependencies]
 		"""
-		# Read in information for the new sentence, if no new
-		# information is available, return
-#		if new[0] == '':
-#			return False
-		# Get the labels and relations
 		if metric == 1:
 			relations,labels = self.spanrels(new[2])
 		elif metric == 2:
@@ -63,7 +73,6 @@ class ProcessFiles():
 			raise ValueError("Metric does not exist")
 		# Create a scoring object and parse the sentence
 		scoring = Scoring(new[0],new[1], relations, labels)
-		print 'creating grammar'
 		if treetype == 'all':
 			productions = scoring.alignment.rules(relations,labels)
 		elif treetype == 'hats':
@@ -71,7 +80,6 @@ class ProcessFiles():
 		else:
 			raise NameError("Type of tree does not exist")
 		grammar = scoring.grammar(productions)
-		print 'parse sentence'
 		parse = scoring.parse(grammar)
 		score = scoring.score(parse)
 		return parse, score
@@ -101,7 +109,7 @@ class ProcessFiles():
 		return label_dict
 		
 		
-	def score_all(self, treefile, scorefile, max_length, metric = 1, treetype = 'hats'):
+	def score_all(self, treefile, scorefile, max_length = 40, metric = 1, treetype = 'hats'):
 		"""
 		Score all input sentences and write scores and
 		trees to two different files. 
@@ -109,26 +117,44 @@ class ProcessFiles():
 		"""
 		self.reset_pointer()
 		parsed_sentences = 0
-		total_score = 0
+		sentence_nr = 1
+		ts = 0
+		total_score = {10:0, 20:0, 40:0, 100:0}
+		sentences = {10:0, 20:0, 40:0, 100:0}
 		trees = open(treefile, 'w')
 		results = open(scorefile, 'w')
 		new = self.next()
 		while new:
-			print parsed_sentences + 1
+			#check if sentence and dependency list are consistent
+			print sentence_nr
+			if not self.check_consistency(new[1], new[2]):
+				print "Warning: dependencies and alignment contain inconsistencies"			
 			sentence_length = len(new[1].split())
-			print 'sentence length ', sentence_length
 			if sentence_length < max_length:
 				tree, score = self.score(new, metric, treetype)
 				trees.write(str(tree) + '\n\n')
-				results.write(str(score) + '\n')
-				total_score += score
+				results.write("s " + str(sentence_nr) + '\t\tlength: ' + str(sentence_length)
+				 + '\t\tscore: ' + str(score) + '\n')
+				#update total scores
+				for key in total_score:
+					if sentence_length < key:
+						total_score[key] += score
+						sentences[key] += 1 
+				ts += score
+				parsed_sentences += 1
 			else:
-				results.write("No result, sentence longer than" + str(max_length) + "words\n")
-			parsed_sentences += 1
+				results.write("No result, sentence longer than " + str(max_length) + " words\n")
 			new = self.next()
-		average = total_score/parsed_sentences
-		print 'average score:', average
-		results.write("\n\nAverage  score: " + str(average))
+			sentence_nr += 1
+		# Write results to file
+		results.write("\n\nSCORES\n")
+		results.write("\nlength \t\t\tscore")
+		results.write("\n-----------------------------------------------")
+		results.write("\n <10\t\t\t"+str(total_score[10]/sentences[10]))
+		results.write("\n <20\t\t\t"+str(total_score[20]/sentences[20]))
+		results.write("\n <40\t\t\t"+str(total_score[40]/sentences[40]))
+		results.write("\n all\t\t\t"+str(total_score[100]/sentences[100])+"\n\n")
+		#close files
 		trees.close()
 		results.close()
 	

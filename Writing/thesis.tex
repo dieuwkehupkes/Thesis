@@ -88,14 +88,13 @@ Chapter give more information on the implementation of the research, while the a
 
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %BACKGROUND ON MT AND TRANSFER MODELS
 
 \chapter{Transfer Models in Machine Translation}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 Machine translation is a very complex problem, to which many approaches have been tried. In this thesis, we focus on one such approach: the transfer method.   After a short introduction to the beginning of machine translation (MT), the focus will thus mainly lay on models that use this method. It does not claim to give a complete overview of these; MT is an enormous field in which many models have been developed, most of which are hybrid in the sense that they borrow from different approaches to complete different parts of translation. For more complete overviews of MT and SMT, the reader is referred to \cite{hutchins1992introduction} (MT), \cite{somers1999review} (EBMT) and \cite{koehn2008statistical} (SMT).
 
@@ -133,13 +132,9 @@ All IBM models require a lexical translation probability (i.e. a dictionary like
 
 \subsection{Statistical Phrase-based Models}
 
-%Moet anders, leg uit: niet modellen die syntactische cues GEBRUIKEN om bijvoorbeeld een reorder model te vinden ofzo, maar welke mogelijkheden er zijn voor mappings
-
 The statistical IBM models led to a huge improvement in translation quality, but they still had the same drawbacks as the first generation of direct translation models: no structure or local context was considered and a large amount of natural language phenomena could therefore not be accounted for. A major leap forward was taken with the introduction of (non linguistic) phrases as basic units in translation models (\cite{wang1998grammar,och1999improved}??). A phrase translation pair is a pair of contiguous source and target sequences such that the words in the source phrase are aligned only with words in the target phrase, and vice versa. \citep{och2004alignment}. Phrases are thus not restricted to linguistic phrases, but can be any arbitrary contiguous sequence of words. Keeping the architecture (more or less) the same, using phrases instead of words as translation units allows the model to use local context during translation. Phrases based translation models can therefore capture short contiguous idiomatic translations, as well as small insertions and deletions and local reordering. E.g. both `la casa' and `il casa' are reasonable word-for-word translations of the English phrase `the house'. `il casa' is, however, not a grammatical string in Italian. The latter observation could be easily captured by a phrase-based model, as `the car' could be translated as one unit, but would be much harder to model in a word-based model. Furthermore, a word-based model would never be able to get the correct idiomatic translation of a phrase like 'kick the bucket', while a phrase-based model would have little trouble finding this translation (provided this specific idiomatic phrase was present in the training corpus). However, such models still suffer from the fact that no structure beyond the phrase level is taken into account.\footnote{Moreover, phrase based translation knows many practical problems, that will not be further discussed here. A rather detailed discussion of the (theoretical and practical) problems with phrase-based translation can be found in \cite{quirk2006we}} Attempts to incorporate syntactic structure by linguistically motivate the selection of phrases \cite{koehn2003statistical} turned out unfruitful, and the focus of the MT-world shifted back to more structure-based models.
 
 \section{Statistical Transfer Models}
-
-%Should I maybe make a distinction between tree-to-tree, string-to-tree and tree-to-string?
 
 The shift of the field to more transfer-based models did not happen overnight. Some researchers were exploring statistical rule-based models even before the first phrase-based model was presented. Over the last 15 years, \textit{very} many models exploring structure beyond the phrase-level have been presented, many of which were hybrid models combining several different strategies. In this section, the focus lies on the different strategies that can be employed to find a mapping between source and target language structures. This means that this section is by no means a complete overview of the statistical syntax-based translation models over the last 15 years. We will not discuss approaches that use the recursive properties of languages without explicitly searching for a mapping, excluding for instance approaches that use syntactic structure as features in a log-linear model (e.g. \cite{cherry2013improved,liu2010semantic}), for reordering preliminary to translation (e.g. \cite{khalilov2012statistical}), to rerank output of a standard phrase-based system (e.g. \cite{och2004smorgasbord}). Also, we will not discuss the methods used to learn a probability model over the selected rules, nor will we discuss decoding or give details on the performance of the models, as it is often hard to tear apart whether performance is due to improved mappings or other factors (as better decoding strategies, different datasets or a better probability model). Furthermore, note that the models are not presented in a chronological order, but are merely grouped according to similarity (anders).
 
@@ -197,13 +192,13 @@ Another set of models attempts to find mappings between dependency parses withou
 
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \chapter{The theoretical backbone of transfer models}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 
 %SCFG's assume isomorphic structures
 
@@ -268,13 +263,21 @@ GIve some examples of seemingly non-compositional phenomena that can still be tr
 
 %Maybe extra section on minimallity? 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% EMPIRICAL STUDY
+%
+% Chapter explaining the need for empirical studies, providing related empirical studies
+% and explainint the current study is
+%
 
 \chapter{An Empirical Study}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 In articles about syntax-based translation models the assumptions discussed in the previous chapter are are rarely mentioned, let alone questioned. Moreover, the evaluation of the models presented is based on the performance of an implemented version of them that is often, due to computational reasons, not even completely equivalent to the version presented. Furthermore, the hybrid nature of models makes the evaluation of the transfer part even fuzzier, as it is not clear which parts of the model are responsible for the results. The current work deviates from this research, in presenting an exploration of the underlying assumptions. Such an analysis is of theoretical importance, but can also serve as an estimate of how far syntax-based translation models can actually bring us and possibly even give information on how to proceed.
 
@@ -289,6 +292,7 @@ The current chapter describes the experiments conducted for this paper (anders).
 %\cite{sogaard2009empirical1}
 %\cite{sogaard2009empirical2}
 %\cite{sogaard2010can}
+%\cite{fung2006automatic}
 
 Most empirical studies focus on the explanatory power of transforming linguistic parse trees. Even though they are ran on different datasets (and different language pairs) and use different criteria, they all find that permuting children in a linguistic constituency trees is not powerful enough to account for the reordering phenomena present in translation data, manual or automatic.
 
@@ -454,62 +458,6 @@ In this section we will express our expectations, and
 
 
 
-\chapter{Implementation}
-
-
-
-
-Explain that the main framework scores an alignment according to a given set of preferred relations between nodes that are siblings in the tree, or nodes that are mother and child. Explain that it is designed to be easily extendible for testing different properties of the tree.
-
-Explain that tests were conducted with different evaluation metrics, information about which can be found in the description of the experiments.
-
-%Do not know what level of detail is required here...
-Briefly discuss how: for each alignment a grammar is created that uniquely generates all Recursive Alignment Trees. The different productions of this grammar are assigned a score proportional to the preferred number of mother child relations that it generates. (similar to a probability, but not the same). A parser is used to find the optimal alignment tree (i.e. the alignment tree with the highest number of preferred mother child relations), and its score.
-%Maybe say something about the scoring and how different things can be tested but that one needs to think about scores for the productions
-
-
-\section{Implementation}
-
-Open source implementation that consists of different parts
-
-\begin{itemize}
-\item the part that deals with the dependency relations, extracts different relations from them and assigns labels to spans
-\item part that generates the context free grammars, details about this is implemented? graph approach, spans found by an algorithm similar to Zhangs.. def of phrases is slightly different, an emtpy node can also be a phrase.
-\item parser, external viterbi parser from nltk toolkit \citep{bird2009natural}, slightly adapted such that it can dael with scores that are not probabilities 
-\end{itemize}
-
-The only thing that is thus required is an evaluation metric
-
-%Show that graph algorithm is sound and complete
-
-%Explain what I did (and will do!)
-
-
-
-\section{Dependency Grammar}
-
-%Introduction: maybe some history about dependency grammars and how they came about (refer to phrase structure grammars)
-
-%Explain why dependency relations seems suitable for the task at hand: we want to see if predicate argument relations stay intact, dependencies are predicate argument relations
-%Maybe also some arguments from other studies that support the suitability of dependency grammars (higher cohesion dependency grammars fox e.g, work quirk & menezes.
-
-%Describe stanford dependency representation
-
-The Stanford Dependency representation distinguishes five different styles. As an elaborate description of these styles, as well as an extensive list of the relations in all of them, can be found in the Stanford typed dependency manual \citep{de2008stanford}, in this thesis just a short summary will be given.
-\paragraph{Basic Dependencies} The basic dependency style contains, as the name suggests, all the basic dependencies present in the sentence. A basic dependency structure is a fully connected projective dependency structure, that is, there are no crossing dependencies.
-\paragraph{Collapsed dependencies} In the collapsed representation several dependencies involving function words are collapsed to get direct dependencies between content words. Furthermore, additional dependencies that break the tree structure are considered, which means the resulting dependency graph is not guaranteed to be acyclic or even a tree. There exist another 2 variants of the collapsed dependency representation, one in which conjunct dependencies are propagated, and one in which the dependencies that do not preserve the tree structure are omitted.
-\paragraph{Non-collapsed dependencies} The last representation gives the basic dependencies as well as the extra ones which break the tree structure.
-
-%Describe available parsers.
-Zeg iets over de beschikbare parsers \cite{de2006generating}
-%Probeer misschien nog wat andere literatuur te vinden over dependency grammar
-
-\section{The Best Tree}
-
-Describe that we need a way to decide how good a tree is and that there are different ways to do that. Present evaluation metrics.
-
-
-
 \subsection{Metric 1}
 
 A dependency tree $T_d$ tells us exactly of which are the smaller parts of the sentence and how they are combined to obtain the complete sentence. Consider for instance the dependency tree of the sentence "My dog also likes eating sausage" (Figure \ref{fig:deptree1}).
@@ -542,64 +490,37 @@ Explain that metric 2 thus just differs in the set of relations it considers: in
 
 
 
-%CHAPTER DESCRIBING THE IMPLEMENTATION OF THE EXPERIMENTS
-
-%Alternative title: compositionality in practice
-Describe that recursive alignment trees are very useful for investigating the recursive properties of translation. Describe empirical research \cite{simaan2013hats}.\\
-Describe that in this work we will use the structures for investigating the preservation of predicate argument structures, as extracted from dependency parses. Explain that we let go of the restriction that the HATs should be minimally branching (+reason), say something about that we only look at the tree structure and not at the reordering, as this is for the theoretical question unimportant.
-Unaligned words also all considered. Say that this significantly increases the complexity of the task, but that this is less of a problem as the purpose is analysis, thus we only have to do it once.
-
 
 
 \section{Setup}
 
+%Explain what the plan is and why this works
+
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% RESULTS
+%
+% Describing the experiments and their results
+%
 
 
 \chapter{Results}
+
+This chapter will describe the sequence of experiments we conducted, as well as their results. Implementation details can be found in \ref{appendix:impl}. 
+We scored a HAT according to how many of the relations found in the dependency parse are respected by the HAT
+
+
 
 % What I want to describe now: ran test experiments on a small dataset, results: HATs do not capture compositionality as in the dependency parses, a small problem are the alignments, but a bigger problem is that the structure from the compositionality derived from the dependency parses is not minimally branching (test with ALL trees)
 % but our goal is to find a consistent set of structures (i.e. consistently label them), so maybe we can do it diffently
 % Investigate which relations ARE preserved, investigation on bigger dataset, find which relations are preserved and which aren't and see which ones are preserved an which ones aren't, maybe we can now investigate new labels?
 
-We conducted experiments on both manual and automatically aligned corpora. The dataset used in the experimens can be found in table \ref{table:datasets}
 
-\begin{table}\label{table:datasets}
-\begin{tabular}{cccc}
-Name corpus & section & size & alignments\\
-\end{tabular}
-\caption{Datasets}
-\end{table}
-
-\section{Datasets}
-
-Describe which experiments were done with which dataset. Describe
-Tell something about datasets, preparation, blabla
-%Denk dat ik dit toch net iets anders wil doen, zodat ik alle resultaten in 1 tabel kan zetten enzo
-
-\section{Experiments}
-
-Describe which experiments were done (with which datasets, which metrics..)
-
-\section{Results}
-
-\begin{table}\label{table:scores}
-\begin{tabular}{llll}
-Experiment 1 & metric 1 & dataset 1 & 0.84\\
-Experiment 2 & metric 2 & dataset 1 & 0.52\\
-Experiment 3 & metric 2 & dataset 2 & 0.79\\
-\end{tabular}
-\caption{Average sentence score of corpus (vul in) according to different metrics.}
-\end{table}
-
-
-The average sentence score of this corpus is 0.830827979565.
-
-\section{Discussion}
-
-Discussion of the results of the experiments, analysis of the results
-
-At the first sight, the results of experiment 1 seem very promising: on average over 80\% of the dependency relations are supported by the alignment. However, the trees in the outputted corpus seems strikingly flat, even for long sentences. Although one could argue that this is also compositional in some aspect, it is definitely not the kind of compositionality that is interesting in the light of Machine Translation. The obtained score might have reflected the similarity with the dependency parses well, but seems no good measure for compositionality. This is mainly caused by the fact that not all relations in the dependency parse actually reflect compositionality. The average fraction of relations that express word to word relations over the entire corpus is 0.56 %(this is not just over the 46 sentences parsed, fix that!)
-, which means that a score of 0.56 could be obtained by simply assigning every sentence in the corpus a completely flat tree. Experiment 2 addresses this problem, altering the evaluation metric such that the score of an alignment tree primarily reflects compsitionality, rather than similarity with the dependency tree of the sentence.
 
 
 \subsection{Analysis}
@@ -626,23 +547,79 @@ No Compositional translation possible & \\
 \caption{Manual analysis of the X scored}
 \end{table}
 
-If the lack of compositionality found in the corpus was really caused by poor automatic alignments, one would expect the score of a corpus scored manually to be higher. This hypothesis is tested in experiment 3.
+%
+%
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-Een stuk hoger indeed, analysis of de bomen lager dan 0.7 in deze dataset
 
-Wat zijn mogelijke opties voor extensie?
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% DISCUSSION
+%
+%
 
 \chapter{Discussion and Future Work}
 
 short summary of findings and what they mean
 
-future work: source reordering, treebank to learn translation structure
+%future work: source reordering, treebank to learn translation structure
 
+
+%
+%
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% CONCLUSION
+%
+%
 
 \chapter{Conclusion}
 
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% APPENDIX IMPLEMENTATION
+%
+%
+
 \appendix
+\chapter{Implementation}
+\label{appendix:impl}
+
+NLTK toolkit: \cite{bird2009natural}\\
+Stanford Dependency Parser: \cite{de2008stanford}(?)
+
+%
+%
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% APPENDIX EVALUATION METRICS
+%
+%
+
 \chapter{Metrics}
+\label{appendix:metric}
 
 \section{Notation}
 
@@ -696,6 +673,15 @@ $$
 
 Note that normalizing the score will sometimes result in zero division for shorter sentences whose dependency parses display no compositional structure, in this cases we will define the score of the sentence to be 0.
 
+
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 %THINGS I SHOULDN'T FORGET TO MENTION!
 
 % zeg iets over dat we op deze manier nicely omgaan met phrasal translations
@@ -706,8 +692,6 @@ Note that normalizing the score will sometimes result in zero division for short
 
 % niet zo tevreden over hoe dependency grammars met conjunction omgaan, collapsed dependencies doen dit wel beter trouwens, misschien moet ik daar nog eens naar kijken. Collapsed dependencies doen soms ook al wat werk met idiom (zie tabel 3)
 
-%Maybe moet ik nog iets zeggen over dat compositionaliteit aangenomen wordt in veel systemen (e.g. rule-based systemen)
-
 %Geen enkel vertaalsysteem vertaalt een zin 'in zijn geheel', altijd in stukken
 
 % Bouw iets in in dat dependency programma dat oneindige recursie tegengaat
@@ -715,10 +699,6 @@ Note that normalizing the score will sometimes result in zero division for short
 % Bouw meer checks in die kijken of de input wel consistent is
 
 % Zeg ergens iets over dat vertalers ook vaak de keuze maken om iets niet letterlijk te vertalen, maar dat we er hier vanuit gaan dat dit wel gebeurt (of iig zo letterlijk mogelijk)
-
-%Say something about partitioning problem with phrase based MT??
-
-% Make a comment about reordering?
 
 % A compositional approach ideally takes care of several problems at the same time
 

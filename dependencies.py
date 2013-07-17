@@ -140,7 +140,7 @@ class Dependencies():
 			if comp_spanrels[(key-1,key)] == []:
 				del comp_spanrels[(key-1,key)]
 		return comp_spanrels
-		
+	
  	def labels(self):
  		"""
  		Create a dictionary that assigns labels to spans
@@ -240,7 +240,7 @@ Testing
 """
 
 def test1():
-	dependencies = ['nn(President-2, Mr-1)','nsubj(welcome-6, President-2)','nsubj(welcome-6, I-4)','aux(welcome-6, would-5)','root(ROOT-0, welcome-6)','det(action-8, some-7)','dobj(welcome-6, action-8)','prep(action-8, in-9)','det(area-11, this-10)','pobj(in-9, area-11)]']
+	dependencies = ['nn(President-2, Mr-1)','nsubj(welcome-6, President-2)','nsubj(welcome-6, I-4)','aux(welcome-6, would-5)','root(ROOT-0, welcome-6)','det(action-8, some-7)','dobj(welcome-6, action-8)','prep(action-8, in-9)','det(area-11, this-10)','pobj(in-9, area-11)']
 	d = Dependencies(dependencies)
 	spanrels = d.get_spanrels()
 	print d.deps
