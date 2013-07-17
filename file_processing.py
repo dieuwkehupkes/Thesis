@@ -15,6 +15,7 @@ class ProcessFiles():
 		self.dependency_file = open(dependencyfile,'r')
 		self.sentence_file = open(sentencefile,'r')
 		self.alignment_file = open(alignmentfile,'r')
+		self.label_dict = {}
 		
 	def next(self):
 		new_alignment = self.alignment_file.readline()
@@ -116,6 +117,7 @@ class ProcessFiles():
 		A maximum sentence length can be specified
 		"""
 		self.reset_pointer()
+		label_dictionary = {}
 		parsed_sentences = 0
 		sentence_nr = 1
 		ts = 0
@@ -128,7 +130,7 @@ class ProcessFiles():
 			#check if sentence and dependency list are consistent
 			print sentence_nr
 			if not self.check_consistency(new[1], new[2]):
-				print "Warning: dependencies and alignment contain inconsistencies"			
+				print "Warning: dependencies and alignment might be inconsistent"			
 			sentence_length = len(new[1].split())
 			if sentence_length < max_length:
 				tree, score = self.score(new, metric, treetype)
@@ -167,9 +169,6 @@ class ProcessFiles():
 		"""
 		Counts occurences of all relations
 		sentences shorter than max_length.
-		As this uses readline, do not execute
-		after executing other functions that
-		loop through file.
 		"""
 		parsed_sentences = 0
 		self.reset_pointer()
@@ -179,9 +178,7 @@ class ProcessFiles():
 			sentence_length = len(new[1].split())
 			if sentence_length < max_length:
 				dependencies = Dependencies(new[2])
-				new_relations = dependencies.label_count()
-				for key in new_relations:
-					relations[key] = relations.get(key, 0) + new_relations[key]
+				dependencies.update_labels(relations)
 			new = self.next()
 			parsed_sentences += 1
 		return relations
@@ -198,7 +195,7 @@ class ProcessFiles():
 		"""
 		f = open(filename, 'w')
 		for key in dictionary:
-			f.write(key + '\t' + str(dictionary[key]) + '\n')
+			f.write(key + '\t\t' + str(dictionary[key]) + '\n')
 		f.close()
 
 

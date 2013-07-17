@@ -220,13 +220,12 @@ class Dependencies():
 			print key, ':\t', labels[key]
  		
  	
- 	def label_count(self):
- 		label_count = {}
+ 	def update_labels(self,label_dict):
  		for key in self.deps:
  			for dependent in self.deps[key]:
  				label = dependent[1]
- 				label_count[label] = label_count.get(label,0) + 1
- 		return label_count
+ 				label_dict[label] = label_dict.get(label,0) + 1
+ 		return label_dict
  
 	def print_spans(self):
 		print self.wordspans, '\n'
@@ -243,14 +242,14 @@ def test1():
 	dependencies = ['nn(President-2, Mr-1)','nsubj(welcome-6, President-2)','nsubj(welcome-6, I-4)','aux(welcome-6, would-5)','root(ROOT-0, welcome-6)','det(action-8, some-7)','dobj(welcome-6, action-8)','prep(action-8, in-9)','det(area-11, this-10)','pobj(in-9, area-11)']
 	d = Dependencies(dependencies)
 	spanrels = d.get_spanrels()
-	print d.deps
 	manual_spanrels= {(1,2): [(0,1)],(5,6): [(0,2),(3,4),(4,5), (6,11)], (7,8):[(6,7),(8,11)],(8,9): [(9,11)], (10,11): [(9,10)]}
-	print "Program output matches manual output spanrels: ", spanrels == manual_spanrels
+	print "spanrels test: ", spanrels == manual_spanrels
 	comp_spanrels = d.get_comp_spanrels()
 	manual_comp_spanrels = {(5,6): [(0,2), (6,11)], (7,8):[(8,11)],(8,9): [(9,11)]}
-	print "Program output matches manual output comp_spanrels: ", comp_spanrels == manual_comp_spanrels
-	print d.label_count()
-#	print d.labels()
+	print "comp_spanrels test: ", comp_spanrels == manual_comp_spanrels
+	manual_label_count = {'nn': 1, 'nsubj': 2, 'det': 2, 'dobj': 1, 'pobj': 1, 'aux': 1, 'prep': 1}
+	comp_label_count = d.label_count({})
+	print "label_count test: ", manual_label_count == comp_label_count
 
 def test2():
 	"labels"
@@ -259,8 +258,6 @@ def test2():
 #	print d.deps
 	labels = d.samt_labels()
 	d.print_labels(labels)
-
-
 
 def print_scores():
 	dependencies = 'Data/europarl-v7.dependencies.head100'
