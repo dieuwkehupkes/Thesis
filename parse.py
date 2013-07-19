@@ -21,6 +21,3 @@ files.score_all(tree_file, scores, max_length, metric, treetype)
 relations = files.relation_count(40)
 files.print_dict(relations, relation_file)
 files.close_all()
-
-#Waarom duurt het construeren van en grammatica zo lang voor:
-# secondly , the requirement of the double hull as a condition for access to Community waters must be enforced as soon as possible and cease to be put off indefinitely .

@@ -1,6 +1,5 @@
 import nltk
 from nltk.grammar import *
-from sets import Set
 from copy import deepcopy
 
 class Waypoint:
@@ -137,9 +136,9 @@ class Node:
 			return
 		
 		#initialize
-		visited = Set([])
+		visited = set([])
 		depth = 0
-		reachable = {0:Set([node])}
+		reachable = {0:set([node])}
 		depth_finished = False
 		current_paths = {node: [Waypoint(node)]}
 		
@@ -153,7 +152,7 @@ class Node:
 				current_node = reachable[depth].pop()
 				# add nodes reachable from current node to
 				# next-depth reachable nodes
-				reachable[depth+1] = reachable.get(depth+1, Set([]))
+				reachable[depth+1] = reachable.get(depth+1, set([]))
 				for link in (l for l in current_node.links if l.value >= self.value):
 					if link not in visited.union(reachable[depth]):
 						# this is the shortest path to link
