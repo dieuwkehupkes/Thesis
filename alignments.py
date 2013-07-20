@@ -1,6 +1,4 @@
 from graph_alignment import *
-#import nltk
-#from ntlk.grammar import *
 
 class Alignments:
 	"""

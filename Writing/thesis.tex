@@ -277,9 +277,8 @@ GIve some examples of seemingly non-compositional phenomena that can still be tr
 
 \chapter{An Empirical Study}
 
-In articles about syntax-based translation models the assumptions discussed in the previous chapter are are rarely mentioned, let alone questioned. Moreover, the evaluation of the models presented is based on the performance of an implemented version of them that is often, due to computational reasons, not even completely equivalent to the version presented. Furthermore, the hybrid nature of models makes the evaluation of the transfer part even fuzzier, as it is not clear which parts of the model are responsible for the results. The current work deviates from this research, in presenting an exploration of the underlying assumptions. Such an analysis is of theoretical importance, but can also serve as an estimate of how far syntax-based translation models can actually bring us and possibly even give information on how to proceed.\\
-The current chapter describes the contribution of this. The outline of the chapter is as follows: we will first discuss a number of empirical studies on the recursive properties of translation data. Some of them are pure analyses, while others are mainly focussed on improving performance of a specific model or method, but report some empirical results during the process. After the related work, we will continue with a new investigation, explaining the necessary concepts and providing a detailed description of the experiment.
-
+In articles about syntax-based translation models the assumptions discussed in the previous chapter are are rarely mentioned, let alone questioned. Moreover, the evaluation of the models presented is based on the performance of an implemented version of them that only approximates the theoretical solution due to simplifications made during encoding. Furthermore, the hybrid nature of models makes the evaluation of the transfer part even fuzzier, as it is not clear which parts of the model are responsible for the results. The current work deviates from this research, in presenting an exploration of the underlying assumptions. Such an analysis is of theoretical importance, but can also serve as an estimate of how far syntax-based translation models can actually bring us and possibly lay the basis for a new type of MT model.\\
+The current chapter describes the contribution of this. The outline of the chapter is as follows: we will first discuss a number of empirical studies on the recursive properties of translation data. Some of them are pure analyses, while others are mainly focussed on improving performance of a specific model or method, but report some empirical results during the process. Thereafter, we will present the founding for the contribution of this work, explaining the necessary concepts, and describing the experiment on a theoretical level. More details can be found in the Results chapter, implementation details can be found at the end of this paper in appendic \ref{appendix:impl}.
 
 \section{Related Work}
 
@@ -290,14 +289,21 @@ Most empirical studies focus on the explanatory power of transforming linguistic
 An often cited study is the one carried out in \cite{fox2002phrasal}. \citeauthor{fox2002phrasal} investigates the degree of phrasal cohesion across English and French. She counts the number of times the alignment spans of constituents overlap or `cross' in the corpus created by \cite{och2000improved}, containing 500 manually aligned sentences from the Canadian Hansard corpus. The alignments are of type S (on which all annotators agreed) and P (in which annotators disagreed or were uncertain). She distinguishes 3 different conditions (only P, only S and S backed up with P), we will only report on her results including all alignment links. She concludes that crossings - even after phrasal translations, that necessarily result in crossings, are filtered out - are too prevalent to ignore (on average 2.854 per sentence). Furthermore, she observes that dependency parses have better cohesive properties than constituency parses (2.714 per sentence). \footnote{With a manual analysis of the crossings in the constituency parses she shows that many of them are not due to the lack of phrasal cohesion, but are often caused by errors in syntactic analysis or rewording and reordering in the translation. Her analysis, however, included only the crossings of the S alignments, that constituted only a small part of the total set of crossings.}\\
 Her results are confirmed by others. \cite{galley2004s} concentrated on finding transformation rules based on larger fragments of trees, he plotted the coverage of the grammar against the maximum depth of the rules in the grammar, and found that only 19.4\% of the parse trees in the corpus could be covered by one-depth transformation rules. At the node level, a comparison more similar to \citepos{fox2002phrasal} study, he finds a coverage of 85\% for the S alignments. Furthermore, he finds that to cover the entire corpus the maximum number of rule expansions should be \textit{17} for the S-alignments (and 23 for the giza++ alignments). For the automatically aligned FBIS corpus (English-Chinese), the coverage of low-expansion rules was even lower: 16.5\% for rules with a single expansion (child reordering scope) and 100\% when the number of allowed expansions is no less than 43. \cite{khalilov2012statistical} confirm the inadequacy of child-reordering in a work that is focussed on source reordering preliminary to translation. Using LRscore \citep{birch2010lrscore} as a measure of success, they conclude that permuting the children of nodes in a constituency tree is insufficient to reach a perfect permutation of source-words in English-Dutch and English-Spanish translation data, even when deleting up to 5 layers of nodes in the parse tree is allowed.\footnote{Their score for English-Spanish, however, are surprisingly high: around 94}
 \cite{hwa2002evaluating} investigates the predicate argument structures correspond across English and Chinese, addressing the validity of the Direct Correspondence Analysis. \citeauthor{hwa2002evaluating} evaluates the quality of Chinese dependency parses that were projected directly from English to Chinese, according to a manual word alignment. The resulting parses had a very low F-score (38.1), which is not surprising, as phrasal translations (multiple aligned words on source or target side) and unaligned target word always result in errors. \cite{hwa2002evaluating} make a similar observation, but do not aim for a scalable solution comparable to that of \citeauthor{fox2002phrasal}. Rather, they develop a small set of linguistically motivated rules, that boosts the F-score significantly to 68.3, but is still rather low to be useful. Another work along this lines was presented by \cite{fung2006automatic} who learned cross-lingual (English-Chinese) semantic verb frames with argument mappings with 89.3\% accuracy. It is unclear how their results compare to \citepos{hwa2002evaluating}.
-\cite{wellington2006empirical} shows, that if the alignment trees are not restricted to parse trees, the results are much better, which brings us to a range of papers investigating the coverage of ITG on both manual and automatic alignments. A number of papers focussing on the binarizing SCFGs \citep{zhang2006synchronous,huang2009binarization} and the coverage of ITGs in normal form \citep{sogaard2009empirical1,sogaard2009empirical2,sogaard2010can} all conclude that the range of reordering phenomena occurring in real translation data are by far not as complicated as the worst case sketched in \cite{satta2005some}. \cite{wellington2006empirical} seem to be the only one who compares his results with linguistically restricted parse trees. On several dataset (covering translation from Chinese, Romanian, Hindi, Spanish and French to English), he found that maximally 5\% of the alignments could not be explained by a completely binary tree, while the failure rate for binary trees that were constrained by monolingual parse trees on the English side climbed to 15\% for French/English to 61\% for Chinese/English. Their failure rate for non constrained binary trees is much lower than the one found by \cite{simaan2013hats}, who reported a coverage of 71.46\% of the manual alignments of the Hansard corpus for trees with a maximal branching factor of 2. The coverage of binary trees for automatic alignments was even lower: 52.84\%. This difference between the results of \cite{wellington2006empirical} and \cite{simaan2013hats} is most likely due to a different treatment in alignment links: the latter author used all alignment links in the dataset, while the former treated many-to-one alignment links disjunctively, focussing on lower bounds. \cite{simaan2013hats} also report the coverage of non binarisable permutation trees (andere term, deze nog niet geintroduceerd), which is surprisingly enough not much higher: 72.14\% and 56.56\% for manual and automatic alignments, respectively.
+\cite{wellington2006empirical} shows, that if the alignment trees are not restricted to parse trees, the results are much better, which brings us to a range of papers investigating the coverage of ITG on both manual and automatic alignments. A number of papers focussing on the binarizing SCFGs \citep{zhang2006synchronous,huang2009binarization} and the coverage of ITGs in normal form \citep{sogaard2009empirical1,sogaard2009empirical2,sogaard2010can} all conclude that the range of reordering phenomena occurring in real translation data are by far not as complicated as the worst case sketched in \cite{satta2005some}. \cite{wellington2006empirical} seem to be the only one who compares his results with linguistically restricted parse trees. On several dataset (covering translation from Chinese, Romanian, Hindi, Spanish and French to English), he found that maximally 5\% of the alignments could not be explained by a completely binary tree, while the failure rate for binary trees that were constrained by monolingual parse trees on the English side climbed to 15\% for French/English to 61\% for Chinese/English. Their failure rate for non constrained binary trees is much lower than the one found by \cite{simaan2013hats}, who reported a coverage of 71.46\% of the manual alignments of the Hansard corpus for trees with a maximal branching factor of 2. The coverage of binary trees for automatic alignments was even lower: 52.84\%. This difference between the results of \cite{wellington2006empirical} and \cite{simaan2013hats} is most likely due to a different treatment in alignment links: the latter author used all alignment links in the dataset, while the former treated many-to-one alignment links disjunctively, focussing on lower bounds. \cite{simaan2013hats} also report the coverage of non binarisable (permutation) trees, which is surprisingly enough not much higher: 72.14\% and 56.56\% for manual and automatic alignments, respectively.
 
 
 \section{Original Work}
 
-%Explain why it isn't enough
-%Say what we will do: consider a set of structures 
-Following \cite{simaan2013hats} and \cite{wellington2006empirical}, we will study the recursive properties of translation data, disregarding conventional syntax at first. We will consider the set of (bilingual) structures defined by the alignment, as defined in \cite{simaan2013hats}. Before explaining exactly how, we will firstly give a formal definition of this set of structures. Although the notation of some of the definitions are slightly adapted to the convenience of this paper, the information presented in the following subsection can be considered summarising (parts of) \cite{simaan2013hats}.
+%Deze verantwoording moet echt anders
+Briefly, the studies described in the previous section teach us that translation knows phenomena much richer than those covered by SCFG's and that using conventional syntax to improve systems is not as simple as one might hope. 
+
+% Explain why this isn't enough yet
+% Say that we will give one step further
+
+
+% Deze sectie moet even herschreven worden: explain why it isn't well enough, explain what we'll do, then sort of give outline
+Following \cite{wu1997stochastic} and \cite{wellington2006empirical}, we will study the recursive properties of translation data on the basis of alignments, disregarding conventional syntax at first. We will consider a set of structures that uniquely describe alignments, as defined in \cite{simaan2013hats}, and aim for finding a systematicity in them that stretches the entire corpus (anders). We will start by giving a formal definition of this set of structures, that can be considered summarising (parts of) \cite{simaan2013hats} (although the notation in some of the definitions is slightly adapted to the convenience of this paper). We will then describe how we will use this set to....
+
 
 \subsection{Hierarchical Alignment Trees}
 
@@ -401,11 +407,13 @@ Furthermore, the nodes of the HATs are decorated with ITG-like operators, that s
 \end{figure}
 
 %EXPLAIN BETTER WHY WE WANT THE MAXIMAL BRANCHING FACTOR
-With the node labels, a HAT uniquely determines a word-alignment, in a maximally recursive fashion. The latter is desirable, because it maximises the probability that we can generalise to new data. \cite{simaan2013hats} provide empirical data, some of which was discussed in the previous section, describing what percentage of alignments can be explained by constrained versions of HATs. Note \textit{every} word alignment can be represented by a HAT, if no constraints are imposed.
+With the node labels, a HAT uniquely determines a word-alignment, in a maximally recursive fashion. The latter is desirable, because it maximises the probability that we can generalise to new data. \cite{simaan2013hats} provide empirical data, some of which was discussed in the previous section, describing what percentage of alignments can be explained by constrained versions of HATs. Note that \textit{every} word alignment can be represented by a HAT, if no constraints are imposed.
 
-\subsubsection{The mapping between HATs}
+\subsubsection{The Mapping between HATs}
 
-Until now we have focussed on constructing monolingual structures for the source side of the translation data, without paying much attention to the structure of its translation.
+As mentioned before, the nodes of a HAT are decorated with operators
+
+Until now we have focussed on constructing monolingual structures for the source side of the translation data, without paying much attention to the structure of its translation. The operators on the nodes 
 Explain that a tree for the other side can be constructed (node decorations itgs like)
 trees need not be isomorphic, mapping between the structures is not bijective (but if the reorder operators are seen as labels they are)
 
@@ -413,32 +421,57 @@ Maybe give some examples? Tell what kind of mapping it describes
 Explain that it mostly means that the trees don't have to be isomorphic
 bijective mapping to structures
 
-\subsection{Testing HATs}
+\subsection{The Power of HATs}
 
-Before describing our experiment, recall that the main aim of this paper is investigating the assumptions underpinning compositional translation. In particular, we want to see if it is possible to find recursive structures of sentences and a systematic mapping between them. The HATs are a very powerful tool for doing so, as they can describe any translation from source to target side. However, the mapping from word-alignments to HATs is a one-to-many mapping: a HAT uniquely describes a word-alignment, but a word alignment is often described by many HATs. To confirm that compositional translation is a reasonable strategy, we need somewhat stronger: a way of devising a single HAT for a word alignment, that is consistent over all sentences.\footnote{There are two remarks needed to refine this statement. Firstly we assume that a sentence has only one meaning, ambiguity cases are thus ruled out. If a sentence has multiple meanings, different HATs might correspond to these meanings. This thesis considers such ambiguity aspects a separate problem, which (that?) is not taken into account here at all. Secondly, in practice it might be desirable to generate multiple HATs per sentence, and define a probability distribution over them, which we do not deny. (anders) For our theoretical investigation this is of no importance.} In this thesis we are concerned with finding such a consistent set of HATs for a corpus. There can be exponentially many HATs per sentence (compute how many), and statistical learning this set without any external reference seems out of reach. Given that the nature of translation is preservation of the semantic content of a sentence, it seems reasonable to assume that the structural representation of a translation is semantically motivated. As guide in our search we will therefore use dependency parses \cite{schubert1987metataxis}, that specify the predicate argument structure of a sentence as perceived by humans, hereby implicitly addressing the question: are predicate argument structures preserved during translation. As many proceeding empirical investigations, we will only focus on source side structures (at first), not worrying about the consistency of the target side structures they are mapped to, implying that we will not consider the node operators. If no consistent source side structures can be found, there is no hope for finding consistent pairs of structures.
+Besides the phenomena covered by SCFG's, HATs can account for a 
+%Explain the power of HATs, give some examples
 
-\subsubsection{Setup}
+\subsection{Experiments}
 
-This section will be sketched how we will proceed, results and details of the experiments will be provided in the next chapter. (anders)
-In a first experiment we will search for the HAT that respects most of the dependency relations in the sentence. The percentage of relations preserved in the HATs will be a measure of how consistent the HATs can be labelled according to the dependency structures. In the best case, we can find a HAT for every sentence in which all relations are preserved, but we suspect that this will not be the case, in which case we will further investigate if the result can be improved. We have distinguished five reasons that could lead to a low score:
+Before describing our experiment, recall that the main aim of this paper is investigating the assumptions underpinning compositional translation. In particular, we want to see if it is possible to find recursive structures of sentences and a systematic mapping between them. The HATs are a very powerful tool for doing so, as they can describe any translation from source to target side. However, the mapping from word-alignments to HATs is a one-to-many mapping: a HAT uniquely describes a word-alignment, but a word alignment is often described by many HATs. To confirm that compositional translation is a reasonable strategy, we need somewhat stronger: a way of producing a single HAT for a word alignment, that is consistent over all sentences.\footnote{There are two remarks needed to refine this statement. Firstly we assume that a sentence has only one meaning, ambiguity cases are thus ruled out. If a sentence has multiple meanings, different HATs might correspond to these meanings. This thesis considers such ambiguity aspects a separate problem, which (that?) is not taken into account here at all. Secondly, it is mainly theoretical that we want to fine \textit{one} HAT per alignment. This is not to say, that in practice is might not be more desirable to generate multiple HATs per sentence over which a probability distribution can be defined. (anders)} In this thesis we are concerned with finding such a consistent set of HATs for a corpus. There can be exponentially many HATs per sentence (compute how many), and statistical learning this set without any external reference seems out of reach. Given that the nature of translation is preservation of the semantic content of a sentence, it seems reasonable to assume that the structural representation of a translation is semantically motivated. As guide in our search we will therefore use dependency parses \cite{schubert1987metataxis}, that specify the predicate argument structure of a sentence as perceived by humans, hereby implicitly addressing the question: are predicate argument structures preserved during translation. As many proceeding empirical investigations, we will only focus on source side structures (at first), not worrying about the consistency of the target side structures they are mapped to, implying that we will not consider the node operators. If no consistent source side structures can be found, there is no hope for finding consistent pairs of structures.
+
+\subsubsection{Experiment 1}
+
+The predicate argument relations in a dependency tree, tell us exactly how the sentence is composed: we can infer which are the smaller parts of the sentence and how they are combined to obtain the complete sentence. Consider for instance the dependency tree of the sentence "My dog also likes eating sausage" (Figure \ref{fig:deptree1}).
+
+\begin{figure}[!h]\label{fig:deptree1}
+\centering
+\begin{dependency}[theme=simple]%[hide label]
+\begin{deptext}[column sep=.5cm, row sep=.1ex]
+%PRP\$ \& NN \& RB \&[.5cm] VBZ \& VBG \& NN \\
+My \& dog \& also \& likes \& eating \& sausage \\
+\end{deptext}
+\deproot{4}{}
+\depedge{2}{1}{poss}
+\depedge{4}{2}{nsubj}
+\depedge{4}{3}{xvmod}
+\depedge{4}{5}{xcomp}
+\depedge{5}{6}{dobj}
+\end{dependency}
+\caption{Stanford Dependency Tree}
+\end{figure}
+
+The dependency tree tells us that 'likes' is the head word of the sentence, and that the sentences is composed of 4 parts: the head 'likes', its modifier 'also', its noun subject whose head is 'dog' and the open clausal complement whose head is 'eating'. The complement and subject are further divisible in, 'My' and 'dog', and 'eating' and 'sausage', respectively. Intuitively, for every relation in the dependency parse, we can check whether this relation exists in a HAT by checking if the word and its depending subtrees are siblings in the HAT.
+In a first experiment, for every alignment, we will search for the HAT in which the number of dependency relations that is consistent with the HAT is the highest. We will assign a score to the HAT, proportional to the percentage of dependencies that is respected. A formal definition of this metric can be found in \ref{appendix:metric}.
+%Maybe something about how phrasal translations come into play
+
+\subsubsection{Follow-up Experiments}
+
+In the best case, we can find a HAT for every sentence in which all dependency relations are preserved, but we suspect that this will not be so, in which cae we will further investigate if the result can be improved. We have distinguished five reasons that could lead to a low score:
 
 \begin{enumerate}
 \item The translation is erroneous, or non literal;
 \item The dependency parse is erroneous;
 \item The alignment is erroneous;
-\item The type of recursion in the HATs and the dependency parses does not agree
+\item The structure of HATs and dependency parses does not agree
 \item The sentence cannot be compositionally translated.
 \end{enumerate}
 
-Although the first three causes might play an important role, there is not much that we can change about our corpora. We will therefore start investigating the fourth cause, which is likely to be an issue, as we have forced our trees to be maximally recursive. This is very useful for computational purposes, but is likely not the structure corresponding to human intuitions. Consider for instance the sentence `I give you flowers', which contains a predicate (`give') with three arguments (the subject `I', the object `flowers' and the indirect object `you'). Its Dutch translation `Ik geef jou bloemen' has exactly the same predicate argument structure \textit{and} word-order which allows a completely binary tree. Even though the translation of the sentence seems perfectly compositional, no HAT will obtain the maximum score because the dependency structure is not minimally branching. 
-We will address this issue by firstly testing if the predicates and arguments constitute translation units at all, and subsequently by allowing dependency motivated labels, rather than strict dependency labels (anders). The third reason will be addressed during this process by performing the same tests on  manual and automatic alignments.
-
-% There is another case, in which two argument are translated into one, this is were the combined labels come into use.
-% Maybe I should explain this in the experiments.
-
-
-
-
+Research like this hinges on the assumption that the datasets we use are representative for the phenomena we are investigating, and don't contain to many mistakes (anders). Unfortunately, this is often not the case. Dependency parsers are not perfect, the translations in our corpora are often not as literal as we would want them to be, and automatic alignments often contain many incorrect alignment links. Although these factors can play an important role, there is not much that we can do about it: we cannot instruct interpreters of the government to follow a protocol we like, and we do not have the manpower to filter our corpora or produce manual alignments for corpora of a reasonable size. Even in empirical research, testing the influence of these factors often boils down to manually checking the data. We will consider the influence of the alignments, by running the same experiments on manually aligned datasets. As regards the first two causes, we might perform a manual analysis on a small subset of our data, but not before we have investigated the fourth case, which we consider likely to be an issue as we have forced our trees to be maximally recursive. This is very useful for computational purposes, but is likely not the structure corresponding to human intuitions. We will illustrate this with two examples.\\
+Firstly, consider the sentence `I give you flowers', which contains one predicate ('give') with three arguments (the subject `I', the object `flowers' and the indirect object `you'). Its Dutch translation `Ik geef jou bloemen' has exactly the same predicate argument structure \textit{and} word-order, whereby the branching factor in any of its HATs will not exceed 2. However, a maximum score can only be obtained by a tree in which `I', `give', `you', and `flowers' are siblings, whose mother will have a branching factor of (at least) 4. Even though the translation of this sentence seems perfectly compositional, no HAT will thus obtain the maximum score, because the dependency structure is not minimally branching.\\
+A second example, that is more related to translational divergence, arises when two arguments are translated into one (which happens when e.g. arguments are translated are pre or suffixes, verbs do not require a subject or when spaces). Consider for instance the sentence 'Can you give me the salt' and its Italian translation 'puoi passarmi il sale'. Once again, this translation seems compositional. However, the dependency parse prescribes that `the salt', `can' and `you' should be siblings of `give', which will be the case in none of the HATs over $\{\{0\},\{0\},\{1\},\{1\},\{2\},\{3\}\}$, as `give' and `me' are together translated into `passarmi', and `can you' into `puoi'.\\
+%Anders
+Both cases could be solved when considering dependency motivated labels, similar to the ones defined in \cite{zollmann2006syntax}, that represent compound categories, which we will do in a second experiment. E.g. `give you flowers' could be seen as a sentence missing a subject to the left (subj\textbackslash S) and `I give' as a combination of a subject and a verb (subj+verb). We will investigate this new labels by obtaining some statistical details about how often they are respected by the alignments. Subsequently, we will rescore the HATs with the new labels, slightly adapting the scoring metric. Instead for looking at sibling relations, we will just consider how many of the nodes in the HAT can be labelled using a label from our new label set. A HAT will receive a score corresponding with the percentage its nodes that could be labelled and thus receives a maximum score if all of its nodes could be labelled. Note that this introduces a slight bias towards trees with more nodes: a tree with 10 nodes of which one is unlabelled receives a higher score than a tree with 9 nodes of which one is unlabelled. %Explain why we do not think this is problematic?
 
 
 
@@ -451,7 +484,7 @@ We will address this issue by firstly testing if the predicates and arguments co
 %
 
 
-\chapter{Experiments}
+\chapter{Results}
 
 This chapter will describe the sequence of experiments we conducted, as well as their results. Implementation details can be found in \ref{appendix:impl}. 
 
@@ -484,6 +517,7 @@ This chapter will describe the sequence of experiments we conducted, as well as 
 short summary of findings and what they mean
 
 %future work: source reordering, treebank to learn translation structure
+% promising for further models: monolingual parsing and learning reordering operators
 
 
 %
@@ -595,28 +629,6 @@ Note that normalizing the score will sometimes result in zero division for short
 
 
 \subsection{Metric 1}
-
-A dependency tree $T_d$ tells us exactly of which are the smaller parts of the sentence and how they are combined to obtain the complete sentence. Consider for instance the dependency tree of the sentence "My dog also likes eating sausage" (Figure \ref{fig:deptree1}).
-
-\begin{figure}[!h]\label{fig:deptree1}
-\centering
-\begin{dependency}[theme=simple]%[hide label]
-\begin{deptext}[column sep=.5cm, row sep=.1ex]
-%PRP\$ \& NN \& RB \&[.5cm] VBZ \& VBG \& NN \\
-My \& dog \& also \& likes \& eating \& sausage \\
-\end{deptext}
-\deproot{4}{}
-\depedge{2}{1}{poss}
-\depedge{4}{2}{nsubj}
-\depedge{4}{3}{xvmod}
-\depedge{4}{5}{xcomp}
-\depedge{5}{6}{dobj}
-\end{dependency}
-\caption{Stanford Dependency Tree}
-\end{figure}
-
-\noindent The dependency tree tells us that 'likes' is the head word of the sentence, and that the sentences is composed of 4 parts: the head 'likes', its modifier 'also', its noun subject whose head is 'dog' and the open clausal complement whose head is 'eating'. The complement and subject are further divisible in, 'My' and 'dog', and 'eating' and 'sausage', respectively. Intuitively, for every relation in the dependency parse, we can check whether this relation exists in an alignment tree $T_a$, by checking if the word and its depending subtrees are siblings in $T_a$. The evaluation metric used in this first experiment is based upon this intuition.
-
 
 
 \subsection{Metric 2}

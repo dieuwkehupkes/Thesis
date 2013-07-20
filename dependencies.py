@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import re
 
 class Dependencies():
@@ -34,14 +33,10 @@ class Dependencies():
 		for relation in dependency_list:
 			self.nr_of_deps += 1
 			# Find the type of relation
-			relb = re.match('[a-z\_]*\(',relation)
-			rel = relb.group(0).strip('(')
+			rel = re.match('[a-z\_]*(?=\()',relation).group(0)
 			# Find head and dependent
-			headdep = re.findall('-[0-9]*[0-9]',relation)
-			if len(headdep) != 2:
-				raise NameError('check line, more than 2 dependencies detected')
-			head = int(headdep[0].strip('-'))
-			dep = int(headdep[1].strip('-'))
+			head = int(re.search('(?<=-)[0-9]*(?=, )',relation).group(0))
+			dep = int(re.search('(?<=-)[0-9]*(?=\)$)', relation).group(0))
 			# Create dictionary entry if it doesn't
 			# and add dependency
 			deps[head] = deps.get(head,[])

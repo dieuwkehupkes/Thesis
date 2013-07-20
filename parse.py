@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from file_processing import *
 
 #parse all sentences according to variables specified

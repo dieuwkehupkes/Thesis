@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from scoring import *
 import sys
 
@@ -40,7 +41,8 @@ class ProcessFiles():
 			dependent = re.findall('(?<=\, ).*(?=-[0-9]*\))',relation)
 			words.add(dependent[0])
 		words_sentence = set(sentence.split(' '))
-		if len(words - words_sentence) == 0:
+		#some flexibility is allowed because of american/english spelling
+		if len(words - words_sentence) < 3:
 			return True
 		else:
 			return False
