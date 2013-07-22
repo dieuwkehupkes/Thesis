@@ -37,6 +37,8 @@ class ProcessFiles():
 		consistent with a sentence.
 		"""
 		words = set([])
+		if dep_list == []:
+			return True
 		for relation in dep_list:
 			dependent = re.findall('(?<=\, ).*(?=-[0-9]*\))',relation)
 			words.add(dependent[0])

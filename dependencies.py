@@ -42,7 +42,8 @@ class Dependencies():
 			deps[head] = deps.get(head,[])
 			deps[head].append([dep,rel])
 		#remove the root dependency
-		del deps[0]
+		if 0 in deps:
+			del deps[0]
 		return deps
 
 	def comp_score(self):
