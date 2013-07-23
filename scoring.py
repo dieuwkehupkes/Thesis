@@ -82,7 +82,7 @@ class Scoring():
 		if normalization_factor != 0:
 			score = rules_used/normalization_factor
 		else:
-			score = 0
+			score = 1
 		return score
 
 #Tests
