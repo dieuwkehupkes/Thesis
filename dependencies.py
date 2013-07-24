@@ -37,13 +37,13 @@ class Dependencies():
 			# Find head and dependent
 			head = int(re.search('(?<=-)[0-9]*(?=, )',relation).group(0))
 			dep = int(re.search('(?<=-)[0-9]*(?=\)$)', relation).group(0))
-			# Create dictionary entry if it doesn't
-			# and add dependency
-			deps[head] = deps.get(head,[])
-			deps[head].append([dep,rel])
-		#remove the root dependency
-		if 0 in deps:
-			del deps[0]
+			# Set head position and create
+			#dictinary entries
+			if head == 0:
+				self.head_pos = dep
+			else:
+				deps[head] = deps.get(head,[])
+				deps[head].append([dep,rel])
 		return deps
 
 	def comp_score(self):
@@ -144,11 +144,17 @@ class Dependencies():
  		are annotated with the span they are modifying
  		"""
  		labels = {}
+ 		labels[(self.head_pos -1, self.head_pos)] = 'HEAD'
  		for key in self.deps:
  			for dependent in self.deps[key]:
  				span_dependent = self.wordspans[dependent[0]]
  				span_string = "-[%s,%s]" % (span_dependent[0], span_dependent[1])
  				labels[span_dependent] = dependent[1]+span_string
+ 		for key in self.deps:
+ 			for dependent in self.deps[key]:
+ 				span_string = "-[%s,%s]" % (span_dependent[0], span_dependent[1])
+ 				span_dependent = (dependent[0]-1, dependent[0])
+ 				labels[span_dependent] = labels.get(span_dependent, dependent[1]+'-head'+span_string)
  		return labels
  	
  	def pure_labels(self):
@@ -157,10 +163,17 @@ class Dependencies():
  		according to their dependency relation.
  		"""
  		labels = {}
+ 		labels[(self.head_pos -1, self.head_pos)] = 'HEAD'
+ 		# Assign labels to dependents
  		for key in self.deps:
  			for dependent in self.deps[key]:
  				span_dependent = self.wordspans[dependent[0]]
  				labels[span_dependent] = dependent[1]
+ 		# Assign labels to words-spans that do not have a label yet
+ 		for key in self.deps:
+ 			for dependent in self.deps[key]:
+ 				span_dependent = (dependent[0]-1, dependent[0])
+ 				labels[span_dependent] = labels.get(span_dependent, dependent[1]+'-head')
  		return labels	
  	
  	
@@ -244,15 +257,21 @@ def test1():
 	manual_comp_spanrels = {(5,6): [(0,2), (6,11)], (7,8):[(8,11)],(8,9): [(9,11)]}
 	print "comp_spanrels test: ", comp_spanrels == manual_comp_spanrels
 	manual_label_count = {'nn': 1, 'nsubj': 2, 'det': 2, 'dobj': 1, 'pobj': 1, 'aux': 1, 'prep': 1}
-	comp_label_count = d.label_count({})
+	comp_label_count = d.update_labels({})
 	print "label_count test: ", manual_label_count == comp_label_count
+	labels = d.pure_labels()
+	d.print_labels(labels)
+	labels2 = d.labels()
+	d.print_labels(labels2)
 
 def test2():
 	"labels"
 	dependencies = ['nsubj(give-2, I-1)','root(ROOT-0, give-2)','det(boy-4, the-3)','iobj(give-2, boy-4)','det(flowers-6, some-5)','dobj(give-2, flowers-6)']
 	d = Dependencies(dependencies)
 #	print d.deps
-	labels = d.samt_labels()
+#	labels = d.samt_labels()
+#	d.print_labels(labels)
+	labels = d.pure_labels()
 	d.print_labels(labels)
 
 def print_scores():

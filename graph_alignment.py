@@ -219,11 +219,10 @@ class Rule:
 		self.spans = spans
 		self.labels = labels
 		self.span_relations = span_relations
-		self.probability()
 		self.rhs()
-		self.lhs()		
+		self.lhs()
 		
-	def probability(self):
+	def probability_spanrels(self):
 		"""
 		Compute the probability of a rule given
 		the span relations we want to have in
@@ -236,7 +235,28 @@ class Rule:
 					if dependent in self.spans:
 						probability = probability * 2
 		self.probability = probability
-		
+	
+	def probability_labels(self):
+		"""
+		Compute the probability of a rule according
+		to how many of the nodes it generates can
+		be labelled according to a set of given
+		labels.
+		"""
+		probability = 1
+		for (i,j) in self.spans:
+			if (i,j) in self.labels:
+				continue
+			else:
+				probability = 0.5 * probability
+		self.probability = probability
+	
+	def uniform_probability(self):
+		"""
+		Set uniform probability
+		"""
+		self.probability = 1
+	
 	def lhs(self):
 		lhs = self.labels.get((self.root[0],self.root[1]), "%s-%s" % (self.root[0],self.root[1]))
 #		self.lhs = Nonterminal(lhs)
@@ -250,11 +270,19 @@ class Rule:
 		return self.__str__()
 
 	def __str__(self):
-		return ("%s -> %s [%s]" % 
-			(self.lhs, " ".join(self.rhs), self.probability))
+		return ("%s -> %s" % 
+			(self.lhs, " ".join(self.rhs)))
 			
 
+
+#############################################################################################
+#Testing
+
 def test1():
+	"""
+	Test if all paths are found in a manually
+	constructed graph with t nodes
+	"""
 	#create sample graph
 	nodes = [Node(i) for i in xrange(0,5)]
 	links = [(0,1),(0,2),(1,2),(1,4),(2,3),(2,4),(3,4),(0,4)]
@@ -268,9 +296,13 @@ def test1():
 			path_list.append(str(path))
 	man_paths = [[0,1,2,3,4],[0,1,2,4], [0,2,3,4], [0,2,4], [0,1,4],[1,2,3,4],[1,2,4], [0,1,2], [2,3,4], [0,1],[1,2],[2,3],[3,4],[2,4],[0,2],[1,4],[0,4]]
 	man_pathlist = [str(i) for i in man_paths]
-	print set(path_list) == set(man_pathlist)
+	return set(path_list) == set(man_pathlist)
 
 def test2():
+	"""
+	Test if all shortest paths are found in a
+	manually constructed graph with 5 nodes
+	"""
 	#create sample graph
 	nodes = [Node(i) for i in xrange(0,5)]
 	links = [(0,1),(0,2),(1,2),(1,4),(2,3),(2,4),(3,4),(0,4)]
@@ -284,10 +316,15 @@ def test2():
 			path_list.append(str(path))
 	man_paths = [[0,1],[1,2],[2,3],[3,4],[0,1,4], [0,2,4], [0,1,2], [1,2,4],[2,3,4]]
 	man_pathlist = [str(i) for i in man_paths]
-	print set(path_list) == set(man_pathlist)
+	return set(path_list) == set(man_pathlist)
 
 
 def test3():
+	"""
+	Test if all shortest paths are found
+	in a fully conected constructed graph
+	with 5 nodes
+	"""
 	nodes = [Node(i) for i in xrange(0,5)]
 	links = [(0,1),(0,2),(0,3),(0,4),(1,2),(1,3),(1,4),(2,3),(2,4),(3,4)]
 	for (i,j) in links:
@@ -300,9 +337,13 @@ def test3():
 			path_list.append(str(path))
 	man_paths = [[0,1],[1,2],[2,3],[3,4],[0,1,4],[0,2,4],[0,3,4],[0,1,3],[0,2,3],[1,2,4],[1,3,4], [0,1,2],[1,2,3],[2,3,4]]
 	man_pathlist = [str(i) for i in man_paths]
-	print set(path_list) == set(man_pathlist)
+	return set(path_list) == set(man_pathlist)
 	
 def worst_case_test(nr_of_nodes):
+	"""
+	Test the worst case running time for
+	a graph with n nodes
+	"""
 	import time
 	t1 = time.time()
 	nodes = [Node(i) for i in xrange(0,nr_of_nodes)]

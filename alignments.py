@@ -56,15 +56,15 @@ class Alignments:
 		sets.
 		"""
 		phrase_pairs = []
-		F_links = self.links_fromF()
-		E_links = self.links_fromE()
+		F_links = self._links_fromF()
+		E_links = self._links_fromE()
 		#Use a shift reduce algorithm to find phrase pairs
 		loopList = []
 		for y in xrange(0,self.lengthS):
 			loopList.append(y)
 			for x in reversed(loopList):
-				u_xy = self.maxspan((x,y))
-				l_xy = self.minspan((x,y))
+				u_xy = self._maxspan((x,y))
+				l_xy = self._minspan((x,y))
 				f_xy = (F_links[u_xy] - F_links[l_xy-1]) - (E_links[y] - E_links[x-1])
 				if f_xy == 0:
 					yield (x,y+1)
@@ -77,7 +77,7 @@ class Alignments:
 
 	def partial_set(self,(x,y),E_links):
 		"""
-		Compute if [x,y] is a partial set, which is true iff:
+		Compute if [x,y] is a single partial set, which is true iff:
 		- [x,y] is not a valid span;
 		- there is at most one aligned word in [x,y]
 		This function will not check if (x,y) is a valid span, as the function
@@ -93,7 +93,7 @@ class Alignments:
 			return False
 			
 
-	def links_fromE(self):
+	def _links_fromE(self):
 		"""
 		Precompute values for the function
 		E_c(j) = |{(i',j')\in A | j' =< j}|
@@ -107,7 +107,7 @@ class Alignments:
 			E_links[position] = E_links[position-1] + links_from_position
 		return E_links
 
-	def links_fromF(self):
+	def _links_fromF(self):
 		"""
 		Precompute values for the function
 		F_c(j) = |{(i',j')\in A | i' =< i}|
@@ -120,7 +120,7 @@ class Alignments:
 			F_links[position] = F_links[position-1] + links_from_position
 		return F_links
 
-	def minspan(self,(x,y)):
+	def _minspan(self,(x,y)):
 		"""
 		Returns the minimum position on the target side
 		that are linked to positions [x,y]
@@ -131,7 +131,7 @@ class Alignments:
 		else:
 			return min(alignment_links)
 
-	def maxspan(self,(x,y)):
+	def _maxspan(self,(x,y)):
 		"""
 		Returns the maximum position on the target side
 		that are linked to positions [x,y]
@@ -150,6 +150,13 @@ class Alignments:
 
 		A generator is returned for all the valid
 		rules in the permutation.
+		
+		If span_relations are specified, the rules
+		will be assigned probabilities according to
+		them. Otherwise, the rules will be asssigned
+		probabilities according to how many nodes
+		can be labelled according to the labels
+		provided.
 		"""
 		# Create nodes for all positions between words
 		nodes = [Node(i) for i in xrange(0, self.lengthS + 1)]
@@ -166,15 +173,28 @@ class Alignments:
 				if not path or len(path) == 2:
 					# No rules possible, or path points to itself
 					continue
-			
-				# Build up the rule as list of spans between
-				# nodes.
-				yield Rule((i, j), path,span_relations, labels)
+				# set probability, if span_relations are specified
+				# according to how many relations are made true,
+				# otherwise, according to how many nodes can be
+				# labelled 
+				rule = Rule((i, j), path,span_relations, labels)
+				if len(span_relations) != 0:
+					prob = rule.probability_spanrels()
+				elif len(labels) != 0:
+					prob = rule.probability_labels()
+				else:
+					rule.probability = 1
+				yield rule
 
 
 	def hat_rules(self, span_relations = {}, labels = {}):
 		"""
 		A generator is returned for all the valid HAT-rules
+		If span_relations are specified, the rules will be 
+		assigned probabilities according to	them. 
+		Otherwise, the rules will be asssigned probabilities
+		according to how many nodes	can be labelled according
+		to the labels provided.
 		"""
 		# Create nodes for all positions between words
 		nodes = [Node(i) for i in xrange(0, self.lengthS + 1)]
@@ -191,8 +211,19 @@ class Alignments:
 				if not path or len(path) == 2:
 					# No rule possible, or path points to itself
 					continue
-				yield Rule((i,j),path,span_relations,labels)
-		
+				rule = Rule((i,j),path,span_relations,labels)
+				# set probability, if span_relations are specified
+				# according to how many relations are made true,
+				# otherwise, according to how many nodes can be
+				# labelled 
+				if len(span_relations) != 0:
+					prob = rule.probability_spanrels()
+				elif len(labels) != 0:
+					prob = rule.probability_labels()
+				else:
+					rule.probability = 1
+				yield rule
+	
 
 	def lexrules(self, labels = {}):
 		"""
@@ -223,10 +254,8 @@ def test_rules():
 	therules = []
 	for rule in a1.rules([]):
 		therules.append(str(rule))
-	rules_man = ['0-5 -> 0-1 1-5 [1]','0-5 -> 0-2 2-5 [1]', '0-5 -> 0-3 3-5 [1]', '0-5 -> 0-1 1-2 2-5 [1]', '0-5 -> 0-1 1-3 3-5 [1]', '0-5 -> 0-2 2-3 3-5 [1]', '0-5 -> 0-3 3-4 4-5 [1]', '0-5 -> 0-1 1-2 2-3 3-5 [1]', '0-5 -> 0-1 1-3 3-4 4-5 [1]', '0-5 -> 0-2 2-3 3-4 4-5 [1]', '0-5 -> 0-1 1-2 2-3 3-4 4-5 [1]', '1-5 -> 1-2 2-5 [1]', '1-5 -> 1-3 3-5 [1]', '1-5 -> 1-2 2-3 3-5 [1]', '1-5 -> 1-3 3-4 4-5 [1]', '1-5 -> 1-2 2-3 3-4 4-5 [1]', '2-5 -> 2-3 3-5 [1]', '2-5 -> 2-3 3-4 4-5 [1]', '0-3 -> 0-1 1-3 [1]', '0-3 -> 0-2 2-3 [1]', '0-3 -> 0-1 1-2 2-3 [1]', '0-2 -> 0-1 1-2 [1]', '1-3 -> 1-2 2-3 [1]', '3-5 -> 3-4 4-5 [1]']
-	print set(rules_man) == set(therules)
-#	print "rules not found", set(therules)-set(rules_man)
-#	print "rules found", set(rules_man) - set(therules)
+	rules_man = ['0-5 -> 0-1 1-5','0-5 -> 0-2 2-5', '0-5 -> 0-3 3-5', '0-5 -> 0-1 1-2 2-5', '0-5 -> 0-1 1-3 3-5', '0-5 -> 0-2 2-3 3-5', '0-5 -> 0-3 3-4 4-5', '0-5 -> 0-1 1-2 2-3 3-5', '0-5 -> 0-1 1-3 3-4 4-5', '0-5 -> 0-2 2-3 3-4 4-5', '0-5 -> 0-1 1-2 2-3 3-4 4-5', '1-5 -> 1-2 2-5', '1-5 -> 1-3 3-5', '1-5 -> 1-2 2-3 3-5', '1-5 -> 1-3 3-4 4-5', '1-5 -> 1-2 2-3 3-4 4-5', '2-5 -> 2-3 3-5', '2-5 -> 2-3 3-4 4-5', '0-3 -> 0-1 1-3', '0-3 -> 0-2 2-3', '0-3 -> 0-1 1-2 2-3', '0-2 -> 0-1 1-2', '1-3 -> 1-2 2-3', '3-5 -> 3-4 4-5']
+	return set(rules_man) == set(therules)
 
 def test_hatrules():
 	alignment = '0-0 1-1 2-2 2-3 3-5 4-4'
@@ -235,10 +264,8 @@ def test_hatrules():
 	therules = []
 	for rule in a1.hat_rules():
 		therules.append(str(rule))
-	rules_man = ['0-5 -> 0-1 1-5 [1]','0-5 -> 0-2 2-5 [1]', '0-5 -> 0-3 3-5 [1]', '1-5 -> 1-2 2-5 [1]', '1-5 -> 1-3 3-5 [1]', '2-5 -> 2-3 3-5 [1]', '0-3 -> 0-1 1-3 [1]', '0-3 -> 0-2 2-3 [1]', '0-2 -> 0-1 1-2 [1]', '1-3 -> 1-2 2-3 [1]', '3-5 -> 3-4 4-5 [1]']
-	print set(rules_man) == set(therules)
-#	print "rules found extra", set(therules)-set(rules_man)
-#	print "rules not found", set(rules_man) - set(therules)
+	rules_man = ['0-5 -> 0-1 1-5','0-5 -> 0-2 2-5', '0-5 -> 0-3 3-5', '1-5 -> 1-2 2-5', '1-5 -> 1-3 3-5', '2-5 -> 2-3 3-5', '0-3 -> 0-1 1-3', '0-3 -> 0-2 2-3', '0-2 -> 0-1 1-2', '1-3 -> 1-2 2-3', '3-5 -> 3-4 4-5']
+	return set(rules_man) == set(therules)
 
 def test1():
 	"""
@@ -246,19 +273,14 @@ def test1():
 	unaligned words
 	"""
 	alignment = '0-0 1-1 2-2 3-3 4-4'
-#	print 'alignment: ', alignment
-#	print "\nManually constructed span list:"	
 	spanlist_man = [(0,1), (0,2), (0,3), (0,4), (0,5), (1,2), (1,3), (1,4), (1,5), (2,3), (2,4), (2,5), (3,4), (3,5), (4,5)]
-#	print spanlist_man
 	s = Alignments(alignment, '0 1 2 3 4')
 	spans = s.spans()
 	spanlist = []	
 	for span in spans:
 		spanlist.append(span)
 	spanlist.sort()
-#	print "\nSpan list constructetd by program:"
-#	print spanlist
-	print spanlist == spanlist_man
+	return spanlist == spanlist_man
 
 def test2():
 	"""
@@ -266,20 +288,15 @@ def test2():
 	no unaligned words on source nor targetside.
 	"""
 	alignment = '0-5 1-4 1-6 2-3 3-0 3-2 4-1 5-0 5-2'
-#	print 'alignment: ', alignment
-#	print "\nManually constructed span list:"	
 	spanlist_man = [(0,1), (0,2), (0,3), (1,2), (0,6), (2,3), (2,6), (3,4), (3,6), (4,5),(5,6)]
 	spanlist_man.sort()
-#	print spanlist_man
 	s = Alignments(alignment, '0 1 2 3 4 5')
 	spans = s.spans()
 	spanlist = []	
 	for span in spans:
 		spanlist.append(span)
 	spanlist.sort()
-#	print "\nSpan list constructetd by program:"
-#	print spanlist
-	print spanlist == spanlist_man
+	return spanlist == spanlist_man
 
 
 def test3():
@@ -299,9 +316,7 @@ def test3():
 	for span in spans:
 		spanlist.append(span)
 	spanlist.sort()
-#	print "\nSpan list constructed by program:"
-#	print spanlist
-	print spanlist == spanlist_man
+	return spanlist == spanlist_man
 
 	
 def test4():
@@ -310,18 +325,30 @@ def test4():
 	with aligned words on both and target side.
 	"""
 	alignment = '0-2 2-0 0-4 4-4 4-5'
-#	print 'alignment: ', alignment
-#	print "\nManually constructed span list:"	
 	spanlist_man = [(0,1), (0,2), (0,5), (1,2), (1,3), (1,4), (2,3), (2,4), (3,4), (3,5), (4,5)]
 	spanlist_man.sort()
-#	print spanlist_man
 	s = Alignments(alignment, '0 1 2 3 4')
 	spans = s.spans()
 	spanlist = []	
 	for span in spans:
 		spanlist.append(span)
 	spanlist.sort()
-#	print "\nSpan list constructed by program:"
-#	print spanlist
-	print spanlist == spanlist_man
+	return spanlist == spanlist_man
+	
+def test5():
+	"""
+	test the workings of the probability
+	function
+	"""
+	alignment = '0-0 1-1 2-2 2-3 3-5 4-4'
+	sentence = 'My dog likes eating sausages'
+	a1 = Alignments(alignment, sentence)
+#	productions = a1.list_productions([])
+	therules = []
+	for rule in a1.rules([]):
+		therules.append(str(rule))
+	
+	
+	
+	
 

@@ -39,17 +39,13 @@ class Scoring():
 		# Create a list with productions
 		productions = []
 		for rule in rules:
-#			print "next rule"
 			#create list to transform rhs to Nontemrinals
 			rhs_list = []
 			for rhs in rule.rhs:
 				rhs_list.append(Nonterminal(rhs))
 			productions.append(WeightedProduction(Nonterminal(rule.lhs), rhs_list,
 			prob = rule.probability))
-#			print "created weighted production for", rule
-#		print 'loop ended'
 		for rule in self.alignment.lexrules(self.labels):
-#			print "get to lexrules"
 			productions.append(rule)
 		# Transform into a grammar to parse
 		startsymbol = "0-"+str(len(self.tokens))
@@ -96,10 +92,13 @@ def test1():
 	labels = deps.labels()
 	scoring = Scoring(alignment, sentence, relations, labels)
 	productions = scoring.alignment.rules(relations,labels)
+#	for production in productions:
+#		print production
+#	productions = scoring.alignment.rules(relations,labels)	
 	grammar = scoring.grammar(productions)
 	parse = scoring.parse(grammar)
 	score = scoring.score(parse)
-	print "Obtained correct score for sentence:", score == 1.0
+	return score == 1.0
 
 def test2():
 	sentence = "european growth is inconceivable without solidarity ."
@@ -112,9 +111,8 @@ def test2():
 	productions = scoring.alignment.rules(relations,labels)
 	grammar = scoring.grammar(productions)
 	parse = scoring.parse(grammar)
-	score = scoring.score(parse)
-	
-	print "Obtained correct score for sentence:", score == 1.0
+	score = scoring.score(parse)	
+	return score == 1.0
 
 def speed_test1(sentence_length):
 	import time
