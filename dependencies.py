@@ -27,7 +27,7 @@ class Dependencies():
 	def set_dependencies(self,dependency_list):
 		"""
 		Read in a file and create a dictionary
-		with its dependencies
+		with its dependencies, using regular expressions.
 		"""
 		deps = {}
 		for relation in dependency_list:
@@ -48,7 +48,7 @@ class Dependencies():
 
 	def comp_score(self):
 		"""
-		Returns the number of words that is head
+		Returns the percentage of words that is head
 		of another word, thereby giving a measure of
 		the level of compositionality of the parse
 		"""
@@ -141,7 +141,7 @@ class Dependencies():
  		"""
  		Create a dictionary that assigns labels to spans
  		according to their dependency relation. The labels
- 		are annotated with the span they are modifying
+ 		are annotated with the span they are modifying.
  		"""
  		labels = {}
  		labels[(self.head_pos -1, self.head_pos)] = 'HEAD'
@@ -182,7 +182,8 @@ class Dependencies():
  		Create a dictionary that assigns labels to spans
  		according to their dependency relations, but also
  		assigns labels to spans forming conjunctions of
- 		relations
+ 		relations.
+ 		FURTHER EXPLAIN WHICH LABELS EXACTLY
  		"""
  		labels = self.pure_labels()
  		for head in self.deps:
@@ -260,6 +261,7 @@ def test1():
 	comp_label_count = d.update_labels({})
 	print "label_count test: ", manual_label_count == comp_label_count
 	labels = d.pure_labels()
+	print labels
 	d.print_labels(labels)
 	labels2 = d.labels()
 	d.print_labels(labels2)

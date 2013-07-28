@@ -1,8 +1,6 @@
 """
-Created on ... 2013
-@author: Dieuwke Hupkes
-Class for processing a sentence and alignment file together with
-a file with dependency parses that ....
+Class for processing sentences, alignments and dependency parses
+simultaneously.
 """
  
 # -*- coding: utf-8 -*-
@@ -18,7 +16,7 @@ class ProcessFiles():
 	"""
 	def __init__(self, alignmentfile, sentencefile, dependencyfile):
 		"""
-		During initialization the files are loaded for reading
+		During initialization the files are loaded for reading.
 		"""
 		self.dependency_file = open(dependencyfile,'r')
 		self.sentence_file = open(sentencefile,'r')
@@ -26,6 +24,10 @@ class ProcessFiles():
 		self.label_dict = {}
 		
 	def next(self):
+		"""
+		Return the next alignment, sentence and dependency_list.
+		If the end of one of the files is reached, return False.
+		"""
 		new_alignment = self.alignment_file.readline()
 		new_sentence = self.sentence_file.readline()
 		new_dependent = self.dependency_file.readline()
@@ -41,7 +43,11 @@ class ProcessFiles():
 	def check_consistency(self, sentence, dep_list):
 		"""
 		Check whether a list with dependencies is
-		consistent with a sentence.
+		consistent with a sentence, by comparing the words.
+		Some flexibility is allowed, to account for words
+		that are spelled differently. Return True if the
+		dependency parse contains no more than 3 words not
+		present in the sentence and False otherwise.
 		"""
 		words = set([])
 		if dep_list == []:
@@ -56,57 +62,16 @@ class ProcessFiles():
 		else:
 			return False
 	
-	def spanrels(self,dependency_list):
-		dependencies = Dependencies(dependency_list)
-		relations = dependencies.get_spanrels()
-		labels = dependencies.labels()
-		return relations, labels
-		
-	def comp_spanrels(self,dependency_list):
-		dependencies = Dependencies(dependency_list)
-		relations = dependencies.get_comp_spanrels()
-		labels = dependencies.labels()
-		return relations, labels
-	
-	def score(self, new, metric = 1, treetype = 'hats'):
-		"""
-		Load with number of metric used to score and the
-		type of trees to be considered. Metric 1 considers
-		all relations in the dependency tree, metric 2 only 
-		the ones displaying compositionality. 'all' considers
-		all trees over the alignments 'hats' only the HATs.
-		@param new: a list [alignment, sentence, list with dependencies]
-		"""
-		if metric == 1:
-			relations,labels = self.spanrels(new[2])
-		elif metric == 2:
-			relations,labels = self.comp_spanrels(new[2])
-		else:
-			raise ValueError("Metric does not exist")
-		# Create a scoring object and parse the sentence
-		scoring = Scoring(new[0],new[1], relations, labels)
-		if treetype == 'all':
-			productions = scoring.alignment.rules(relations,labels)
-		elif treetype == 'hats':
-			productions = scoring.alignment.hat_rules(relations,labels)
-		else:
-			raise NameError("Type of tree does not exist")
-		grammar = scoring.grammar(productions)
-		parse = scoring.parse(grammar)
-		score = scoring.score(parse)
-		return parse, score
-	
 	def consistent_labels(self, alignment, sentence, labels):
 		"""
 		Find the percentage of inputted labels that is
 		consistent with the alignment without computing
 		the best parse tree.
 		Returns a dictionary with labels as keys and as
-		value a pair with how often the label occured in
+		value a pair with how often the label occurred in
 		the dependency parse and how often it was
-		consistent with the alignment
-		@param input: a dictionary that assigning labels
-		to spans
+		consistent with the alignment. Parameter labels should
+		be presented as a dictionary assigning labels to spans.
 		Gives an upperbound for the score of the alignment
 		"""
 		label_dict = {}
@@ -117,17 +82,45 @@ class ProcessFiles():
 			if labels[label] in spans:
 				consistent = 1
 			current = label_dict.get(label,[0,0])
-			label_dict[label] = (current[0] + 1, current[1] + consistent)
+			label_dict[label] = [current[0] + 1, current[1] + consistent]
 		return label_dict
+
+	def score(self, new, spanrel_type, rule_function, scoring_type):
+		"""
+		Score a sentence according to parameter inputs.
+		::
+			@param new				A list [new_alignment, new_sentence, dependency_list]
+			@param spanrel_type		method from Dependencies specifying what
+									type of spanrels to consider
+			@param treetype			method from Alignments specifying what type
+									of rules to consider
+			@param scoring_type		Method from Scoring specifying how to score
+									the sentence
+		"""
+		#Set labels and relations
+		dependencies = Dependencies(new[2])
+		labels = dependencies.labels()
+		if spanrel_type!= None:
+			relations = spanrel_type(dependencies)
+		# Create a scoring object and parse the sentence
+		scoring = Scoring(new[0],new[1], labels)
+		productions = rule_function(scoring.alignment, relations, labels)
+		grammar = scoring.grammar(productions)
+		parse = scoring.parse(grammar)
+		score = scoring_type(scoring, parse)
+		#normalize score if necessary
+		if scoring_type == Scoring.relation_score:
+			score = scoring.normalize_score(score, dependencies.nr_of_deps)
+		return parse, score		
 		
-		
-	def score_all(self, treefile, scorefile, max_length = 40, metric = 1, treetype = 'hats'):
+	def score_all(self, treefile, scorefile, max_length = 40, spanrels = Dependencies.get_spanrels, rule_function = Alignments.hat_rules, scoring_type = Scoring.relation_score):
 		"""
 		Score all input sentences and write scores and
 		trees to two different files. 
-		A maximum sentence length can be specified
+		A maximum sentence length can be specified.
+		For parameters, see score method.
 		"""
-		self.reset_pointer()
+		self._reset_pointer()
 		label_dictionary = {}
 		parsed_sentences = 0
 		sentence_nr = 1
@@ -144,7 +137,7 @@ class ProcessFiles():
 				print "Warning: dependencies and alignment might be inconsistent"			
 			sentence_length = len(new[1].split())
 			if sentence_length < max_length:
-				tree, score = self.score(new, metric, treetype)
+				tree, score = self.score(new, spanrels, rule_function, scoring_type)
 				trees.write(str(tree) + '\n\n')
 				results.write("s " + str(sentence_nr) + '\t\tlength: ' + str(sentence_length)
 				 + '\t\tscore: ' + str(score) + '\n')
@@ -171,18 +164,18 @@ class ProcessFiles():
 		trees.close()
 		results.close()
 	
-	def reset_pointer(self):
+	def _reset_pointer(self):
 		self.dependency_file.seek(0)
 		self.sentence_file.seek(0)
 		self.alignment_file.seek(0)
 			
 	def relation_count(self, max_length):
 		"""
-		Counts occurences of all relations
+		Counts occurences of all relations in
 		sentences shorter than max_length.
 		"""
 		parsed_sentences = 0
-		self.reset_pointer()
+		self._reset_pointer()
 		relations = {}
 		new = self.next()
 		while new:
@@ -193,8 +186,17 @@ class ProcessFiles():
 			new = self.next()
 			parsed_sentences += 1
 		return relations
-		
+	
+	def relation_percentage(self, all_relations, relations_present):
+		percentage_dict = {}
+		for key in all_relations:
+			percentage_dict[key] = relations_present.get(key,0)/all_relations[key]
+		return percentage_dict
+	
 	def close_all(self):
+		"""
+		Close all input files.
+		"""
 		self.dependency_file.close()
 		self.sentence_file.close()
 		self.alignment_file.close()

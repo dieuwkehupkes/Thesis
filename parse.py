@@ -2,7 +2,10 @@
 from file_processing import *
 
 #parse all sentences according to variables specified
-metric, treetype, max_length = 1, 'hats', 40
+metric = Dependencies.get_spanrels
+rule_generator = Alignments.hat_rules
+max_length = 40
+scoring_type = Scoring.relation_score
 
 #check if the number of arguments is correct
 if len(sys.argv) != 7:
@@ -18,7 +21,7 @@ relation_file = sys.argv[6]
 # compute trees and scores and write to files
 
 files = ProcessFiles(all_alignments, all_sentences, all_dependencies)
-files.score_all(tree_file, scores, max_length, metric, treetype)
+files.score_all(tree_file, scores, max_length, metric, rule_generator, scoring_type)
 relations = files.relation_count(40)
 files.print_dict(relations, relation_file)
 files.close_all()
