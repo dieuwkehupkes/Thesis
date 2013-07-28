@@ -1,3 +1,10 @@
+"""
+Created on ... 2013
+@author: Dieuwke Hupkes
+Class for processing a sentence and alignment file together with
+a file with dependency parses that ....
+"""
+ 
 # -*- coding: utf-8 -*-
 from scoring import *
 import sys
@@ -154,12 +161,12 @@ class ProcessFiles():
 			sentence_nr += 1
 		# Write results to file
 		results.write("\n\nSCORES\n")
-		results.write("\nlength \t\t\tscore")
+		results.write("\nlength\t\t\t nr of sentences \t\tscore")
 		results.write("\n-----------------------------------------------")
-		results.write("\n <10\t\t\t"+str(total_score[10]/sentences[10]))
-		results.write("\n <20\t\t\t"+str(total_score[20]/sentences[20]))
-		results.write("\n <40\t\t\t"+str(total_score[40]/sentences[40]))
-		results.write("\n all\t\t\t"+str(total_score[100]/sentences[100])+"\n\n")
+		results.write("\n <10\t\t\t"+str(sentences[10])+'\t\t\t\t\t\t'+str(total_score[10]/sentences[10]))
+		results.write("\n <20\t\t\t"+str(sentences[20])+'\t\t\t\t\t\t'+str(total_score[20]/sentences[20]))
+		results.write("\n <40\t\t\t"+str(sentences[40])+'\t\t\t\t\t\t'+str(total_score[40]/sentences[40]))
+		results.write("\n all\t\t\t"+str(sentences[100])+'\t\t\t\t\t\t'+str(total_score[100]/sentences[100])+"\n\n")
 		#close files
 		trees.close()
 		results.close()

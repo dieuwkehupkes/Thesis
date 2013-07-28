@@ -1,3 +1,7 @@
+"""
+Module Description
+"""
+
 from graph_alignment import *
 
 class Alignments:
@@ -78,8 +82,8 @@ class Alignments:
 	def partial_set(self,(x,y),E_links):
 		"""
 		Compute if [x,y] is a single partial set, which is true iff:
-		- [x,y] is not a valid span;
-		- there is at most one aligned word in [x,y]
+		* [x,y] is not a valid span;
+		* there is at most one aligned word in [x,y]
 		This function will not check if (x,y) is a valid span, as the function
 		is only called from compute_spans if (x,y) is not a valid span.
 		"""
@@ -97,7 +101,6 @@ class Alignments:
 		"""
 		Precompute values for the function
 		E_c(j) = |{(i',j')\in A | j' =< j}|
-		
 		"""
 		E_links = {}
 		E_links[-1], E_links[-2] = 0, 0
