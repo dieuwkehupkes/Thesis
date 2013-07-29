@@ -1,22 +1,25 @@
+"""
+Module for dealing with dependencies.....
+"""
+
 import re
 
 class Dependencies():
 	"""
 	A class representing the dependencies of a sentence in a dictionary.
-	The dependencies are created from a file with dependencies as outputed
-	by the Stanford dependency parser, i.e. every line will contain a
-	dependency of the form:
-
-		reltype(head-pos_head, dependent-pos_dependent)
-
-	The first position in the sentence is 1.
+	The dependencies are created from a list with dependencies formatted
+	like the stanford dependency parses.
 	"""
 
 	def __init__(self, dependency_list):
 		"""
-		Initializes a dictionary with the dependencies
-		from an inputed list of dependencies. Entries
-		of the dictionary will be of the form:
+		Initialize with a list of dependencies represented as a string
+		as follows:
+		
+			reltype(head-pos_head, dependent-pos_dependent)
+		
+		The first position in the centence is 1. A dictionary will be created
+		with entries of the form:
 
 			pos_head: [pos_dependent, reltype]
 		"""
@@ -27,7 +30,7 @@ class Dependencies():
 	def set_dependencies(self,dependency_list):
 		"""
 		Read in a file and create a dictionary
-		with its dependencies, using regular expressions.
+		with its dependencies using regular expressions.
 		"""
 		deps = {}
 		for relation in dependency_list:
@@ -107,7 +110,7 @@ class Dependencies():
 
 		was in the dependency dictionary, then
 
-			(pos_head-1, pos_head): span(pos_dependent)
+			(pos_head-1, pos_head): span[pos_dependent]
 
 		will be in the dictionary returned by this function.
 		"""	
@@ -136,96 +139,90 @@ class Dependencies():
 			if comp_spanrels[(key-1,key)] == []:
 				del comp_spanrels[(key-1,key)]
 		return comp_spanrels
+ 
 	
- 	def labels(self):
+ 	def labels(self, ldepth = 0, rdepth = 0, max_var = 1):
  		"""
- 		Create a dictionary that assigns labels to spans
- 		according to their dependency relation. The labels
- 		are annotated with the span they are modifying.
+ 		When ran without any variables, produces standard labels for spans
+ 		according to the following scheme:
+ 		
+ 		* label[(i,i+1)] = HEAD 	iff word i+1 is the head of the sentence
+ 		
+ 		* label[(i,j+1)] = rel		iff there is a dependency relation rel(x, y) and wordspan(y) = (i,j+1)
+ 		
+ 		* label[(i,i+1)] = rel-head iff there is a dependency relation rel(x,i+1) and word i+1 was not labelled by one of the previous conditions
+ 		
+		
+ 		Parameters can be used to indicate that compound labels should be
+ 		found. ldepth indicates the depth on the left, rdepth indicates the depth
+ 		on the right, and max_var indicates how many variables should maximally
+ 		be used. E.g, ldepth = 1 means that Y/X is allowed, while Y+Z/X is not,
+ 		if max_var is 2, Y/X and X\Y. X+Y is only constructed if there is a Z such that
+ 		X+Y/Z or Z\X+Y. 'Normal' labels are prefered over compound labels.
  		"""
+ 		#first create standard labels:
  		labels = {}
- 		labels[(self.head_pos -1, self.head_pos)] = 'HEAD'
- 		for key in self.deps:
- 			for dependent in self.deps[key]:
- 				span_dependent = self.wordspans[dependent[0]]
- 				span_string = "-[%s,%s]" % (span_dependent[0], span_dependent[1])
- 				labels[span_dependent] = dependent[1]+span_string
- 		for key in self.deps:
- 			for dependent in self.deps[key]:
- 				span_string = "-[%s,%s]" % (span_dependent[0], span_dependent[1])
- 				span_dependent = (dependent[0]-1, dependent[0])
- 				labels[span_dependent] = labels.get(span_dependent, dependent[1]+'-head'+span_string)
- 		return labels
- 	
- 	def pure_labels(self):
- 		"""
-  		Create a dictionary that assigns labels to spans
- 		according to their dependency relation.
- 		"""
- 		labels = {}
- 		labels[(self.head_pos -1, self.head_pos)] = 'HEAD'
- 		# Assign labels to dependents
- 		for key in self.deps:
- 			for dependent in self.deps[key]:
- 				span_dependent = self.wordspans[dependent[0]]
- 				labels[span_dependent] = dependent[1]
- 		# Assign labels to words-spans that do not have a label yet
- 		for key in self.deps:
- 			for dependent in self.deps[key]:
- 				span_dependent = (dependent[0]-1, dependent[0])
- 				labels[span_dependent] = labels.get(span_dependent, dependent[1]+'-head')
- 		return labels	
- 	
- 	
- 	def samt_labels(self):
- 		"""
- 		Create a dictionary that assigns labels to spans
- 		according to their dependency relations, but also
- 		assigns labels to spans forming conjunctions of
- 		relations.
- 		FURTHER EXPLAIN WHICH LABELS EXACTLY
- 		"""
- 		labels = self.pure_labels()
+ 		#manually add label for head
+ 		head_span = (self.head_pos -1, self.head_pos)
+ 		labels[head_span] = 'head'
+ 		labels[self.wordspans[self.head_pos]] = 'root'
  		for head in self.deps:
- 			print head
- 			word_span = (head-1,head)
- 			labels[word_span] = labels.get(word_span, 'ROOT')
- 			head_span = self.wordspans[head]
- 			head_label = labels.get(head_span, 'ROOT')
- 			dep_list = [word_span]
- 			for dependent in self.deps[head]:
- 				dep_span = self.wordspans[dependent[0]]
- 				dep_list.append(dep_span)
- 			dep_list.sort()
- 			begin, end = dep_list[0][0], dep_list[-1][1]
- 			# Locate position head
-			head_pos = dep_list.index(word_span)
-			#create all labels with \ and /
-			root_label = str(head_label)
-			cur_label = root_label
-			left_emitted = []
-			for i in xrange(head_pos+1):
-				right_emitted = []
-				for j in reversed(xrange(head_pos+1, len(dep_list))):
-					begin_span, end_span = dep_list[i][0],dep_list[j][1]
-					samt_span = (begin_span, end_span)
-					labels[samt_span] = labels.get(samt_span, cur_label)
-					right_emitted.append(labels[dep_list[j]])
-					#update concatenated labels
-					r_label = '+'.join(reversed(right_emitted))
-					l_label = '+'.join(left_emitted)					
-					if i > 0:
-						labels[(begin,begin_span)] = labels.get((begin,begin_span), l_label)
-						labels[(dep_list[j][0], end)] = labels.get((dep_list[j][0],end), r_label)
-					#update label for the next span
-					if i == 0:
-						cur_label = l_label + root_label + "/" + r_label
-					else:
-						cur_label = l_label + "\\" + root_label + "/" + r_label
-				left_emitted.append(labels[dep_list[i]])
-			return labels					
+ 			head_span = (head-1, head)
+ 			deplist = [head_span]
+ 			for dep in self.deps[head]:
+ 				dep_span = self.wordspans[dep[0]]
+ 				deplist.append(dep_span)
+ 				labels[dep_span] = dep[1]
+ 				dep_word_span = (dep[0]-1, dep[0])
+ 				labels[dep_word_span] = labels.get(dep_word_span, dep[1]+'-head')
+ 			deplist.sort()
+ 			#Create compound labels
+ 			index_head = deplist.index(head_span)
+ 			nr_left = index_head
+ 			nr_right = len(deplist) - 1 - index_head
+ 			for left in [i for i in xrange(0, ldepth+1) if i < max_var and i<= nr_left]:
+ 				for right in [j for j in xrange(rdepth+1) if left+j < max_var and j <= nr_right]:
+# 					print 'maxvar= ', max_var, 'left+right= ' ,left, right
+ 					if left == 0:
+ 						new_label = labels[self.wordspans[head]]
+ 						left_index = deplist[0][0]
+ 					else:
+ 						left_index = deplist[left-1][1]
+ 						compound_left = '+'.join([labels[deplist[k]] for k in xrange(left)])
+ 						compound_span = (deplist[0][0],left_index)
+ 						labels[compound_span] = labels.get(compound_span, compound_left)
+ 						new_label = compound_left + "/" + labels[self.wordspans[head]]
+ 					if right == 0:
+ 						right_index = deplist[-1][1]
+ 					else:
+ 						right_index = deplist[-right][0]
+						compound_right = '+'.join([labels[deplist[l]] for l in xrange(-right,0)])
+						compound_span = (right_index,deplist[-1][1])
+						labels[compound_span] = labels.get(compound_span, compound_right)
+						new_label = new_label + '\\' + compound_right
+					#Set new label in dictionary
+					labelled_span = (left_index, right_index)
+					labels[labelled_span] = labels.get(labelled_span, new_label)
+ 		return labels
+
+ 	def annotate_span(self, labels):
+ 		"""
+ 		Annotate labels with their span, to make the
+ 		grammar unique.
+ 		"""
+ 		for key in labels:
+ 			span = "-[%s-%s]" % (key[0], key[1])
+ 			new_label = labels[key] + span
+ 			labels[key] = new_label
+ 		return labels
+
+
 
 	def print_labels(self,labels):
+		"""
+		Print out the contents of a dictionary
+		in a nice format.
+		"""
 		for key in labels:
 			print key, ':\t', labels[key]
  		
@@ -248,9 +245,24 @@ class Dependencies():
 Testing
 """
 
+def test():
+	"""
+	Test labelling for sentence 'I give the boy some flowers'
+	"""
+	dependencies = ['nsubj(give-2, I-1)','root(ROOT-0, give-2)','det(boy-4, the-3)','iobj(give-2, boy-4)','det(flowers-6, some-5)','dobj(give-2, flowers-6)']
+	d = Dependencies(dependencies)
+	man_labels = {(0,1): 'nsubj', (1,2): 'head', (2,3): 'det', (2,4): 'iobj', (3,4): 'iobj-head', (4,5): 'det', (4,6): 'dobj', (5,6): 'dobj-head', (0,6): 'root', (0,2) :'root' + '\\' +'iobj+dobj', (0,4): 'root' + '\\' +'dobj', (1,4): 'nsubj/root' + '\\' +'dobj', (1,6): 'nsubj/root', (2,6): 'iobj+dobj'}
+	labels = d.samt_labels(1,2,4)
+	print set(man_labels.keys()) - set(labels.keys())
+	print set(labels.keys()) - set(man_labels.keys())	
+	return labels == man_labels
+
+
 def test1():
 	dependencies = ['nn(President-2, Mr-1)','nsubj(welcome-6, President-2)','nsubj(welcome-6, I-4)','aux(welcome-6, would-5)','root(ROOT-0, welcome-6)','det(action-8, some-7)','dobj(welcome-6, action-8)','prep(action-8, in-9)','det(area-11, this-10)','pobj(in-9, area-11)']
 	d = Dependencies(dependencies)
+	print d.deps
+	return
 	spanrels = d.get_spanrels()
 	manual_spanrels= {(1,2): [(0,1)],(5,6): [(0,2),(3,4),(4,5), (6,11)], (7,8):[(6,7),(8,11)],(8,9): [(9,11)], (10,11): [(9,10)]}
 	print "spanrels test: ", spanrels == manual_spanrels
@@ -260,19 +272,21 @@ def test1():
 	manual_label_count = {'nn': 1, 'nsubj': 2, 'det': 2, 'dobj': 1, 'pobj': 1, 'aux': 1, 'prep': 1}
 	comp_label_count = d.update_labels({})
 	print "label_count test: ", manual_label_count == comp_label_count
-	labels = d.pure_labels()
+	labels = d.labels()
 	print labels
 	d.print_labels(labels)
 	labels2 = d.labels()
 	d.print_labels(labels2)
 
 def test2():
-	"labels"
+	"Test labels"
 	dependencies = ['nsubj(give-2, I-1)','root(ROOT-0, give-2)','det(boy-4, the-3)','iobj(give-2, boy-4)','det(flowers-6, some-5)','dobj(give-2, flowers-6)']
 	d = Dependencies(dependencies)
-#	print d.deps
-#	labels = d.samt_labels()
-#	d.print_labels(labels)
+	man_labels = {(0,1): 'nsubj', (1,2): 'head', (2,3): 'det', (2,4): 'iobj', (3,4): 'iobj-head', (4,5): 'det', (4,6): 'dobj', (5,6): 'dobj-head'}
+	labels = d.pure_labels()
+	return
+
+	print man_labels == labels
 	labels = d.pure_labels()
 	d.print_labels(labels)
 
