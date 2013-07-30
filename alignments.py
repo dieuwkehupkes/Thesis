@@ -154,25 +154,14 @@ class Alignments:
 			return max(alignment_links)
 
 
-	def rules(self, span_relations = {}, labels = {}):
+#	def rules(self, span_relations = {}, labels = {}):
+	def rules(self, prob_function, args, labels = {}):
 		"""
 		Returns a generator with all rules of a PCFG
 		uniquely generating all alignment trees. Rule
-		probabilities are assigned according to input:
-		if span_relation are specified, the probability of
-		rule will depend on how many relations it makes true.
-		If span_relations are not specified, the rule probability will
-		be assigned depending on the label set given. The probability
-		of the rule will then be the percentage of all generated nodes
-		that can be labelled with one of the provided labels.
-		If no labels are provided, the probability of every rule is 1.
-		
-		span_relations and labels should be given as a dictionary of the
-		following form:
-		::
-			span_relations = {headspan : [depspan_1,...], ....}
-			label = {span : label, ....}
-		
+		probabilities are assigned according to specified
+		input probability function, args should contain a list
+		of arguments for this function.
 
 		The rules are computed by transforming the alignment into
 		a graph whose edges correspond to valid spans and partial
@@ -193,38 +182,20 @@ class Alignments:
 				if not path or len(path) == 2:
 					# No rules possible, or path points to itself
 					continue
-				# set probability, if span_relations are specified
-				# according to how many relations are made true,
-				# otherwise, according to how many nodes can be
-				# labelled 
+				# set probability
 				rule = Rule((i, j), path, labels)
-				if len(span_relations) != 0:
-					prob = rule.probability_spanrels(span_relations)
-				elif len(labels) != 0:
-					prob = rule.probability_labels()
-				else:
-					rule.probability = 1
+				prob = prob_function(rule,args)
 				yield rule
 
 
-	def hat_rules(self, span_relations = {}, labels = {}):
+#	def hat_rules(self, prob_function, span_relations = {}, labels = {}):
+	def hat_rules(self, prob_function, args, labels = {}):
 		"""
 		Returns a generator with all rules of a PCFG
 		uniquely generating all *hierarchical* alignment trees. Rule
-		probabilities are assigned according to input:
-		if span_relation are specified, the probability of
-		rule will depend on how many relations it makes true.
-		If span_relations are not specified, the rule probability will
-		be assigned depending on the label set given. The probability
-		of the rule will then be the percentage of all generated nodes
-		that can be labelled with one of the provided labels.
-		If no labels are provided, the probability of every rule is 1.
-		
-		span_relations and labels should be given as a dictionaries with 
-		entries of the following form:
-		::
-			span_relations = {span : [related_to],...}
-			label = {span: label, ....}
+		probabilities are assigned according to input probability function.
+		Args should specify a list of arguments for this function, currently
+		assumes there is only 1 argument.
 
 		The rules are computed by transforming the alignment into
 		a graph whose edges correspond to valid spans and partial
@@ -246,16 +217,8 @@ class Alignments:
 					# No rule possible, or path points to itself
 					continue
 				rule = Rule((i,j),path, labels)
-				# set probability, if span_relations are specified
-				# according to how many relations are made true,
-				# otherwise, according to how many nodes can be
-				# labelled 
-				if len(span_relations) != 0:
-					prob = rule.probability_spanrels(span_relations)
-				elif len(labels) != 0:
-					prob = rule.probability_labels()
-				else:
-					rule.probability = 1
+				# set probability
+				prob = prob_function(rule,args)
 				yield rule
 	
 
@@ -524,6 +487,7 @@ class Rule:
 		how many span_relations it makes true.
 		"""
 		probability = 1
+		span_relations = span_relations[0]
 		for key in span_relations:
 			if key in self.spans:
 				for dependent in span_relations[key]:
@@ -531,7 +495,7 @@ class Rule:
 						probability = probability * 2
 		self.probability = probability
 	
-	def probability_labels(self):
+	def probability_labels(self, args):
 		"""
 		Compute the probability of a rule according
 		to how many of the nodes it generates can
@@ -546,7 +510,7 @@ class Rule:
 				probability = 0.5 * probability
 		self.probability = probability
 	
-	def uniform_probability(self):
+	def uniform_probability(self, args):
 		"""
 		Set probability to 1.
 		"""

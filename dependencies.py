@@ -160,23 +160,35 @@ class Dependencies():
  		if max_var is 2, Y/X and X\Y. X+Y is only constructed if there is a Z such that
  		X+Y/Z or Z\X+Y. 'Normal' labels are prefered over compound labels.
  		"""
- 		#first create standard labels:
+ 		#first create standard labe ls:
  		labels = {}
+ 		#In case input is 0,0,0 no labels are preferred:
+ 		if ldepth == rdepth == 0:
+ 			return labels
  		#manually add label for head
  		head_span = (self.head_pos -1, self.head_pos)
  		labels[head_span] = 'head'
  		labels[self.wordspans[self.head_pos]] = 'root'
  		for head in self.deps:
- 			head_span = (head-1, head)
- 			deplist = [head_span]
+# 			print 'head', head
+# 			head_span = (head-1, head)
  			for dep in self.deps[head]:
+# 				print 'dep', dep
  				dep_span = self.wordspans[dep[0]]
- 				deplist.append(dep_span)
  				labels[dep_span] = dep[1]
  				dep_word_span = (dep[0]-1, dep[0])
  				labels[dep_word_span] = labels.get(dep_word_span, dep[1]+'-head')
- 			deplist.sort()
- 			#Create compound labels
+ 		if max_var == 1 or (ldepth == 0 and rdepth ==0):
+ 			return labels
+ 		#loop through labels again to find compound labels  		
+ 		for head in self.deps:
+ 			head_span = (head-1, head)
+ 			deplist = [head_span]
+ 			for dep in self.deps[head]:
+	 			dep_span = self.wordspans[dep[0]]
+ 				deplist.append(dep_span)
+ 			deplist.sort()	
+ 			#Compute index head and nr of right and left dependents
  			index_head = deplist.index(head_span)
  			nr_left = index_head
  			nr_right = len(deplist) - 1 - index_head
@@ -216,8 +228,6 @@ class Dependencies():
  			labels[key] = new_label
  		return labels
 
-
-
 	def print_labels(self,labels):
 		"""
 		Print out the contents of a dictionary
@@ -252,9 +262,10 @@ def test():
 	dependencies = ['nsubj(give-2, I-1)','root(ROOT-0, give-2)','det(boy-4, the-3)','iobj(give-2, boy-4)','det(flowers-6, some-5)','dobj(give-2, flowers-6)']
 	d = Dependencies(dependencies)
 	man_labels = {(0,1): 'nsubj', (1,2): 'head', (2,3): 'det', (2,4): 'iobj', (3,4): 'iobj-head', (4,5): 'det', (4,6): 'dobj', (5,6): 'dobj-head', (0,6): 'root', (0,2) :'root' + '\\' +'iobj+dobj', (0,4): 'root' + '\\' +'dobj', (1,4): 'nsubj/root' + '\\' +'dobj', (1,6): 'nsubj/root', (2,6): 'iobj+dobj'}
-	labels = d.samt_labels(1,2,4)
+	labels = d.labels(1,2,4)
+	print d.labels(0,0,0)
 	print set(man_labels.keys()) - set(labels.keys())
-	print set(labels.keys()) - set(man_labels.keys())	
+	print set(labels.keys()) - set(man_labels.keys())
 	return labels == man_labels
 
 
@@ -263,32 +274,14 @@ def test1():
 	d = Dependencies(dependencies)
 	print d.deps
 	return
-	spanrels = d.get_spanrels()
-	manual_spanrels= {(1,2): [(0,1)],(5,6): [(0,2),(3,4),(4,5), (6,11)], (7,8):[(6,7),(8,11)],(8,9): [(9,11)], (10,11): [(9,10)]}
-	print "spanrels test: ", spanrels == manual_spanrels
-	comp_spanrels = d.get_comp_spanrels()
-	manual_comp_spanrels = {(5,6): [(0,2), (6,11)], (7,8):[(8,11)],(8,9): [(9,11)]}
-	print "comp_spanrels test: ", comp_spanrels == manual_comp_spanrels
-	manual_label_count = {'nn': 1, 'nsubj': 2, 'det': 2, 'dobj': 1, 'pobj': 1, 'aux': 1, 'prep': 1}
-	comp_label_count = d.update_labels({})
-	print "label_count test: ", manual_label_count == comp_label_count
-	labels = d.labels()
-	print labels
-	d.print_labels(labels)
-	labels2 = d.labels()
-	d.print_labels(labels2)
 
 def test2():
-	"Test labels"
-	dependencies = ['nsubj(give-2, I-1)','root(ROOT-0, give-2)','det(boy-4, the-3)','iobj(give-2, boy-4)','det(flowers-6, some-5)','dobj(give-2, flowers-6)']
+	sentence = 'madam president , i shall keep to the subject of the minutes .'
+	dependencies = ['ccomp(keep-6, madam-1)','dobj(madam-1, president-2)','nsubj(keep-6, i-4)','aux(keep-6, shall-5)','root(ROOT-0, keep-6)','prep(keep-6, to-7)','det(subject-9, the-8)','pobj(to-7, subject-9)','prep(subject-9, of-10)','det(minutes-12, the-11)','pobj(of-10, minutes-12)']
 	d = Dependencies(dependencies)
-	man_labels = {(0,1): 'nsubj', (1,2): 'head', (2,3): 'det', (2,4): 'iobj', (3,4): 'iobj-head', (4,5): 'det', (4,6): 'dobj', (5,6): 'dobj-head'}
-	labels = d.pure_labels()
-	return
-
-	print man_labels == labels
-	labels = d.pure_labels()
-	d.print_labels(labels)
+	labels = d.labels(2,2,3)
+	print d.print_labels(labels)
+#	d.print_labels(labels), '\n'
 
 def print_scores():
 	dependencies = 'Data/europarl-v7.dependencies.head100'

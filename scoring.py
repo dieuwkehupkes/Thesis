@@ -79,8 +79,14 @@ class Scoring():
 		"""
 		return parse.prob()
 
-
-	def normalize_score(self, score, factor):
-		return score/factor
+	def score(self, rule_function, prob_function, args):
+		productions = rule_function(self.alignment, prob_function, args)
+		grammar = self.grammar(productions)
+		parse = self.parse(grammar)
+		score = parse.prob()
+		if prob_function == Rule.probability_spanrels:
+			import math
+			score = math.log(score,2)/args[1]
+		return parse, score
 
 

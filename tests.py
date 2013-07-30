@@ -115,7 +115,7 @@ def worst_case_test(nr_of_nodes):
 
 
 #######################################3
-#Tests rule and alignment
+#Tests Rule class
 
 
 def test_rules():
@@ -129,7 +129,7 @@ def test_rules():
 	a1 = Alignments(alignment, sentence)
 #	productions = a1.list_productions([])
 	therules = []
-	for rule in a1.rules([]):
+	for rule in a1.rules(Rule.probability_spanrels,[{}]):
 		therules.append(str(rule))
 	rules_man = ['0-5 -> 0-1 1-5','0-5 -> 0-2 2-5', '0-5 -> 0-3 3-5', '0-5 -> 0-1 1-2 2-5', '0-5 -> 0-1 1-3 3-5', '0-5 -> 0-2 2-3 3-5', '0-5 -> 0-3 3-4 4-5', '0-5 -> 0-1 1-2 2-3 3-5', '0-5 -> 0-1 1-3 3-4 4-5', '0-5 -> 0-2 2-3 3-4 4-5', '0-5 -> 0-1 1-2 2-3 3-4 4-5', '1-5 -> 1-2 2-5', '1-5 -> 1-3 3-5', '1-5 -> 1-2 2-3 3-5', '1-5 -> 1-3 3-4 4-5', '1-5 -> 1-2 2-3 3-4 4-5', '2-5 -> 2-3 3-5', '2-5 -> 2-3 3-4 4-5', '0-3 -> 0-1 1-3', '0-3 -> 0-2 2-3', '0-3 -> 0-1 1-2 2-3', '0-2 -> 0-1 1-2', '1-3 -> 1-2 2-3', '3-5 -> 3-4 4-5']
 	return set(rules_man) == set(therules)
@@ -144,7 +144,7 @@ def test_hatrules():
 	sentence = 'My dog likes eating sausages'
 	a1 = Alignments(alignment, sentence)
 	therules = []
-	for rule in a1.hat_rules():
+	for rule in a1.hat_rules(Rule.probability_spanrels, [{}]):
 		therules.append(str(rule))
 	rules_man = ['0-5 -> 0-1 1-5','0-5 -> 0-2 2-5', '0-5 -> 0-3 3-5', '1-5 -> 1-2 2-5', '1-5 -> 1-3 3-5', '2-5 -> 2-3 3-5', '0-3 -> 0-1 1-3', '0-3 -> 0-2 2-3', '0-2 -> 0-1 1-2', '1-3 -> 1-2 2-3', '3-5 -> 3-4 4-5']
 	return set(rules_man) == set(therules)
@@ -157,7 +157,7 @@ def rules_test_all():
 
 
 ###############################
-#Span tests
+#Tests Alignments class
 
 def span_test1():
 	"""
@@ -255,20 +255,12 @@ def score_test1():
 	alignment = '0-0 1-1 2-2 2-3 3-5 4-4'
 	dependencies = ['poss(dog-2, My-1)','nsubj(likes-3, dog-2)','root(ROOT-0, likes-3)','xcomp(likes-3, eating-4)','dobj(eating-4, sausages-5)']
 	deps = Dependencies(dependencies)
-	normalization_factor = deps.nr_of_deps
+	nr_of_deps = deps.nr_of_deps
 	relations = deps.get_spanrels()
-	labels = deps.labels()
-	scoring = Scoring(alignment, sentence, labels)
-	productions = scoring.alignment.rules(relations,labels)
-#	for production in productions:
-#		print production
-#	productions = scoring.alignment.rules(relations,labels)	
-	grammar = scoring.grammar(productions)
-	parse = scoring.parse(grammar)
-	score = scoring.relation_score(parse)
-	score_norm = scoring.normalize_score(normalization_factor, score)
-	return score_norm == 1.0
-
+	scoring = Scoring(alignment, sentence, {})
+	tree, score = scoring.score(Alignments.rules, Rule.probability_spanrels, [relations, nr_of_deps])
+	return score == 1.0
+	
 def score_test2():
 	"""
 	Test if the correct score is found for sentence
@@ -282,18 +274,14 @@ def score_test2():
 	alignment = "0-0 1-1 2-2 3-3 4-4 5-5 6-6"
 	dependencies = ['nn(growth-2, european-1)','nsubj(inconceivable-4, growth-2)','cop(inconceivable-4, is-3)','root(ROOT-0, inconceivable-4)','prep(inconceivable-4, without-5)','pobj(without-5, solidarity-6)']
 	deps = Dependencies(dependencies)
-	normalization_factor = deps.nr_of_deps
+	nr_of_deps = deps.nr_of_deps
 	relations = deps.get_spanrels()
-	labels = deps.labels()
-	scoring = Scoring(alignment, sentence, labels)
-	productions = scoring.alignment.rules(relations,labels)
-	grammar = scoring.grammar(productions)
-	parse = scoring.parse(grammar)
-	score = scoring.relation_score(parse)
-	score_norm = scoring.normalize_score(normalization_factor, score)
-	return score_norm == 1.0
+	scoring = Scoring(alignment, sentence, {})
+	tree, score = scoring.score(Alignments.rules, Rule.probability_spanrels, [relations, nr_of_deps])
+	return score == 1.0
 
-def scoring_speed_test1(sentence_length):
+
+def scoring_speedtest1(sentence_length):
 	"""
 	Test for a dummy sentence and monotone alignment 
 	with only one dependency relation
@@ -305,18 +293,18 @@ def scoring_speed_test1(sentence_length):
 	sentence = " ".join(s)
 	a = [str(i)+'-'+str(i) for i in xrange(sentence_length)]
 	alignment = " ".join(a)
-	dependencies = ["root(ROOT-0,let-1)"]
+	dependencies = ["root(ROOT-0, let-1)"]
 	deps = Dependencies(dependencies)
 	relations = deps.get_spanrels()
-	scoring = Scoring(alignment, sentence, relations)
-	productions = scoring.alignment.hat_rules(relations)
+	scoring = Scoring(alignment, sentence, {})
+	productions = scoring.alignment.hat_rules(Rule.probability_spanrels, [relations])
 	for rule in productions:
 		continue
 	time2 = time.time()
 	print "processing time:", time2-time1
 	
 
-def scoring_speed_test2(sentence_length):
+def scoring_speedtest2(sentence_length):
 	"""
 	Test for a dummy sentence and alignment in which
 	every target word is aligned to every source word
@@ -331,8 +319,8 @@ def scoring_speed_test2(sentence_length):
 	dependencies = ["root(ROOT-0, let-1)"]
 	deps = Dependencies(dependencies)
 	relations = deps.get_spanrels()
-	scoring = Scoring(alignment,sentence, relations)
-	productions = scoring.alignment.hat_rules(relations)
+	scoring = Scoring(alignment, sentence, {})
+	productions = scoring.alignment.hat_rules(Rule.probability_spanrels, [relations])	
 	for rule in productions:
 		continue
 	time2 = time.time()
@@ -342,7 +330,7 @@ def scoring_speed_test2(sentence_length):
 def scores_test_all():
 	return score_test1() and score_test2()
 
-####################################3
+####################################
 # Test dependency class
 
 """
@@ -418,8 +406,6 @@ def labels_test3():
 	Bool4 = man_labels == d.labels(0,1,2)
 	return Bool1 and Bool2 and Bool3 and Bool4
 
-
-
 def labels_annotation_test():
 	"Test annotated labels for a manually constructed sentence"
 	dependencies = ['nsubj(give-2, I-1)','root(ROOT-0, give-2)','det(boy-4, the-3)','iobj(give-2, boy-4)','det(flowers-6, some-5)','dobj(give-2, flowers-6)']
@@ -429,10 +415,16 @@ def labels_annotation_test():
 	new_labels = d.annotate_span(labels)
 	return new_labels == man_labels
 
-
 def dependencies_test_all():
 	"""
 	Run all dependency tests.
 	"""
 	return dependencies_test1() and labels_test1() and labels_test2() and labels_annotation_test() and labels_test3()
+	
+	
+	
+	
+	
+	
+	
 

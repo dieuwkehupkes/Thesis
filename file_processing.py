@@ -62,6 +62,78 @@ class ProcessFiles():
 		else:
 			return False
 	
+	
+	def score_all_sentences(self, rule_function, probability_function, label_args, max_length = 40, scorefile = '', treefile = ''):
+		self._reset_pointer()
+		parsed_sentences = 0
+		sentence_nr = 1
+		new = self.next()
+		writeScores, writeTrees = False, False
+		
+		#Create files
+		if scorefile != '':
+			scoref = open(scorefile,'w')
+			writeScores = True
+		if treefile != '':
+			treesf = open(treefile, 'w')
+			writeTrees = True
+		
+		#Create dictionary to score different subsets of the file
+		total_score = {10:0, 20:0, 40:0, 100:0}
+		sentences = {10:0, 20:0, 40:0, 100:0}
+		
+		#process file until one of them ends
+		while new:
+			print sentence_nr
+			#consistency check
+			if not self.check_consistency(new[1], new[2]):
+				print "Warning: dependencies and alignment might be inconsistent"
+			sentence_length = len(new[1].split())
+			if sentence_length < max_length:
+				dependencies = Dependencies(new[2])
+				#set labels for spans and create a scoring object
+				labels = dependencies.labels(label_args[0], label_args[1], label_args[2])
+				scoring = Scoring(new[0], new[1], labels)
+				#Set arguments for probability function
+				if probability_function == Rule.probability_spanrels:
+					args = [dependencies.get_spanrels(), dependencies.nr_of_deps]
+				else:
+					args = []
+				tree, score = scoring.score(rule_function, probability_function, args)
+				#update total scores
+				for key in total_score:
+					if sentence_length < key:
+						total_score[key] += score
+						sentences[key] += 1 
+				#write to files
+				if writeScores:
+					scoref.write("s %i\t\tlength: %i\t\tscore: %f\n" % (sentence_nr, sentence_length, score))
+				if writeTrees:
+					treesf.write("%s\n\n" % tree)
+				print 'score', score
+				parsed_sentences +=1
+			else:
+				if writeTrees:
+					treesf.write("No result, sentence longer than %i words\n" % max_length)
+			sentence_nr += 1
+			new = self.next()
+		#Make a table of the results
+		results_table = [ ['length', 'nr of sentences','score'], ['','',''], ['<10', sentences[10], total_score[10]/sentences[10]],['<20', sentences[20], total_score[20]/sentences[20]],['<40', sentences[40], total_score[40]/sentences[40]], ['all', sentences[100], total_score[100]/sentences[100]]]
+		results_string = ''
+		for triple in results_table:
+			print '%s %20s %20s' % (triple[0], triple[1], triple[2])
+			results_string += '%s %20s %20s\n' % (triple[0], triple[1], triple[2])
+		if writeScores:
+			scoref.write('\n\nSCORES\n\n------------------------------------------------------\n%s' %results_string)
+			scoref.close()
+		if writeTrees:
+			treesf.close()
+
+	def _reset_pointer(self):
+		self.dependency_file.seek(0)
+		self.sentence_file.seek(0)
+		self.alignment_file.seek(0)
+	
 	def consistent_labels(self, alignment, sentence, labels):
 		"""
 		Find the percentage of inputted labels that is
@@ -72,7 +144,7 @@ class ProcessFiles():
 		the dependency parse and how often it was
 		consistent with the alignment. Parameter labels should
 		be presented as a dictionary assigning labels to spans.
-		Gives an upperbound for the score of the alignment
+		Gives an upperbound for the score of the alignment.
 		"""
 		label_dict = {}
 		this_alignment = Alignment(alignment,sentence)
@@ -84,95 +156,11 @@ class ProcessFiles():
 			current = label_dict.get(label,[0,0])
 			label_dict[label] = [current[0] + 1, current[1] + consistent]
 		return label_dict
-
-	def score(self, new, spanrel_type, rule_function, scoring_type):
-		"""
-		Score a sentence according to parameter inputs.
-		::
-			@param new				A list [new_alignment, new_sentence, dependency_list]
-			@param spanrel_type		method from Dependencies specifying what
-									type of spanrels to consider
-			@param treetype			method from Alignments specifying what type
-									of rules to consider
-			@param scoring_type		Method from Scoring specifying how to score
-									the sentence
-		"""
-		#Set labels and relations
-		dependencies = Dependencies(new[2])
-		labels = dependencies.labels()
-		if spanrel_type!= None:
-			relations = spanrel_type(dependencies)
-		# Create a scoring object and parse the sentence
-		scoring = Scoring(new[0],new[1], labels)
-		productions = rule_function(scoring.alignment, relations, labels)
-		grammar = scoring.grammar(productions)
-		parse = scoring.parse(grammar)
-		score = scoring_type(scoring, parse)
-		#normalize score if necessary
-		if scoring_type == Scoring.relation_score:
-			score = scoring.normalize_score(score, dependencies.nr_of_deps)
-		return parse, score		
 		
-	def score_all(self, treefile, scorefile, max_length = 40, spanrels = Dependencies.get_spanrels, rule_function = Alignments.hat_rules, scoring_type = Scoring.relation_score):
-		"""
-		Score all input sentences and write scores and
-		trees to two different files. 
-		A maximum sentence length can be specified.
-		For parameters, see score method.
-		"""
-		self._reset_pointer()
-		label_dictionary = {}
-		parsed_sentences = 0
-		sentence_nr = 1
-		ts = 0
-		total_score = {10:0, 20:0, 40:0, 100:0}
-		sentences = {10:0, 20:0, 40:0, 100:0}
-		trees = open(treefile, 'w')
-		results = open(scorefile, 'w')
-		new = self.next()
-		while new:
-			#check if sentence and dependency list are consistent
-			print sentence_nr
-			if not self.check_consistency(new[1], new[2]):
-				print "Warning: dependencies and alignment might be inconsistent"			
-			sentence_length = len(new[1].split())
-			if sentence_length < max_length:
-				tree, score = self.score(new, spanrels, rule_function, scoring_type)
-				trees.write(str(tree) + '\n\n')
-				results.write("s " + str(sentence_nr) + '\t\tlength: ' + str(sentence_length)
-				 + '\t\tscore: ' + str(score) + '\n')
-				#update total scores
-				for key in total_score:
-					if sentence_length < key:
-						total_score[key] += score
-						sentences[key] += 1 
-				ts += score
-				parsed_sentences += 1
-			else:
-				results.write("No result, sentence longer than " + str(max_length) + " words\n")
-			new = self.next()
-			sentence_nr += 1
-		# Write results to file
-		results.write("\n\nSCORES\n")
-		results.write("\nlength\t\t\t nr of sentences \t\tscore")
-		results.write("\n-----------------------------------------------")
-		results.write("\n <10\t\t\t"+str(sentences[10])+'\t\t\t\t\t\t'+str(total_score[10]/sentences[10]))
-		results.write("\n <20\t\t\t"+str(sentences[20])+'\t\t\t\t\t\t'+str(total_score[20]/sentences[20]))
-		results.write("\n <40\t\t\t"+str(sentences[40])+'\t\t\t\t\t\t'+str(total_score[40]/sentences[40]))
-		results.write("\n all\t\t\t"+str(sentences[100])+'\t\t\t\t\t\t'+str(total_score[100]/sentences[100])+"\n\n")
-		#close files
-		trees.close()
-		results.close()
-	
-	def _reset_pointer(self):
-		self.dependency_file.seek(0)
-		self.sentence_file.seek(0)
-		self.alignment_file.seek(0)
-			
 	def relation_count(self, max_length):
 		"""
-		Counts occurences of all relations in
-		sentences shorter than max_length.
+		Counts occurences of all relations in dependency
+		parses of sentences shorter than max_length.
 		"""
 		parsed_sentences = 0
 		self._reset_pointer()
