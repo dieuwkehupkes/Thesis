@@ -280,6 +280,34 @@ def score_test2():
 	tree, score = scoring.score(Alignments.rules, Rule.probability_spanrels, [relations, nr_of_deps])
 	return score == 1.0
 
+def score_test3():
+	"""
+	"""
+	sentence = 'approval of the minutes of the previous sitting'
+	alignment = '5-6 4-5 3-4 3-2 2-1 6-8 3-3 1-1 0-0 7-7'
+	dependencies = ['root(ROOT-0, approval-1)','prep(approval-1, of-2)', 'det(minutes-4, the-3)','pobj(of-2, minutes-4)','prep(approval-1, of-5)','det(sitting-8, the-6)','amod(sitting-8, previous-7)','pobj(of-5, sitting-8)']
+	deps = Dependencies(dependencies)
+	labels = deps.labels(1,1,3)
+	scoring = Scoring(alignment, sentence, labels)
+	tree, score = scoring.score(Alignments.hat_rules, Rule.probability_labels, [labels])
+	print tree
+	print score
+#	return score == 1.0
+	
+def score_test4():
+	"""
+	"""
+	sentence = 'resumption of the session'
+	alignment = '3-3 2-2 1-1 0-0'
+	dependencies = ['root(ROOT-0, resumption-1)','prep(resumption-1, of-2)','det(session-4, the-3)','pobj(of-2, session-4)']
+	deps = Dependencies(dependencies)
+	labels = deps.labels(1,1,3)
+	scoring = Scoring(alignment, sentence, labels)
+	tree, score = scoring.score(Alignments.hat_rules, Rule.probability_labels, [labels])
+	print tree
+	print score
+	return score == 1.0
+
 
 def scoring_speedtest1(sentence_length):
 	"""
@@ -355,6 +383,7 @@ def labels_test1():
 	dependencies = ['nsubj(give-2, I-1)','root(ROOT-0, give-2)','det(boy-4, the-3)','iobj(give-2, boy-4)','det(flowers-6, some-5)','dobj(give-2, flowers-6)']
 	d = Dependencies(dependencies)
 	man_labels = {(0,1): 'nsubj', (1,2): 'head', (2,3): 'det', (2,4): 'iobj', (3,4): 'iobj-head', (4,5): 'det', (4,6): 'dobj', (5,6): 'dobj-head', (0,6): 'root'}
+	print d.labels()
 	labels = d.labels()
 	return labels == man_labels
 

@@ -496,17 +496,23 @@ class Rule:
 		self.probability = probability
 	
 	def probability_labels(self, args):
+		#SOMETHING IS NOT RIGHT HERE!!!
 		"""
 		Compute the probability of a rule according
 		to how many of the nodes it generates can
 		be labelled according to a set of given
 		labels.
 		"""
+		labels = args[0]
 		probability = 1
 		for (i,j) in self.spans:
-			if (i,j) in labels:
+#			print 'span: (%i,%i)' % (i,j)
+			if (i,j) in labels.keys():
+				probability = probability * 3
+#				'print (%i,%i) in labels' % (i,j)
 				continue
 			else:
+#				'print (%i,%i) not in labels' % (i,j)
 				probability = 0.5 * probability
 		self.probability = probability
 	

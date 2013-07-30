@@ -163,7 +163,7 @@ class Dependencies():
  		#first create standard labe ls:
  		labels = {}
  		#In case input is 0,0,0 no labels are preferred:
- 		if ldepth == rdepth == 0:
+ 		if ldepth == rdepth == max_var == 0:
  			return labels
  		#manually add label for head
  		head_span = (self.head_pos -1, self.head_pos)

@@ -5,9 +5,8 @@ from file_processing import *
 metric = Dependencies.get_spanrels
 rule_generator = Alignments.hat_rules
 max_length = 40
-prob_function = Rule.probability_spanrels
-scoring_type = Scoring.label_score
-label_args = [0,0,1]
+prob_function = Rule.probability_labels
+label_args = [1,1,3]
 
 #check if the number of arguments is correct
 #if len(sys.argv) != 7:

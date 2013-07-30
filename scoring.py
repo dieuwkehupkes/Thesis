@@ -46,7 +46,7 @@ class Scoring():
 		for rule in self.alignment.lexrules(self.labels):
 			productions.append(rule)
 		# Transform into a grammar to parse
-		startsymbol = "0-"+str(len(self.tokens))
+		startsymbol = self.labels.get((0,len(self.tokens)), "0-"+str(len(self.tokens)))
 		start = Nonterminal(startsymbol)
 		return WeightedGrammar(start,productions)
 			
@@ -56,37 +56,30 @@ class Scoring():
 		using the viterbi parser from the nltk.
 		Return the best parse and its score.
 		"""
+		print grammar
 		parser = ViterbiParser(grammar)
-		parser.trace(0)
+		parser.trace(3)
 		parses = parser.nbest_parse(self.tokens)
 		#return the best parse
 		return parses[0]
 
-	def relation_score(self,parse):
-		"""
-		Return non normalized score of a sentence by
-		computing how many rules were used.
-		"""
-		import math
-		probability = parse.prob()
-		rules_used = math.log(probability,2)
-		return rules_used
-
-	def label_score(self, parse):
-		"""
-		Return how many of the HATnodes could
-		be labelled according to the grammar
-		"""
-		return parse.prob()
-
 	def score(self, rule_function, prob_function, args):
-		productions = rule_function(self.alignment, prob_function, args)
+		"""
+		Score, args are arguments for prob_function.
+		Thus: if probfunction = Rule.probability_labels, then args
+		should be [labels], if it is Rule.probability_spanrels then
+		args should be [spanrels, normalization_factor]
+		"""
+		productions = rule_function(self.alignment, prob_function, args, self.labels)
 		grammar = self.grammar(productions)
 		parse = self.parse(grammar)
 		score = parse.prob()
 		if prob_function == Rule.probability_spanrels:
 			import math
 			score = math.log(score,2)/args[1]
+		if prob_function == Rule.probability_labels:
+			import math
+			#Something should be done figure out what..
 		return parse, score
 
 

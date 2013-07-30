@@ -98,7 +98,7 @@ class ProcessFiles():
 				if probability_function == Rule.probability_spanrels:
 					args = [dependencies.get_spanrels(), dependencies.nr_of_deps]
 				else:
-					args = []
+					args = [labels]
 				tree, score = scoring.score(rule_function, probability_function, args)
 				#update total scores
 				for key in total_score:
