@@ -308,6 +308,19 @@ def score_test4():
 #	print tree.nr_of_nonterminals()
 	return score == 1.0
 
+def score_test5():
+	"""
+	no dependencies
+	"""
+	sentence = 'ahum'
+	alignment = '0-0'
+	dependencies = []
+	deps = Dependencies(dependencies)
+	labels = deps.labels(1,1,3)
+	scoring = Scoring(alignment, sentence, labels)
+	tree, score = scoring.score(Alignments.hat_rules, Rule.probability_labels, [labels])
+	print(tree)
+	print score
 
 def scoring_speedtest1(sentence_length):
 	"""

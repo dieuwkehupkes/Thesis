@@ -165,6 +165,9 @@ class Dependencies():
  		#In case input is 0,0,0 no labels are preferred:
  		if ldepth == rdepth == max_var == 0:
  			return labels
+ 		#stop search if dependency list happens to be empty
+ 		if self.deps == {}:
+ 			return labels
  		#manually add label for head
  		head_span = (self.head_pos -1, self.head_pos)
  		labels[head_span] = 'head'
