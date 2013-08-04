@@ -312,9 +312,9 @@ def score_test5():
 	"""
 	no dependencies
 	"""
-	sentence = 'ahum'
+	sentence = '( 2 ) -do-'
 	alignment = '0-0'
-	dependencies = []
+	dependencies = ['appos(--4, 2-2)','rcmod(--4, do-5)']
 	deps = Dependencies(dependencies)
 	labels = deps.labels(1,1,3)
 	scoring = Scoring(alignment, sentence, labels)

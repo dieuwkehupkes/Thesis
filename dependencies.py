@@ -24,6 +24,7 @@ class Dependencies():
 			pos_head: [pos_dependent, reltype]
 		"""
 		self.nr_of_deps = -1
+		self.head_pos = None
 		self.deps = self.set_dependencies(dependency_list)
 		self.set_wordspans()
 
@@ -47,6 +48,10 @@ class Dependencies():
 			else:
 				deps[head] = deps.get(head,[])
 				deps[head].append([dep,rel])
+		#set headpos to first head in dependency list if sentence has no head
+		if not self.head_pos:
+			first_head = int(re.search('(?<=-)[0-9]*(?=, )',dependency_list[0]).group(0))
+			self.head_pos = first_head
 		return deps
 
 	def comp_score(self):
@@ -168,13 +173,13 @@ class Dependencies():
  		#stop search if dependency list happens to be empty
  		if self.deps == {}:
  			return labels
- 		#manually add label for head
+ 		#manually add label for sentence head
  		head_span = (self.head_pos -1, self.head_pos)
  		labels[head_span] = 'head'
  		labels[self.wordspans[self.head_pos]] = 'root'
  		for head in self.deps:
 # 			print 'head', head
-# 			head_span = (head-1, head)
+ 			head_span = (head-1, head)
  			for dep in self.deps[head]:
 # 				print 'dep', dep
  				dep_span = self.wordspans[dep[0]]
@@ -183,8 +188,9 @@ class Dependencies():
  				labels[dep_word_span] = labels.get(dep_word_span, dep[1]+'-head')
  		if max_var == 1 or (ldepth == 0 and rdepth ==0):
  			return labels
- 		#loop through labels again to find compound labels  		
+ 		#loop through labels again to find compound labels  
  		for head in self.deps:
+ 			print head
  			head_span = (head-1, head)
  			deplist = [head_span]
  			for dep in self.deps[head]:

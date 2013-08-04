@@ -56,9 +56,9 @@ class Scoring():
 		using the viterbi parser from the nltk.
 		Return the best parse and its score.
 		"""
-		print grammar
+#		print grammar
 		parser = ViterbiParser(grammar)
-		parser.trace(3)
+		parser.trace(0)
 		parses = parser.nbest_parse(self.tokens)
 		#return the best parse
 		return parses[0]
