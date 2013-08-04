@@ -506,13 +506,12 @@ class Rule:
 		labels = args[0]
 		probability = 1
 		for (i,j) in self.spans:
-#			print 'span: (%i,%i)' % (i,j)
 			if (i,j) in labels.keys():
-				probability = probability * 2
-#				'print (%i,%i) in labels' % (i,j)
-			else:
 				continue
-#				'print (%i,%i) not in labels' % (i,j)
+#				probability = probability * 2
+			else:
+				probability = probability * 0.5
+				continue
 		self.probability = probability
 	
 	def uniform_probability(self, args):
