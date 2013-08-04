@@ -321,6 +321,20 @@ def score_test5():
 	tree, score = scoring.score(Alignments.hat_rules, Rule.probability_labels, [labels])
 	print(tree)
 	print score
+	
+def score_test6():
+	"""
+	. ( pt ) we basically agree with the assessment and the thoughts put forward by the rapporteur concerning the sixth periodic report on the social and economic situation and development of the regions of the european union .
+	"""
+	sentence = '( 2 ) -do-'
+	alignment = '0-0'
+	dependencies = ['discourse(.-1, pt-3)','nsubj(agree-7, we-5)','advmod(agree-7, basically-6)','rcmod(.-1, agree-7)','prep(agree-7, with-8)','det(assessment-10, the-9)','pobj(with-8, assessment-10)','cc(assessment-10, and-11)','det(thoughts-13, the-12)','conj(assessment-10, thoughts-13)','root(ROOT-0, put-14)','advmod(put-14, forward-15)','prep(put-14, by-16)','det(rapporteur-18, the-17)','pobj(by-16, rapporteur-18)','det(report-23, the-20)','amod(report-23, sixth-21)','amod(report-23, periodic-22)','pobj(concerning-19, report-23)','prep(report-23, on-24)','det(situation-29, the-25)','amod(situation-29, social-26)','cc(social-26, and-27)','conj(social-26, economic-28)','pobj(on-24, situation-29)','cc(situation-29, and-30)','conj(situation-29, development-31)','prep(development-31, of-32)','det(regions-34, the-33)','pobj(of-32, regions-34)','prep(regions-34, of-35)', 'det(union-38, the-36)','nn(union-38, european-37)','pobj(of-35, union-38)']
+	deps = Dependencies(dependencies)
+	labels = deps.labels(1,1,3)
+	scoring = Scoring(alignment, sentence, labels)
+	tree, score = scoring.score(Alignments.hat_rules, Rule.probability_labels, [labels])
+	print(tree)
+	print score
 
 def scoring_speedtest1(sentence_length):
 	"""
