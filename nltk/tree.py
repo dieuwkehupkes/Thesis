@@ -259,6 +259,30 @@ class Tree(list):
             else:
                 max_child_height = max(max_child_height, 1)
         return 1 + max_child_height
+    
+    def nr_of_nonterminals(self):
+    	"""
+    	Return the number of n
+    	
+    		>>> t = Tree("(S (NP (D the) (N dog)) (VP (V chased) (NP (D the) (N cat))))")
+    		>>> t.nr_of_nonterminals()
+    		9
+    		>>> print(t[0,0])
+    		(D the)
+    		>>> t[0,0].nr_of_nonterminals()
+    		1
+    	
+    	:return: The number of nodes in the tree.
+    	:rtype: int
+    	"""
+    	nr_of_nonterminals = 1
+    	for child in self:
+    		if isinstance(child, Tree):
+    			nr_of_nonterminals += child.nr_of_nonterminals()
+    		else:
+    			continue
+    	return nr_of_nonterminals
+    			
 
     def treepositions(self, order='preorder'):
         """

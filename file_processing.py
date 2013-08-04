@@ -118,7 +118,7 @@ class ProcessFiles():
 			sentence_nr += 1
 			new = self.next()
 		#Make a table of the results
-		results_table = [ ['length', 'nr of sentences','score'], ['','',''], ['<10', sentences[10], total_score[10]/sentences[10]],['<20', sentences[20], total_score[20]/sentences[20]],['<40', sentences[40], total_score[40]/sentences[40]], ['all', sentences[100], total_score[100]/sentences[100]]]
+		results_table = [ ['length', 'number','score'], ['','',''], ['<10', sentences[10], total_score[10]/sentences[10]],['<20', sentences[20], total_score[20]/sentences[20]],['<40', sentences[40], total_score[40]/sentences[40]], ['all', sentences[100], total_score[100]/sentences[100]]]
 		results_string = ''
 		for triple in results_table:
 			print '%s %20s %20s' % (triple[0], triple[1], triple[2])

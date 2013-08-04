@@ -304,8 +304,8 @@ def score_test4():
 	labels = deps.labels(1,1,3)
 	scoring = Scoring(alignment, sentence, labels)
 	tree, score = scoring.score(Alignments.hat_rules, Rule.probability_labels, [labels])
-	print tree
-	print score
+#	print(tree)
+#	print tree.nr_of_nonterminals()
 	return score == 1.0
 
 

@@ -56,9 +56,9 @@ class Scoring():
 		using the viterbi parser from the nltk.
 		Return the best parse and its score.
 		"""
-		print grammar
+#		print grammar
 		parser = ViterbiParser(grammar)
-		parser.trace(3)
+		parser.trace(0)
 		parses = parser.nbest_parse(self.tokens)
 		#return the best parse
 		return parses[0]
@@ -79,6 +79,7 @@ class Scoring():
 			score = math.log(score,2)/args[1]
 		if prob_function == Rule.probability_labels:
 			import math
+			score = (math.log(score,2)+1)/parse.nr_of_nonterminals()
 			#Something should be done figure out what..
 		return parse, score
 
