@@ -22,6 +22,7 @@ class Alignments:
 		is created.
 		"""
 		self.lengthS = len(sentence.split())
+		self.consistent = True
 		self.alignment = self.make_set(alignment)
 		self.sentence = sentence
 
@@ -48,7 +49,8 @@ class Alignments:
 		lengthS = lengthS + 1
 		self.lengthT = lengthT+1
 		if lengthS > self.lengthS:
-			print "Alignments has more words than sentence, skipped"
+#			print "Alignments has more words than sentence, skipped"
+			self.consistent = False
 		elif lengthS < self.lengthS:
 			print "Caution: sentence does not have the same length as alignment, are there", self.lengthS - lengthS, "unaligned words at the end of the sentence?"
 		return set(links)
@@ -508,11 +510,10 @@ class Rule:
 		for (i,j) in self.spans:
 			if (i,j) in labels.keys():
 				continue
-#				probability = probability * 2
 			else:
 				probability = probability * 0.5
-				continue
 		self.probability = probability
+		return
 	
 	def uniform_probability(self, args):
 		"""

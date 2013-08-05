@@ -15,8 +15,14 @@ label_args = [1,1,3]
 all_dependencies = sys.argv[1]
 all_sentences = sys.argv[2]
 all_alignments = sys.argv[3]
-scores = sys.argv[4]
-tree_file = sys.argv[5]
+if len(sys.argv) > 4:
+	scores = sys.argv[4]
+else:
+	scores = ''
+if len(sys.argv) > 5:
+	tree_file = sys.argv[5]
+else:
+	tree_file = ''
 #relation_file = sys.argv[6]
 
 # compute trees and scores and write to files

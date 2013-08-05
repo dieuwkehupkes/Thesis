@@ -54,6 +54,23 @@ class Dependencies():
 			self.head_pos = first_head
 		return deps
 
+	def checkroot(self):
+		"""
+		Check if dependencies form a tree by checking coverage
+		of the rootnote.
+		"""
+		if len(self.deps) == 0:
+			return False
+		rootspan = self.wordspans[self.head_pos]
+		for head in self.deps:
+			if head < rootspan[0] or head > rootspan[1]:
+				return False
+			for dependent in self.deps[head]:
+				if dependent[0] < rootspan[0] or dependent[0] > rootspan[1]:
+					return False
+		return True
+		
+
 	def comp_score(self):
 		"""
 		Returns the percentage of words that is head
@@ -171,14 +188,13 @@ class Dependencies():
  		if ldepth == rdepth == max_var == 0:
  			return labels
  		#stop search if dependency list happens to be empty
- 		if self.deps == {}:
+ 		if self.deps == {} or not self.checkroot():
  			return labels
  		#manually add label for sentence head
- 		print self.head_pos
  		head_span = (self.head_pos -1, self.head_pos)
  		labels[head_span] = 'head'
  		labels[self.wordspans[self.head_pos]] = 'root'
-	 	print self.wordspans, '\n'
+#	 	print self.wordspans, '\n'
  		for head in self.deps:
 # 			print 'head', head
  			head_span = (head-1, head)
@@ -188,7 +204,7 @@ class Dependencies():
  				labels[dep_span] = dep[1]
  				dep_word_span = (dep[0]-1, dep[0])
  				labels[dep_word_span] = labels.get(dep_word_span, dep[1]+'-head')
-	 	print labels, '\n'
+#	 	print labels, '\n'
  		if max_var == 1 or (ldepth == 0 and rdepth ==0):
  			return labels
  		#loop through labels again to find compound labels  
@@ -205,7 +221,6 @@ class Dependencies():
  			nr_right = len(deplist) - 1 - index_head
  			for left in [i for i in xrange(0, ldepth+1) if i < max_var and i<= nr_left]:
  				for right in [j for j in xrange(rdepth+1) if left+j < max_var and j <= nr_right]:
-# 					print 'maxvar= ', max_var, 'left+right= ' ,left, right
  					if left == 0:
  						new_label = labels[self.wordspans[head]]
  						left_index = deplist[0][0]

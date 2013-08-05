@@ -89,9 +89,21 @@ class ProcessFiles():
 			if not self.check_consistency(new[1], new[2]):
 				print "Warning: dependencies and alignment might be inconsistent"
 			sentence_length = len(new[1].split())
-			if sentence_length < max_length:
-				dependencies = Dependencies(new[2])
-				#set labels for spans and create a scoring object
+			dependencies = Dependencies(new[2])
+			a = Alignments(new[0],new[1])
+			# tests if input is as desired, skip if not
+			if sentence_length >= max_length:
+				if writeTrees:
+					treesf.write("No result, sentence longer than %i words\n" % max_length)
+			elif not dependencies.checkroot():
+				if writeTrees:
+					treesf.write("No result, dependency structure is no tree")
+					print "Dependency structure is not tree"
+			elif not a.consistent:
+				if writeTrees:
+					treesf.write("No result, dependency structure inconsistent with sentence")
+					print "Alignments has more words than sentence, skipped"
+			else:
 				labels = dependencies.labels(label_args[0], label_args[1], label_args[2])
 				scoring = Scoring(new[0], new[1], labels)
 				#Set arguments for probability function
@@ -112,13 +124,20 @@ class ProcessFiles():
 					treesf.write("%s\n\n" % tree)
 				print 'score', score
 				parsed_sentences +=1
-			else:
-				if writeTrees:
-					treesf.write("No result, sentence longer than %i words\n" % max_length)
 			sentence_nr += 1
 			new = self.next()
 		#Make a table of the results
-		results_table = [ ['length', 'number','score'], ['','',''], ['<10', sentences[10], total_score[10]/sentences[10]],['<20', sentences[20], total_score[20]/sentences[20]],['<40', sentences[40], total_score[40]/sentences[40]], ['all', sentences[100], total_score[100]/sentences[100]]]
+		score10, score20,score40,score100 = 0,0,0,0
+		if sentences[100] != 0:
+			score100 = total_score[100]/sentences[100]
+		if sentences[40] != 0:
+			score40 = total_score[40]/sentences[40]
+		if sentences[20] != 0:
+			score20 = total_score[20]/sentences[20]
+		if sentences[10] != 0:
+			score10 = total_score[10]/sentences[10]
+			
+		results_table = [ ['length', 'number','score'], ['','',''], ['<10', sentences[10], score10],['<20', sentences[20], score10],['<40', sentences[40], score40], ['all', sentences[100], score100] ]
 		results_string = ''
 		for triple in results_table:
 			print '%s %20s %20s' % (triple[0], triple[1], triple[2])
