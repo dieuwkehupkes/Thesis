@@ -13,7 +13,7 @@ from file_processing import *
 # Test all
 
 def test_all():
-	return path_test_all() and spans_test_all() and scores_test_all() and rules_test_all() and dependencies_test1()
+	return path_test_all() and spans_test_all() and scores_test_all() and rules_test_all() and dependencies_test_all()
 
 
 
@@ -256,7 +256,7 @@ def score_test1():
 	dependencies = ['poss(dog-2, My-1)','nsubj(likes-3, dog-2)','root(ROOT-0, likes-3)','xcomp(likes-3, eating-4)','dobj(eating-4, sausages-5)']
 	deps = Dependencies(dependencies)
 	nr_of_deps = deps.nr_of_deps
-	relations = deps.get_spanrels()
+	relations = deps.spanrelations()
 	scoring = Scoring(alignment, sentence, {})
 	tree, score = scoring.score(Alignments.rules, Rule.probability_spanrels, [relations, nr_of_deps])
 	return score == 1.0
@@ -275,7 +275,7 @@ def score_test2():
 	dependencies = ['nn(growth-2, european-1)','nsubj(inconceivable-4, growth-2)','cop(inconceivable-4, is-3)','root(ROOT-0, inconceivable-4)','prep(inconceivable-4, without-5)','pobj(without-5, solidarity-6)']
 	deps = Dependencies(dependencies)
 	nr_of_deps = deps.nr_of_deps
-	relations = deps.get_spanrels()
+	relations = deps.spanrelations()
 	scoring = Scoring(alignment, sentence, {})
 	tree, score = scoring.score(Alignments.rules, Rule.probability_spanrels, [relations, nr_of_deps])
 	return score == 1.0
@@ -352,7 +352,7 @@ def scoring_speedtest1(sentence_length):
 	alignment = " ".join(a)
 	dependencies = ["root(ROOT-0, let-1)"]
 	deps = Dependencies(dependencies)
-	relations = deps.get_spanrels()
+	relations = deps.spanrelations()
 	scoring = Scoring(alignment, sentence, {})
 	productions = scoring.alignment.hat_rules(Rule.probability_spanrels, [relations])
 	for rule in productions:
@@ -375,7 +375,7 @@ def scoring_speedtest2(sentence_length):
 	alignment = " ".join(a)
 	dependencies = ["root(ROOT-0, let-1)"]
 	deps = Dependencies(dependencies)
-	relations = deps.get_spanrels()
+	relations = deps.spanrelatons()
 	scoring = Scoring(alignment, sentence, {})
 	productions = scoring.alignment.hat_rules(Rule.probability_spanrels, [relations])	
 	for rule in productions:
@@ -401,7 +401,7 @@ def dependencies_test1():
 	"""
 	dependencies = ['nn(President-2, Mr-1)','nsubj(welcome-6, President-2)','nsubj(welcome-6, I-4)','aux(welcome-6, would-5)','root(ROOT-0, welcome-6)','det(action-8, some-7)','dobj(welcome-6, action-8)','prep(action-8, in-9)','det(area-11, this-10)','pobj(in-9, area-11)']
 	d = Dependencies(dependencies)
-	spanrels = d.get_spanrels()
+	spanrels = d.spanrelations()
 	manual_spanrels= {(1,2): [(0,1)],(5,6): [(0,2),(3,4),(4,5), (6,11)], (7,8):[(6,7),(8,11)],(8,9): [(9,11)], (10,11): [(9,10)]}
 	return spanrels == manual_spanrels
 
@@ -412,7 +412,6 @@ def labels_test1():
 	dependencies = ['nsubj(give-2, I-1)','root(ROOT-0, give-2)','det(boy-4, the-3)','iobj(give-2, boy-4)','det(flowers-6, some-5)','dobj(give-2, flowers-6)']
 	d = Dependencies(dependencies)
 	man_labels = {(0,1): 'nsubj', (1,2): 'head', (2,3): 'det', (2,4): 'iobj', (3,4): 'iobj-head', (4,5): 'det', (4,6): 'dobj', (5,6): 'dobj-head', (0,6): 'root'}
-	print d.labels()
 	labels = d.labels()
 	return labels == man_labels
 
@@ -473,11 +472,31 @@ def labels_annotation_test():
 	new_labels = d.annotate_span(labels)
 	return new_labels == man_labels
 
+def rightbranching_relations_test():
+	"""
+	Test right branching relations for sentence 'I give the boy some flowers'
+	"""
+	dependencies = ['nsubj(give-2, I-1)','root(ROOT-0, give-2)','det(boy-4, the-3)','iobj(give-2, boy-4)','det(flowers-6, some-5)','dobj(give-2, flowers-6)']
+	d = Dependencies(dependencies)
+	relations = d.spanrelations(True,False)
+	man_relations = {(1, 2): [(0, 1), (2, 4), (4, 6)], (5, 6): [(4, 5)], (3, 4): [(2, 3)], (1,6): [(0,1)], (1,4): [(4,6)]}
+	return relations == man_relations
+
+def leftbranching_relations_test():
+	"""
+	Test left branching relations for sentence 'I give the boy some flowers'
+	"""
+	dependencies = ['nsubj(give-2, I-1)','root(ROOT-0, give-2)','det(boy-4, the-3)','iobj(give-2, boy-4)','det(flowers-6, some-5)','dobj(give-2, flowers-6)']
+	d = Dependencies(dependencies)
+	relations = d.spanrelations(False,True)
+	man_relations = {(1, 2): [(0, 1), (2, 4), (4, 6)], (5, 6): [(4, 5)], (3, 4): [(2, 3)], (0,4): [(4,6)], (0,2): [(2,4)]}
+	return relations == man_relations
+
 def dependencies_test_all():
 	"""
 	Run all dependency tests.
 	"""
-	return dependencies_test1() and labels_test1() and labels_test2() and labels_annotation_test() and labels_test3()
+	return dependencies_test1() and labels_test1() and labels_test2() and labels_annotation_test() and labels_test3() and rightbranching_relations_test() and leftbranching_relations_test()
 	
 	
 	

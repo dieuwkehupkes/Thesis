@@ -1,4 +1,4 @@
-\documentclass{report}
+\documentclass[a4paper, 11pt]{report}
 \usepackage[english]{babel}
 \usepackage{microtype}
 \usepackage{amsmath,amssymb}
@@ -10,6 +10,8 @@
 \usepackage{enumerate}
 \usepackage{qtree}
 \usepackage{mdframed}
+\usepackage{algorithmic}
+\usepackage{algorithm}
 \usepackage{tikz-dependency}
 \usepackage{float}
 \usepackage[OT2,T1]{fontenc}
@@ -101,7 +103,7 @@ Machine translation (MT) is a very complex problem, for which many approaches ha
 \label{sec:intro}
 
 The research field of machine translation arose almost immediately after the emergence of the first computers, and was one of the very first problems to be tackled by them. In the earliest approaches, sentences were treated as structureless sequences of words that could be translated more or less directly to a sequence of words in another language. The early models using such a direct approach are now called the first generation models. Such models, which ignore all structural aspects of the sentence, as well as relations between words, are clearly only suitable for languages that are structured almost identically, as translations whose structure deviates in any aspect from the original source structure will never be found. Most languages, if not all, are not this similar, and the direct approach of the first generation models was not very successful, leading to translations that are incomprehensible, not fluent en often not even meaning preserving.\\
-The models that arose after the first generation, appositely called second generation models, aimed at translating structural representations of sentences, rather than translating sentences directly. In such a model, a source sentences is analysed into an intermediate representation that somehow conveys the semantic structure (or `meaning') of the sentence. This representation is mapped to a target side structure, that is then used to generate a target sentence. The process of mapping representations in one language to representations in another language is called transfer. A graphical representation of this process is shown in Figure \ref{fig:triangle}. 
+The models that arose after the first generation, appositely called second generation models, aimed at translating structural representations of sentences, rather than translating sentences directly. In such a model, a source sentence is analysed into an intermediate representation that somehow conveys the semantic structure (or `meaning') of the sentence. This representation is mapped to a target side structure, that is then used to generate a target sentence. The process of mapping representations in one language to representations in another language is called transfer. A graphical representation of this process is shown in Figure \ref{fig:triangle}. 
 
 \begin{figure}[!ht]
 \includegraphics[scale=0.2]{translation_triangle.png}
@@ -113,7 +115,7 @@ The depicted pyramid shows that the transfer method can be employed in different
 \section{Statistical Machine Translation}
 \label{sec:SMT}
 
-Like the MT-world did, we will make a detour to statistical models. Driven by the thought that translation is too rich to formalized, the MT-world left linguistically motivated models for what they were, concentrating on models
+Like the MT-world did, we will make a detour to statistical models. Driven by the thought that translation is too rich to formalize, the MT-world left linguistically motivated models for what they were, concentrating on models
 that were based on information found in parallel corpora. Later, the two lines of models came together, and models that used earlier techniques in a corpus-based framework started to be developed. In this section we will briefly introduce the main concepts and thoughts behind models that use corpora to learn the parameters of their models.
 
 \subsection{Word-based models}
@@ -159,7 +161,7 @@ As regards the existence of mappings, translating artificial languages into each
 Two expressions are each others translation if they are built up from parts which are each other's translation, by means of translation-equivalent rules (ref??)
 \end{quote}
 
-An extensive discussion of this principle can be found in \cite{janssen1998algebraic}. Once again, it is not obvious if the principle also holds for translation from natural language to natural language. A first issue is that the principle assumes that in translation not only meaning, but also form should be preserved (as much as possible). In other words, it assumes that translation is literal. For artificial languages this property is straight forward and useful, mostly because there are no a priori reasons to prefer a non-literal translation over a literal translation. Often this it is also like that in natural language. Consider for instance the sentence `alle raven zijn zwart', of which `all ravens are black' is an adequate translation, while `if something is black it is not a raven' is not, even though it has the same meaning \citep{landsbergen1989power}. However, in practice a translator can have many reasons to prefer a more free translation if a literal alternative is also available. Although this is a real issue for manual translators, it is generally ignored in MT. The current systems are by far not sophisticated enough to be concerned with style issues and once again, developing a system that produces decent literal translations would be a huge accomplishment. Also throughout this paper will be assumed that the perfect translation is the most literal one.\\
+An extensive discussion of this principle can be found in \cite{janssen1998algebraic}. Once again, it is not obvious if the principle also holds for translation from natural language to natural language. A first issue is that the principle assumes that in translation not only meaning, but also form should be preserved (as much as possible). In other words, it assumes that translation is literal. For artificial languages this property is straight forward and useful, mostly because there are no a priori reasons to prefer a non-literal translation over a literal translation. Often this it is also like that in natural language. Consider for instance the sentence `alle raven zijn zwart', of which `all ravens are black' is an adequate translation, while `if something is not black it is not a raven' is not, even though it has the same meaning \citep{landsbergen1989power}. However, in practice a translator can have many reasons to prefer a more free translation if a literal alternative is also available. Although this is a real issue for manual translators, it is generally ignored in MT. The current systems are by far not sophisticated enough to be concerned with style issues and once again, developing a system that produces decent literal translations would be a huge accomplishment. Also throughout this paper will be assumed that the perfect translation is the most literal one.\\
 A second issue is that natural languages do not always express the same set of meanings in the same way. Even in languages of cultures that are quite similar one can find a number of words that simply do not have an adequate translation in the other language (e.g., in English-Dutch translation, the Dutch word `gezellig' or the English word `evidence'), and even if the same meaning is expressed there are many syntactic phenomena in natural language that seem problematic for a compositional translation. For instance, different ways of role expression (e.g., `I like ...' and `\textcyr{mne nravitsa ...}') or syntactic mismatches (e.g., `woonachtig zijn' and its translation `reside' \citep{landsbergen1989power}). The grammars rules and basic units can thus not simply be taken from a monolingual grammar, as there is no guarantee that the rules and basic units will have a translation equivalent rule or basic unit in the other grammar. The grammars must be constructed for translation, such that they are `attuned' \citep{rosetta1994compositional}, which is a non-trivial task.\\
 \cite{rosetta1994compositional} showed that previous mentioned examples do not necessarily stand in the way of compositional translation, by manually constructing a grammar for translation from English to Dutch, covering many non-trivial translation phenomena. This result was important to show that compositional translation is in theory more powerful than it might seem at the first sight, but will not be further discussed. The focus of this paper lies on statistical models, that aim at \textit{learning} translation grammars and mappings from data, rather than manually constructing them. To make this process feasible, they make additional assumptions about the grammars involved. We will devote a very small subsection to the assumptions made in practice.
 
@@ -393,6 +395,8 @@ Before describing our experiment, (anders) recall that the main aim of this pape
 
 \subsubsection{Experiment 1}
 
+%Maybe give the definition of HATs and dependency parses here.
+
 The predicate argument relations in a dependency tree tell us exactly how the sentence is composed: we can infer which are the smaller parts of the sentence and how they are combined to obtain the complete sentence. Consider for instance the dependency tree of the sentence "My dog also likes eating sausage" (Figure \ref{fig:deptree1}).
 
 \begin{figure}[!h]\label{fig:deptree1}
@@ -412,7 +416,15 @@ My \& dog \& also \& likes \& eating \& sausage \\
 \caption{Stanford Dependency Tree}
 \end{figure}
 
-The dependency tree tells us that 'likes' is the head word of the sentence, and that the sentence is composed of 4 parts: the head `likes', its modifier `also', its noun subject whose head is `dog' and the open clausal complement whose head is `eating'. The complement and subject are further divisible in `My' and `dog', and `eating' and `sausage', respectively. Intuitively, we can check for every relation in the dependency parse whether this relation exists in a HAT by checking if the word and its depending subtrees are siblings in the HAT. We will then say that such a relation is respected by the HAT. In a first experiment, we will search for the HAT that respects the highest percentage of the dependency relations prescribed by the dependency parse. We will assign a score to the HAT, proportional to the percentage of dependencies that is respected by the HAT. A formal definition of this metric can be found in Appendix \ref{appendix:metric}. Note that relations within phrasal translations will always be consistent with the HATs, as words that are part of a phrasal translation are necessarily siblings. Phrasal translations do thus not demand a special treatment, as they are naturally covered.
+The dependency tree tells us that 'likes' is the head word of the sentence, and that the sentence is composed of 4 parts: the head `likes', its modifier `also', its noun subject whose head is `dog' and the open clausal complement whose head is `eating'. The complement and subject are further divisible in `My' and `dog', and `eating' and `sausage', respectively. Intuitively, we can check for every relation in the dependency parse whether this relation exists in a HAT by checking if the word and its depending subtrees are siblings in the HAT. We will then say that such a relation is respected by the HAT, as is defined in Definition \ref{def:depHAT}.
+
+
+
+\begin{definition}\label{def:depHAT}
+Let $s = w_1 w_2 \dots w_n$ be a sentence, and $D = \{ (i,j) |$ there is a dependency arrow from word $w_i$ to word $w_j \}$ a set of dependencies describing a dependency tree for $s$. Let span($j$) be the range $[m,n]$ in which $m$ and $n$ are the maximum and minimum position that can be reached from $w_j$ by following the directed dependency arrows, respectively. A dependency relation $(i,j)$ is said to be respected by an alignment tree $T$ over $s$ if and only if there is a node in $T$ of which both $[i,i]$ and span($j$) are children.
+\end{definition}
+
+In a first experiment, we will search for the HAT that respects the highest percentage of the dependency relations prescribed by the dependency parse. Note that relations within phrasal translations will always be consistent with the HATs, as words that are part of a phrasal translation are necessarily siblings. Phrasal translations do thus not demand a special treatment, as they are naturally covered.
 
 \subsubsection{Follow-up Experiments}
 
@@ -445,16 +457,105 @@ Appropriate einde van hoofdstuk%Explain why we do not think this is problematic?
 %
 
 
-\chapter{Results}
+\chapter{Experiments and Results}
 
-Intro chapter
-This chapter will describe the sequence of experiments we conducted, as well as their results. Implementation details can be found in \ref{appendix:impl}. 
+%Other introduction?
+In this chapter we will present our empirical results, and give a precise description of the procedures used to obtain them. Documentation of the code can be found in Appendix \ref{appendix:impl}.\\
 
-\section{Data}
+\section{General Setup}
 
-For our experiments we used 4 .. language pairs blabla, then which manual alignments, automatic with giza++ grow-diag-final
 
-\begin{table}
+
+In all our experiments, we search for the HAT that is most consistent with a set of relations that are abstracted from a set of basic dependencies of the (English) sentence, generated by the Stanford Dependency parser \cite{de2006generating}. Details on this set of relations can be found in the sections dedicated to the different experiments.\\
+
+\subsection{Procedure and Algorithms}
+
+We searched through the HATs by generating a grammar for every alignment that uniquely generated the HAT forest for that alignment, and manipulating the probabilities of the rules to find the best HAT using an off-the-shelve Viterbi parser \citep{bird2009natural}. This grammar was generated by creating a graph representation of the alignment, and searching for the shortest path between the endpoints of all allowed translation units, as is depicted in \ref{alg:grammar}. Auxiliary algorithms \ref{alg:shortest paths} and \ref{alg:phrasepairs} describe the how the shortest paths were found and how the translation units were identified, respectively.
+
+\begin{algorithm}
+\caption{Grammar generation}\label{alg:grammar}
+\begin{algorithmic}
+\STATE \textbf{Input:} A sentence $s = w_1\ldots w_n$ and a string representation of alignment $a$
+\STATE \textbf{Output:} A grammar uniquely generating the HAT forest
+\STATE %nothing
+\STATE alignment = set\_repr($a$) \hfill \# Represent alignment as a set
+\STATE U = translation\_units($a$) \hfill \# Find translation units of $a$ 
+%DIT MOET ANDERS!!!
+\STATE \textit{\# Create a graph representation of the alignment}
+\STATE $V = \{\}$
+\FOR{$i\in\{0,n\}$}
+	\STATE $V$ $\leftarrow$ $V\cup v_i$
+\ENDFOR
+\STATE $E=\{\}$
+\FOR{$(i,j)\in U$}
+	\STATE $E$ $\leftarrow E\cup (i$-$1,j)$
+\ENDFOR
+\STATE \textit{\# Compute rules for every translation unit}
+\STATE rules = $\emptyset$
+\FOR{$(i,j)\in U$}
+	\IF{$i+1 = j$}
+		\STATE new\_rule = $(i,j) \leftarrow w_j$)
+		\STATE rules $\leftarrow$ rules $\cup$ new\_rule 
+	\ELSE
+		\FOR{path $(i,r_1,\ldots,r_m,j)$ $\in$ shortest\_paths$(i,j)$}
+			\STATE new\_rule = $(i,j \leftarrow (i,r_1) (r_1, r_2) \ldots (r_m j)$
+			\STATE rules $\leftarrow$ rules $\cup$ new\_rule
+		\ENDFOR
+	\ENDIF
+\ENDFOR
+\end{algorithmic}
+\end{algorithm}
+
+Algorithm \ref{alg:shortest paths}, which is similar to Dijkstra's shortest path algorithm \citep{dijkstra1959note}, was used to compute the shortest paths from $i$ to $j$.
+
+\begin{algorithm}
+\caption{Shortest Paths}\label{alg:shortest paths}
+\begin{algorithmic}
+\STATE \textbf{Input:} A graph $G = (V,E)$ describing an alignment and two vertices $i$ and $j$ for which $(i,j)\in E$ is true.
+\STATE \textbf{Output:} All non-trivial shortest paths from $i$ to $j$
+\STATE \textit{\#Initialization}
+\STATE visited = $\emptyset$, depth = $0$, paths = $\{j\}$
+\STATE $\forall n\in\mathbb{N}:$ reachable(n) = $\emptyset$; reachable($0$) = $\{j\}$
+\STATE depth\_finished = False
+\STATE \textit{\# Start backwards search through graph}
+\WHILE{not depth\_finished or $i\notin$ visited}
+	\WHILE{reachable(depth) $\neq\emptyset$}
+		\STATE depth\_finished $\leftarrow$ False
+		\STATE current\_node $\leftarrow N$ an arbitrary element $v$ from reachable(depth)
+		\STATE reachable(depth) $\leftarrow$ reachable(depth) $-$ $\{$current\_node$\}$
+		\FOR{ ($l$,current\_node) $\in E$}
+			\IF{$l\notin $visited $\cup$ reachable(depth) \AND depth $\neq 0$}
+				\STATE reachable(depth+1) $\leftarrow$ reachable(depth+1) $\cup$ $\{l\}$
+				\FOR{path (current\_node,\ldots, $j) \in$ paths}
+					\STATE path $\leftarrow$ ($l$,current\_node,\ldots, $j)$
+				\ENDFOR
+			\ENDIF
+		\STATE visited $\leftarrow$ visited $\cup$ $\{l\}$
+		\ENDFOR
+	\STATE depth\_finished $\leftarrow$ True
+	\STATE depth $\leftarrow$ depth+1
+	\ENDWHILE
+\ENDWHILE
+\STATE \textbf{Return} paths
+\end{algorithmic}
+\end{algorithm}
+
+The translation units are found using an algorithm similar to the one presented in \cite{chiang2005hierarchical} (is it this one??), which is described in Algorithm \ref{alg:phrasepairs}.
+
+\begin{algorithm}
+\caption{Finding translation Units}\label{alg:phrasepairs}
+\begin{algorithmic}
+\STATE \textbf{Input:} an alignment graph $G = (V,E)$
+\STATE \textbf{Output:} all allowed translation units.
+\end{algorithmic}
+\end{algorithm}
+
+
+\subsection{Data}
+
+Describe corpora, which sections are used and how they were aligned.
+
+\begin{table};!h]
 \begin{tabular}{llllll}
 Language & Corpus & & Section & Aligned\\
 \hline
@@ -467,11 +568,79 @@ English- French & Hansard & & manual\\
 \caption{Datasets}\label{tab:datasets}
 \end{table}
 
+We parsed the English side of the corpus with the Stanford dependency parser \citep{de2008stanford} using newlines as delimitation, to obtain basic typed dependencies of the sentences. Note that punctuation is thus not taken into account.
+
+\subsection{Shared Notions}
+
+
+
 \section{Experiment 1}
 
-In the first experiment we search for the HAT that is most consistent with the dependency parse. A dependency relation is said to be consistent with a HAT if its head and the phrase that is headed by its dependent are siblings in the HAT, we thus search for the HAT in which most dependency relations can be found, and give score it according to the percentage of dependency relations that it is consistent with. A bottom up definition of this evaluation metric can be found in Appendix \ref{appendix:metric}. The results of this experiment can be found in Table \ref{tab:scores1}.
+As mentioned before, we will test the HATs of an alignment for consistency with a set of relations abstracted from the dependency parse of the corresponding sentence. In Experiment 1, this will be done in the most elementary way of doing so, which we will explain in the following subsection.
+%Explain what comes after
+
+\subsection{Motivation}
+
+The predicate argument relations in a dependency tree tell us exactly how the sentence is composed: we can infer which are the smaller parts of the sentence and how they are combined to obtain the complete sentence. Consider or instance the dependency tree of the sentence `My dog also likes eating sausage' (\ref{fig:deptree}).
+
+\begin{figure}[!h]\label{fig:deptree}
+\centering
+\begin{dependency}[theme=simple]%[hide label]
+\begin{deptext}[column sep=.5cm, row sep=.1ex]
+%PRP\$ \& NN \& RB \&[.5cm] VBZ \& VBG \& NN \\
+My \& dog \& also \& likes \& eating \& sausage \\
+\end{deptext}
+\deproot{4}{}
+\depedge{2}{1}{poss}
+\depedge{4}{2}{nsubj}
+\depedge{4}{3}{xvmod}
+\depedge{4}{5}{xcomp}
+\depedge{5}{6}{dobj}
+\end{dependency}
+\caption{Stanford Dependency Tree}
+\end{figure}
+
+The dependency tree shows that `likes' is the head word of the sentence, and that the sentence is composed of four parts: the head `likes', its modifier `also', its noun subject whose head is `dog' and the open clausal complement whose head is `eating'. The complement and subject are further divisible in `My' and `dog', and `eating' and `sausage', respectively. Intuitively, we can check for every relation in the dependency parse whether this relation exists in a HAT by checking if the word and its depending subtrees are siblings in the HAT. Experiment 1 is based upon this definition.
+
+\subsection{Relations}
+
+We will say that a dependency relation from word $i$ to word $j$ is respected by a HAT if the head $i$ is siblings with the phrases headed by $j$, which is formally defined in \ref{def:respHAT}
+
+\begin{definition}\label{def:respHAT}
+Let $s = w_1 w_2 \dots w_n$ be a sentence, and $D = \{ (i,j) |$ there is a dependency arrow from word $w_i$ to word $w_j \}$ a set of dependencies describing a dependency tree for $s$. Let span($j$) be the range $[m,n]$ in which $m$ and $n$ are the maximum and minimum position that can be reached from $w_j$ by following the directed dependency arrows, respectively. A dependency relation $(i,j)$ is said to be respected by an alignment tree $T$ over $s$ if and only if there is a node in $T$ of which both $[i,i]$ and span($j$) are children.
+\end{definition}
+
+In Experiment 1, we will search for the HAT in which most of these relations are respected, as defined in \ref{metric:m1}.
+
+\begin{metric}\label{metric:m1}
+Let $s = w_1 w_2 \dots w_n$ be a sentence, and $D = \{ (i,j) |$ there is a dependency arrow from word $w_i$ to word $w_j \}$ a set of dependencies describing a dependency tree for $s$. Let $D' = \{ (i,\textrm{span}(j))$ $|$ $D(i,j) \land 1 \leq i,j \leq n \}$ be the set $D$ in which each dependent $w$ is replaced by its span $[i,j]$, with $i$ and $j$ the maximum and minimum position, respectively, that can be reached from $w$ by following the directed dependency arrows. Let $H$ be an alignment tree for $s$. The consistency of $H$ with $D$ is now defined as the score of its highest node $N$::
+
+$$
+E(N_a,D) = \sum_{c\in C_{N_a}} E(c,D)+ \sum_{c_1\in C_{N_a}} \sum_{c_2\in C_{N_a}} B(c_1,c_2)
+$$
+
+\noindent With base case $E(N,D) = 0$, $B(c_1,c_2) = 1$ iff  $(c_1,c_2)\in D'$, and $C_N$ the set of child nodes of $N$.
+\end{metric}
+
+Note that this score should be normalized after the procedure by dividing by $|D'|$. As $|D'|$ is not dependent on the tree, this does not complicate the search for the best HAT.
+
+\subsection{Search}
+
+The grammar productions $r$ were found as described before, and were assigned weights according to the number of relatios $n$ they made true: $r = 2^n$. These weights do not constitute a probability model (as indicated by the fact the `probabilities' can be higher than $1$), but are meant to guide the search. A proof of soundness of this procedure is given below.
+
+\begin{proof}[Soundness of Procedure]
+\label{proof:s1}
+to proof: score(N1) $>$ score(N2) iff p(N1) $>$ p(N2)
+\end{proof}
+
+An external parser was used \citep{bird2009natural} to parse the sentence into the best HAT.
+
+\subsection{Results}
+
+The results of Experiment 1 can be found in table \ref{tab:scores1}
 
 \begin{table}[!h]
+\centering
 \begin{tabular}{l|ccc}
 & \multicolumn{3}{c}{Multi-column}\\
 Language pair & |s| < 10 & |s| < 20 & |s| < 40\\
@@ -484,13 +653,28 @@ English-Chinese & 0.410 & 0.382 & 0.361\\
 \caption{Results Experiment 1, automatic alignments}\label{tab:scores1}
 \end{table}
 
-
-\begin{table}
-
-\end{table}
-
+%table with which results were respected?
 
 \section{Experiment 2}
+
+\subsection{Motivation}
+
+Experiment 1 showed that HATs are not very consistent with dependency parses: on average not even half of the relations from the dependency parse of a sentence were respected in a maximally recursive alignment tree. However, drawing the conclusion that dependency syntax is thus useless for SMT without considering other options would be rather hasty. We have identified five reasons that possibly could have lead to a low score for an alignment:
+
+\begin{enumerate}
+\item The translation is erroneous or not as literal as possible;
+\item The dependency parse is erroneous;
+\item The alignment is erroneous;
+\item The structure of HATs and dependency parses does not agree;
+\item The sentence cannot be compositionally translated
+\end{enumerate}
+
+Empirical research using translation corpora hinges on the assumption that the datasets that are used are error-free and representative for the phenomena that are investigated. Although this is often not the case - dependency parses are not perfect, the translations in our corpora are not always as literal as we would want them to be, and automatic alignments often contain many incorrect alignment links - for the moment we will stick to this assumption. Although these factors can play an important role, there is not much that we can do about it: we cannot instrut interpreters of the government to follow a protocol specifically designed for our needs, and we do not have the manpower to filter our corpora or produce manual alignments for corpora of a reasonable size. Even in empirical research, testing the influence of these factors often boils down to manually checking the data, which we will only do after having considered other options.\\
+In Experiment 2 we investigate the discrepancy between dependency parses and HATs (cause 4), which we consider likeli to be an issue, as we have forced our trees to be maximally recursive. Maximal recursivity is very useful for computational purposes and generalization (ref?), but it is likely not the structure that corresponds to human intuitions. We will illustrate this with two examples.\\ 
+Firstly, consider the sentence `I give you flowers', which contains one predicate (`give') with three arguments (the subject `I', the object `flowers' and the indirect object `you'). Its Dutch translation `Ik geef jou bloemen' has exactly the same predicate argument structure \textit{and} word-order, whereby the branching factor in any of its HATs will not exceed two. However, a maximum score can only be obtained by a tree in which `I', `give', `you', and `flowers' are siblings, whose mother will have a branching factor of (at least) four. Even though the translation of this sentence seems perfectly compositional, no HAT will thus obtain the maximum score, because the dependency structure is not minimally branching.\\
+A second example, that is more related to translational divergence, arises when two arguments are translated into one (which happens, e.g., when arguments are translated as pre- or suffixes, when verbs do not require a subject or when spaces are emitted). Consider for instance the sentence 'Can you give me the salt' and its Italian translation 'puoi passarmi il sale'. Once again, the predicate-argument structure of the sentence is well preserved. However, the dependency parse prescribes that `the salt', `can' and `you' should be siblings of `give', which will be the case in none of the HATs over $\{\{0\},\{0\},\{1\},\{1\},\{2\},\{3\}\}$, as `give' and `me' are together translated into `passarmi', and `can you' into `puoi'.\\
+
+
 
 
 

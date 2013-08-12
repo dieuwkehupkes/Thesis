@@ -2,8 +2,7 @@
 Class for processing sentences, alignments and dependency parses
 simultaneously.
 """
- 
-# -*- coding: utf-8 -*-
+
 from scoring import *
 import sys
 
@@ -63,7 +62,7 @@ class ProcessFiles():
 			return False
 	
 	
-	def score_all_sentences(self, rule_function, probability_function, label_args, max_length = 40, scorefile = '', treefile = ''):
+	def score_all_sentences(self, rule_function, probability_function, prob_function_args, label_args, max_length = 40, scorefile = '', treefile = ''):
 		self._reset_pointer()
 		parsed_sentences = 0
 		sentence_nr = 1
@@ -98,7 +97,7 @@ class ProcessFiles():
 			elif not dependencies.checkroot():
 				if writeTrees:
 					treesf.write("No result, dependency structure is no tree")
-					print "Dependency structure is not tree"
+					print "Dependency structure is not a tree"
 			elif not a.consistent:
 				if writeTrees:
 					treesf.write("No result, dependency structure inconsistent with sentence")
@@ -108,7 +107,8 @@ class ProcessFiles():
 				scoring = Scoring(new[0], new[1], labels)
 				#Set arguments for probability function
 				if probability_function == Rule.probability_spanrels:
-					args = [dependencies.get_spanrels(), dependencies.nr_of_deps]
+					p1, p2 = prob_function_args[0], prob_function_args[1]
+					args = [dependencies.spanrelations(p1,p2), dependencies.nr_of_deps]
 				else:
 					args = [labels]
 				tree, score = scoring.score(rule_function, probability_function, args)

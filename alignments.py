@@ -156,7 +156,6 @@ class Alignments:
 			return max(alignment_links)
 
 
-#	def rules(self, span_relations = {}, labels = {}):
 	def rules(self, prob_function, args, labels = {}):
 		"""
 		Returns a generator with all rules of a PCFG
@@ -212,9 +211,7 @@ class Alignments:
 			nodes[j].link_to(nodes[i])
 			spans.append((i,j))
 		for (i,j) in spans:
-#			print "find spans for (", i, j, ")"
 			for path in nodes[i].shortest_paths_to(nodes[j]):
-#				print path
 				if not path or len(path) == 2:
 					# No rule possible, or path points to itself
 					continue
@@ -275,6 +272,8 @@ class Waypoint:
 			path.append(waypoint.link.node.value)
 			waypoint = waypoint.link
 		return str(path)
+
+#Miss in andere file zetten
 
 class Node:
 	"""
@@ -364,8 +363,6 @@ class Node:
 		used for later use (i.e paths longer than 1
 		from self to intermediate nodes.
 		"""
-		
-#		print 'find shortest paths from', self, 'to', node
 		
 		if node in self.shortest_paths:
 			# already computed the shortest path to this node
@@ -498,7 +495,6 @@ class Rule:
 		self.probability = probability
 	
 	def probability_labels(self, args):
-		#SOMETHING IS NOT RIGHT HERE!!!
 		"""
 		Compute the probability of a rule according
 		to how many of the nodes it generates can

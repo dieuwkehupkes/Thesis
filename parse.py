@@ -2,10 +2,10 @@
 from file_processing import *
 
 #parse all sentences according to variables specified
-metric = Dependencies.get_spanrels
 rule_generator = Alignments.hat_rules
 max_length = 40
-prob_function = Rule.probability_labels
+prob_function = Rule.probability_spanrels
+prob_function_args = [True,True]
 label_args = [1,1,3]
 
 #check if the number of arguments is correct
@@ -28,7 +28,7 @@ else:
 # compute trees and scores and write to files
 
 files = ProcessFiles(all_alignments, all_sentences, all_dependencies)
-files.score_all_sentences(rule_generator, prob_function, label_args, max_length, tree_file, scores)
+files.score_all_sentences(rule_generator, prob_function, prob_function_args, label_args, max_length, tree_file, scores)
 
 #relations = files.relation_count(40)
 #files.print_dict(relations, relation_file)

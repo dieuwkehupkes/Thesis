@@ -3,6 +3,7 @@ Module for dealing with dependencies.....
 """
 
 import re
+import copy
 
 class Dependencies():
 	"""
@@ -120,28 +121,92 @@ class Dependencies():
 			self.wordspans[key] = (min(min(deplist)),max(max(deplist)))
 			return self.wordspans[key]
 
-	def get_spanrels(self):
-		"""
-		Create a dictionary of dependencies between
-		word-positions and word spans. Go through the
-		dependency dictionary and replace heads by the
-		span that constitutes their position and dependents
-		by their wordspan. I.e., if 
+#	def spanrelations(self):
+#		"""
+#		Create a dictionary of relations between
+#		word-positions and word spans. Go through the
+#		dependency dictionary and replace heads by the
+#		span that constitutes their position and dependents
+#		by their wordspan. I.e., if 
 
-			pos_head: [pos_dependent, reltype]
+#			pos_head: [pos_dependent, reltype]
 
-		was in the dependency dictionary, then
+#		was in the dependency dictionary, then
 
-			(pos_head-1, pos_head): span[pos_dependent]
+#			(pos_head-1, pos_head): span[pos_dependent]
 
-		will be in the dictionary returned by this function.
-		"""	
-		spanrels = {}
+#		will be in the dictionary returned by this function.
+#		"""	
+#		spanrels = {}
+#		for key in self.deps:
+#			spanrels[(key-1,key)] = []
+#			for dependent in self.deps[key]:
+#				spanrels[(key-1,key)].append(self.wordspans[dependent[0]])
+#		return spanrels
+ 
+ 	def spanrelations(self, rightbranching = False, leftbranching = False):
+ 		"""
+ 		Create a dictionary with spanrelations that are 'deeper'
+ 		than the standard relations in the dependency parse, and allow
+ 		for stepwise combining a head with its arguments. The latter can
+ 		be done in different fashions: if 'rightbranching' is true, relations
+ 		will be included that first combine with the right arguments, and then
+ 		with the left arguments, and vise versa for leftbranching. If both left-
+ 		and rightbranching are true, ......
+ 		"""
+ 		#Create normal span relations
+ 		spanrels = {}
 		for key in self.deps:
 			spanrels[(key-1,key)] = []
 			for dependent in self.deps[key]:
 				spanrels[(key-1,key)].append(self.wordspans[dependent[0]])
-		return spanrels
+		#create deeper span relations
+		deep_spanrels = copy.copy(spanrels)
+		# Maybe I can improve on this by just generating a list that specifies in which
+		# order things can be connected, so that it becomes somewhat more uniform
+		for head in spanrels:
+			deplist = self.argument_list(head)
+			index_head = deplist.index(head)
+			nr_left = index_head
+ 			nr_right = len(deplist) - 1 - index_head
+			if rightbranching:
+				#create relations that connect first arguments
+				for argument in xrange(nr_right-1):
+					right_arg = deplist[-1-argument]
+					other = (deplist[index_head][0], deplist[-2-argument][1])
+					if other != head:
+						rel_list = spanrels.get(other, [])
+						rel_list.append(right_arg)
+						deep_spanrels[other] = rel_list
+				#create relations that connect left arguments
+				for argument in xrange(nr_left):
+					left_arg = deplist[argument]
+					other = (deplist[argument+1][0], deplist[argument-1][1])
+					if other != head:
+						rel_list = spanrels.get(other,[])
+						rel_list.append(left_arg)
+						deep_spanrels[other] = rel_list
+			if leftbranching:
+				#create relations that connect left arguments
+				for argument in xrange(nr_left-1):
+					left_arg = deplist[argument]
+					other = (deplist[argument+1][0],deplist[index_head][1])
+					if other != head:
+						rel_list = spanrels.get(other,[])
+						rel_list.append(left_arg)
+						deep_spanrels[other] = rel_list
+				#create relations that connect right arguments
+				for argument in xrange(nr_right):
+					right_arg = deplist[-1-argument]
+					other = (deplist[0][0], deplist[-2-argument][1])
+					if other != head:
+						rel_list = spanrels.get(other,[])
+						rel_list.append(right_arg)
+						deep_spanrels[other] = rel_list
+		#Create both left and right-branching arguments
+		return deep_spanrels
+				
+						
  
  	def get_comp_spanrels(self):
  		"""
@@ -161,7 +226,6 @@ class Dependencies():
 			if comp_spanrels[(key-1,key)] == []:
 				del comp_spanrels[(key-1,key)]
 		return comp_spanrels
- 
 	
  	def labels(self, ldepth = 0, rdepth = 0, max_var = 1):
  		"""
@@ -182,7 +246,7 @@ class Dependencies():
  		if max_var is 2, Y/X and X\Y. X+Y is only constructed if there is a Z such that
  		X+Y/Z or Z\X+Y. 'Normal' labels are prefered over compound labels.
  		"""
- 		#first create standard labe ls:
+ 		#first create standard labels:
  		labels = {}
  		#In case input is 0,0,0 no labels are preferred:
  		if ldepth == rdepth == max_var == 0:
@@ -194,27 +258,19 @@ class Dependencies():
  		head_span = (self.head_pos -1, self.head_pos)
  		labels[head_span] = 'head'
  		labels[self.wordspans[self.head_pos]] = 'root'
-#	 	print self.wordspans, '\n'
  		for head in self.deps:
-# 			print 'head', head
  			head_span = (head-1, head)
  			for dep in self.deps[head]:
-# 				print 'dep', dep
  				dep_span = self.wordspans[dep[0]]
  				labels[dep_span] = dep[1]
  				dep_word_span = (dep[0]-1, dep[0])
  				labels[dep_word_span] = labels.get(dep_word_span, dep[1]+'-head')
-#	 	print labels, '\n'
  		if max_var == 1 or (ldepth == 0 and rdepth ==0):
  			return labels
  		#loop through labels again to find compound labels  
  		for head in self.deps:
  			head_span = (head-1, head)
- 			deplist = [head_span]
- 			for dep in self.deps[head]:
-	 			dep_span = self.wordspans[dep[0]]
- 				deplist.append(dep_span)
- 			deplist.sort()	
+ 			deplist = self.argument_list(head_span)
  			#Compute index head and nr of right and left dependents
  			index_head = deplist.index(head_span)
  			nr_left = index_head
@@ -222,7 +278,7 @@ class Dependencies():
  			for left in [i for i in xrange(0, ldepth+1) if i < max_var and i<= nr_left]:
  				for right in [j for j in xrange(rdepth+1) if left+j < max_var and j <= nr_right]:
  					if left == 0:
- 						new_label = labels[self.wordspans[head]]
+ 						new_label = labels.get(self.wordspans[head],'root')
  						left_index = deplist[0][0]
  					else:
  						left_index = deplist[left-1][1]
@@ -242,6 +298,19 @@ class Dependencies():
 					labelled_span = (left_index, right_index)
 					labels[labelled_span] = labels.get(labelled_span, new_label)
  		return labels
+
+	def argument_list(self,head_span):
+		"""
+		return a list with spans of the head and
+		its arguments
+		"""
+		deplist = [head_span]
+		head = head_span[1]
+		for dep in self.deps[head]:
+			dep_span = self.wordspans[dep[0]]
+			deplist.append(dep_span)
+		deplist.sort()
+		return deplist
 
  	def annotate_span(self, labels):
  		"""
@@ -275,7 +344,14 @@ class Dependencies():
 
 	def print_deps(self):
 		print self.deps, '\n'
-		
+	
+def demo():
+	dependencies = ['nsubj(give-2, I-1)','root(ROOT-0, give-2)','det(boy-4, the-3)','iobj(give-2, boy-4)','det(flowers-6, some-5)','dobj(give-2, flowers-6)']
+	print 'Sentence: I give the boy some flowers'
+	print 'Dependencies: nsubj(give-2, I-1), root(ROOT-0, give-2), det(boy-4, the-3), iobj(give-2, boy-4), det(flowers-6, some-5), dobj(give-2, flowers-6)\n'
+	print 'Word spans:'
+	d = Dependencies(dependencies)
+	d.print_labels(d.wordspans)
 
 """
 Testing
@@ -283,16 +359,13 @@ Testing
 
 def test():
 	"""
-	Test labelling for sentence 'I give the boy some flowers'
+	Test right branching relations for sentence 'I give the boy some flowers'
 	"""
 	dependencies = ['nsubj(give-2, I-1)','root(ROOT-0, give-2)','det(boy-4, the-3)','iobj(give-2, boy-4)','det(flowers-6, some-5)','dobj(give-2, flowers-6)']
 	d = Dependencies(dependencies)
-	man_labels = {(0,1): 'nsubj', (1,2): 'head', (2,3): 'det', (2,4): 'iobj', (3,4): 'iobj-head', (4,5): 'det', (4,6): 'dobj', (5,6): 'dobj-head', (0,6): 'root', (0,2) :'root' + '\\' +'iobj+dobj', (0,4): 'root' + '\\' +'dobj', (1,4): 'nsubj/root' + '\\' +'dobj', (1,6): 'nsubj/root', (2,6): 'iobj+dobj'}
-	labels = d.labels(1,2,4)
-	print d.labels(0,0,0)
-	print set(man_labels.keys()) - set(labels.keys())
-	print set(labels.keys()) - set(man_labels.keys())
-	return labels == man_labels
+	relations = d.relations(True,True)
+	man_relations = {(1, 2): [(0, 1), (2, 4), (4, 6)], (5, 6): [(4, 5)], (3, 4): [(2, 3)], (1,6): [(0,1)], (1,4): [(4,6)], (0,4): [(4,6)], (0,2): [(2,4)]}
+	return relations == man_relations
 
 
 def test1():
