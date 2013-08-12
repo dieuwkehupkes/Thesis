@@ -2,6 +2,8 @@
 Module for testing behaviour of Dependency class
 """
 
+from dependencies import *
+
 
 def dependencies_test1():
 	"""
@@ -11,7 +13,7 @@ def dependencies_test1():
 	dependencies = ['nn(President-2, Mr-1)','nsubj(welcome-6, President-2)','nsubj(welcome-6, I-4)','aux(welcome-6, would-5)','root(ROOT-0, welcome-6)','det(action-8, some-7)','dobj(welcome-6, action-8)','prep(action-8, in-9)','det(area-11, this-10)','pobj(in-9, area-11)']
 	d = Dependencies(dependencies)
 	spanrels = d.spanrelations()
-	manual_spanrels= {(1,2): [(0,1)],(5,6): [(0,2),(3,4),(4,5), (6,11)], (7,8):[(6,7),(8,11)],(8,9): [(9,11)], (10,11): [(9,10)]}
+	manual_spanrels= {(1,2): set([(0,1)]), (5,6): set([(0,2),(3,4),(4,5),(6,11)]), (7,8):set([(6,7),(8,11)]),(8,9): set([(9,11)]), (10,11): set([(9,10)])}
 	return spanrels == manual_spanrels
 
 def labels_test1():
@@ -81,28 +83,38 @@ def labels_annotation_test():
 	new_labels = d.annotate_span(labels)
 	return new_labels == man_labels
 
-def rightbranching_relations_test():
+def rr_test():
 	"""
 	Test right branching relations for sentence 'I give the boy some flowers'
 	"""
 	dependencies = ['nsubj(give-2, I-1)','root(ROOT-0, give-2)','det(boy-4, the-3)','iobj(give-2, boy-4)','det(flowers-6, some-5)','dobj(give-2, flowers-6)']
 	d = Dependencies(dependencies)
 	relations = d.spanrelations(True,False)
-	man_relations = {(1, 2): [(0, 1), (2, 4), (4, 6)], (5, 6): [(4, 5)], (3, 4): [(2, 3)], (1,6): [(0,1)], (1,4): [(4,6)]}
+	man_relations = {(1, 2): set([(0, 1), (2, 4), (4, 6)]), (5, 6): set([(4, 5)]), (3, 4): set([(2, 3)]), (1,6): set([(0,1)]), (1,4): set([(4,6)])}
 	return relations == man_relations
 
-def leftbranching_relations_test():
+def lr_test():
 	"""
 	Test left branching relations for sentence 'I give the boy some flowers'
 	"""
 	dependencies = ['nsubj(give-2, I-1)','root(ROOT-0, give-2)','det(boy-4, the-3)','iobj(give-2, boy-4)','det(flowers-6, some-5)','dobj(give-2, flowers-6)']
 	d = Dependencies(dependencies)
 	relations = d.spanrelations(False,True)
-	man_relations = {(1, 2): [(0, 1), (2, 4), (4, 6)], (5, 6): [(4, 5)], (3, 4): [(2, 3)], (0,4): [(4,6)], (0,2): [(2,4)]}
+	man_relations = {(1, 2): set([(0, 1), (2, 4), (4, 6)]), (5, 6): set([(4, 5)]), (3, 4): set([(2, 3)]), (0,4): set([(4,6)]), (0,2): set([(2,4)])}
+	return relations == man_relations
+
+def allr_test():
+	"""
+	Test left branching relations for sentence 'I give the boy some flowers'
+	"""
+	dependencies = ['nsubj(give-2, I-1)','root(ROOT-0, give-2)','det(boy-4, the-3)','iobj(give-2, boy-4)','det(flowers-6, some-5)','dobj(give-2, flowers-6)']
+	d = Dependencies(dependencies)
+	relations = d.spanrelations(True,True)
+	man_relations = {(1, 2): set([(0, 1), (2, 4), (4, 6)]), (5, 6): set([(4, 5)]), (3, 4): set([(2, 3)]), (0,4): set([(4,6)]), (0,2): set([(2,4)]), (1,4): set([(0,1),(4,6)]), (1,6): set([(0,1)])}	
 	return relations == man_relations
 
 def dependencies_test_all():
 	"""
 	Run all dependency tests.
 	"""
-	return dependencies_test1() and labels_test1() and labels_test2() and labels_annotation_test() and labels_test3() and rightbranching_relations_test() and leftbranching_relations_test()
+	return dependencies_test1() and labels_test1() and labels_test2() and labels_annotation_test() and labels_test3() and rr_test() and lr_test() and allr_test()

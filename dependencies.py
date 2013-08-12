@@ -157,52 +157,34 @@ class Dependencies():
  		#Create normal span relations
  		spanrels = {}
 		for key in self.deps:
-			spanrels[(key-1,key)] = []
+			spanrels[(key-1,key)] = set([])
 			for dependent in self.deps[key]:
-				spanrels[(key-1,key)].append(self.wordspans[dependent[0]])
+				spanrels[(key-1,key)].add(self.wordspans[dependent[0]])
 		#create deeper span relations
 		deep_spanrels = copy.copy(spanrels)
-		# Maybe I can improve on this by just generating a list that specifies in which
-		# order things can be connected, so that it becomes somewhat more uniform
 		for head in spanrels:
+			relations = []
 			deplist = self.argument_list(head)
 			index_head = deplist.index(head)
-			nr_left = index_head
- 			nr_right = len(deplist) - 1 - index_head
-			if rightbranching:
-				#create relations that connect first arguments
-				for argument in xrange(nr_right-1):
-					right_arg = deplist[-1-argument]
-					other = (deplist[index_head][0], deplist[-2-argument][1])
-					if other != head:
-						rel_list = spanrels.get(other, [])
-						rel_list.append(right_arg)
-						deep_spanrels[other] = rel_list
-				#create relations that connect left arguments
-				for argument in xrange(nr_left):
-					left_arg = deplist[argument]
-					other = (deplist[argument+1][0], deplist[argument-1][1])
-					if other != head:
-						rel_list = spanrels.get(other,[])
-						rel_list.append(left_arg)
-						deep_spanrels[other] = rel_list
-			if leftbranching:
-				#create relations that connect left arguments
-				for argument in xrange(nr_left-1):
-					left_arg = deplist[argument]
-					other = (deplist[argument+1][0],deplist[index_head][1])
-					if other != head:
-						rel_list = spanrels.get(other,[])
-						rel_list.append(left_arg)
-						deep_spanrels[other] = rel_list
-				#create relations that connect right arguments
-				for argument in xrange(nr_right):
-					right_arg = deplist[-1-argument]
-					other = (deplist[0][0], deplist[-2-argument][1])
-					if other != head:
-						rel_list = spanrels.get(other,[])
-						rel_list.append(right_arg)
-						deep_spanrels[other] = rel_list
+			if leftbranching and rightbranching:
+				left = [(i,j,j+1) for i in xrange(len(deplist)-2) for j in xrange(index_head,len(deplist)-1) if j>i ]
+				right = [(i+1,j, i) for j in xrange(index_head,len(deplist)) for i in xrange(index_head) if i+1<j]
+				relations = left + right
+			elif rightbranching:
+				right = [ (index_head, i, i+1) for i in xrange(index_head+1, len(deplist)-1)]
+				left = [ (i+1, len(deplist)-1, i) for i in xrange(index_head) ]
+				relations = right + left
+			elif leftbranching:
+				left = [ ( i+1, index_head ,i) for i in xrange(index_head-1) ]
+				right = [ (0,i,i+1) for i in xrange(index_head, len(deplist)-1) ]
+				relations = left + right
+			# add relations to dctionary
+			for tuples in relations:
+				rel1 = (deplist[tuples[0]][0],deplist[tuples[1]][1])
+				rel2 = deplist[tuples[2]]
+				rel_list = deep_spanrels.get(rel1,set([]))
+				rel_list.add(rel2)
+				deep_spanrels[rel1] = rel_list
 		#Create both left and right-branching arguments
 		return deep_spanrels
 				
