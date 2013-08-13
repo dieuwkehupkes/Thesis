@@ -76,11 +76,17 @@ class Scoring():
 		score = parse.prob()
 		if prob_function == Rule.probability_spanrels:
 			import math
-			score = math.log(score,2)/args[1]
+			if args[1] != 0:
+				score = math.log(score,2)/args[1]
+			else:
+				score = 1
 		elif prob_function == Rule.probability_labels:
 			import math
 			score = 1/score
-			score = 1- math.log(score,2)/parse.nr_of_nonterminals()
+			if parse.nr_of_nonterminals != 0:
+				score = 1- math.log(score,2)/parse.nr_of_nonterminals()
+			else:
+				score = 0
 		return parse, score
 
 
