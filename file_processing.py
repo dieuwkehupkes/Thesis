@@ -137,7 +137,7 @@ class ProcessFiles():
 		if sentences[10] != 0:
 			score10 = total_score[10]/sentences[10]
 			
-		results_table = [ ['length', 'number','score'], ['','',''], ['<10', sentences[10], score10],['<20', sentences[20], score10],['<40', sentences[40], score40], ['all', sentences[100], score100] ]
+		results_table = [ ['length', 'number','score'], ['','',''], ['<10', sentences[10], score10],['<20', sentences[20], score20],['<40', sentences[40], score40], ['all', sentences[100], score100] ]
 		results_string = ''
 		for triple in results_table:
 			print '%s %20s %20s' % (triple[0], triple[1], triple[2])
