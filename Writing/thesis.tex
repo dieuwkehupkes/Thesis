@@ -50,42 +50,30 @@
 
 % Introduction to machine translation, quote Warren Weaver
 
+Language and meaning play an important role in many aspects of our lifes, and when means of transportation and communication over larger distances became more publicly available, contact with other cultures became more prevalent and being able to understand how meanings are expressed in other languages than your mother tongue more important. Translation has something intriguing, as it seems to touch on something that is universal for all human beings, but is yet, even for human beings, a very non trivial task. We would like to start this paper with a famous quote of Warren Weaver, that we believe has, besides the author of current work, inspired many to pursue a career in machine translation:
+
 \begin{quote}
-\textit{When I look at an article in Russian, I say: `This is really written in English, but it has been coded in some strange symbols. I will now proceed to decode.}
+\textit{When I look at an article in Russian, I say: `This is really written in English, but it has been coded in some strange symbols. I will now proceed to decode.} \citep{weaver1955translation}
 \end{quote}
 
-Evidently, automatic translation is not as easily solved as Weaver thought at the time. Over 60 years later, the state-of-the-art systems are still not able to produce translations of an arbitrary text with a quality comparable to that of a translation of a human translator. This was not for the lack of trying, on google.scholar one can find maar liefst .... articles with ``Machine Translation" in the title (and ... with ``machine translation'' in the document), in which many different methods have been explored. This work focuses on one such method: compositional translation. The compositional approach to translation is intuitively attractive, as it touches the fundamentals of semantics. As we are able to infer the meaning from a sentence by considering the words in it and the structure blablabla.... it seems reasonable to regard translation as a ...
-
-suming we can infer the meaning of a sentence using the words in it and 
-
-
-
-%Describe compositional translation
-%Explain why compositional translation is attractive from a theoretical point of view.
-
-In many fields in which translations occur (computer science, logic, philosophy), computational translation is a very common method. The semantics of an expression in a certain logic, for instance, can be unambiguously determined by considering the terms and the methods used to combine them. Translating such an expression into another logical language can be effectively carried out by translating these terms and methods into the terms and methods particular for the second logic.
-
-%Explain why for language it is not so straight forward that we can do this: words have multiple meanings, sentences are vague and ambiguous, building blocks unclear
-%Explain that we also do not a-priori dispose over grammars and mappings, as we did not design natural languages as artificial languages, nor is it clear of such mappings even exist.
+Evidently, automatic translation is not as easily solved as Weaver thought at the time. Over 60 years later, the state-of-the-art systems are still not able to produce translations of arbitrary pieces of text with a quality comparable to that of a translation of a human translator. This was not for the lack of trying, on Google Scholar one can found over 100,000 articles that contain the phrase ``Machine Translation'', of which almost 10,000 were published in the last two years.\\
+Many different methods have been explored in these articles, one of which is the transfer method. Contrary to more direct approaches that treat sentences as structureless sequences that can be translated into a sequence of words in another language more or less word for word, the transfer method aims to find structural representations for sentences in the source and target languages and finding a mapping between them. The translation process then consists of analysing the source sentence into a structure, mapping this structure to a target side structure, and generating a target sentence from this structure. A graphical representation of this process is shown in Figure \ref{fig:triangle}. The depicted pyramid shows that direct translation can be seen as an extreme of the transfer method, in which the distance from the sentences to the intermediate representation is zero, and thus no analysis or generation takes place. On the other end of the spectrum, there is the case in which the intermediate representation is a universal one, independent of source and target language, and the mapping is the identity mapping. Such an universal intermediate representation or language is called an `interlingua'. The pyramid also shows, that transfer can be employed in many ways, varying the distance from intermediate representation to source and target language (analysis and generation, respectively). 
+%Say something about which kind of transfer we are interested in in particular? relate to compositionality?
 
 
-% although not every grammar is suitable for compositional meaning assignment, the class of languages that can be analyzed is not restricted, nor are the meanings that can be assigned: any recursively enumerable language can be generated by a compositional grammar, and any semantics can be dealt with in a compositional way. 
-%Is this helpful? Is NL recursively enumerable? What about ambiguity
+\begin{figure}[!ht]
+\includegraphics[scale=0.2]{translation_triangle.png}
+\caption{Vauquois pyramid?}\label{fig:triangle}
+\end{figure}
 
-However, none of this teaches us if compositional translation is a reasonable strategy for translating natural language. Intuitively, it seems reasonable that 'who-did-what-to-whom-relations' are universal for languages, but exploiting this fact in translation has proven to be a non-trivial task. The present work does not aim to develop a model for compositional translation of language, but rather attempts to empirically analyse if it is realistic to aim for one.\\
-%Explain how this question becomes practical
-Although this question is of theoretical nature, blabla explain that we have to deal with data such that it merely transforms to the question: can we find compositionality in the corpora we are training on, that an be of use in translation models. We will therefore also pay some attention to the use of the results, and make suggestions for future work.
 
+Although computationally troublesome and not as successful as one might hope in practice, the transfer method is theoretically interesting. Especially when interpreting the intermediate representations as instructions that tell how to derive the meaning of a sentence (such structures could be seen as semantically motivated syntactic structures), transfer addresses the problem of translation on a very fundamental level. Although very many translation models have tried to incorporate transfer (refs?), and compositional translation is theoretically well studied (refs?), it is not fully understood if translation from natural language to natural language can actually be treated in such a compositional way. In translation between other domains (logical languages, programming languages), compositional translation is almost trivially a sound approach (anders), as the expressions of such languages are unambiguous and the compositional grammar according to which the meaning was derived is known (is it only this?). Natural language has neither of these qualities, which does not only complicate the construction of a translation system, but also makes that the existence of such a system is not a priori certain (anders).  The soundness of the approach could in practice be confirmed by a machine that successfully carried out translation using transfer and theoretically be refuted by finding real examples that can not be translated as such. However, attempting to create a system using transfer without thinking about its potential in theory seems ... ?, while it also turns out that theoretical examples of non-compositional translations, such as idiomatic translations, are not per se a problem for compositional translation in practice. The question thus remains, how much is left when we have accounted for such non-compositional phenomena, how compositional is the rest in practice, and thus: how far can the transfer strategy take us in translation.\\
+Nowadays, the availability of huge parallel corpora with sentences that are each others translation allows for an empirical investigation of this question. The path trodden in this paper will rely on these corpora, which we believe contains much information about both language and translation. We will investigate how the intuitions of linguists correspond with translation data, hereby implicitly addressing reasonability of compositional translation.\\
+The contribution of this paper is thus twofold. First of all, we hope that empirical investigation of translation corpora might bring us closer to the invariants of language. In this sense, this thesis is interesting on a theoretical linguistic level. Secondly, the results of this paper can be directly related to the field of machine translation, as it addresses the usefulness of linguistic for the transfer method.
 
 \section*{Thesis Outline}
 
-%Rewrite this when the rest is written
-As mentioned before, the primary goal of this thesis is to investigate whether predicate-argument relations are preserved during translation. To do so, a tree will be searched that respects both the alignment (completely) and as much of the predicate-argument relations present in the source sentence as possible. The resulting tree will be scored according to how many of the predicate argument relations were allowed by the alignment, thus yielding a compositionality measure for the sentence.\\
-The following chapter will give some theoretical background: it will explain the notion of alignment-respecting trees (anders) and provide some information on the grammar formalism used to extract predicate-argument relations.\\
-Chapter give more information on the implementation of the research, while the actual experiments and their results will be presented in chapter 
-%We probably also need a section about compositionality (lets see how that is gonna fit in)
-%Describe the rest
-
+We will start this paper with some background information on MT (Chapter \ref{ch:background}). We will discuss important principles on a fundamental level, provide technical details on how transfer is employed in different models, and discuss some current state of the art models using transfer. In Chapter 2, we will discuss transfer on a more theoretical level, explaining how its underlying assumptions manifest could manifest themselves in the corpora, and discussing empirical results of others. (anders)
 
 
 
@@ -94,7 +82,8 @@ Chapter give more information on the implementation of the research, while the a
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %BACKGROUND ON MT AND TRANSFER MODELS
 
-\chapter{Background}
+\chapter{Background: MT}
+\label{ch:background}
 
 Machine translation (MT) is a very complex problem, for which many approaches have been tried. In this thesis we focus on one such approach: the transfer method. More precisely, we are interested in \textit{statistical} models using this method. As discussing one particular method without as much as mentioning other possibilities seems a bit silly, we will start with a brief introduction to transfer models and statistical models. The most important sections of this chapter are section \ref{sec:theory} and \ref{sec:main}, in which, respectively, the main assumptions underpinning transfer methods and a number of proposed statistical models using transfer are discussed. The first two sections are introductory sections on early transfer models (\ref{sec:intro}) and statistical machine translation (\ref{sec:SMT}), and might be superfluous by readers familiar with the field. The chapter will be concluded with a short summary.
 
@@ -610,7 +599,7 @@ We will say that a dependency relation from word $i$ to word $j$ is respected by
 Let $s = w_1 w_2 \dots w_n$ be a sentence, and $D = \{ (i,j) |$ there is a dependency arrow from word $w_i$ to word $w_j \}$ a set of dependencies describing a dependency tree for $s$. Let span($j$) be the range $[m,n]$ in which $m$ and $n$ are the maximum and minimum position that can be reached from $w_j$ by following the directed dependency arrows, respectively. A dependency relation $(i,j)$ is said to be respected by an alignment tree $T$ over $s$ if and only if there is a node in $T$ of which both $[i,i]$ and span($j$) are children.
 \end{definition}
 
-In Experiment 1, we will search for the HAT in which most of these relations are respected, as defined in \ref{metric:m1}.
+The score of a HAT can be defined recursively as follows:
 
 \begin{metric}\label{metric:m1}
 Let $s = w_1 w_2 \dots w_n$ be a sentence, and $D = \{ (i,j) |$ there is a dependency arrow from word $w_i$ to word $w_j \}$ a set of dependencies describing a dependency tree for $s$. Let $D' = \{ (i,\textrm{span}(j))$ $|$ $D(i,j) \land 1 \leq i,j \leq n \}$ be the set $D$ in which each dependent $w$ is replaced by its span $[i,j]$, with $i$ and $j$ the maximum and minimum position, respectively, that can be reached from $w$ by following the directed dependency arrows. Let $H$ be an alignment tree for $s$. The consistency of $H$ with $D$ is now defined as the score of its highest node $N$::
@@ -637,7 +626,7 @@ An external parser was used \citep{bird2009natural} to parse the sentence into t
 
 \subsection{Results}
 
-The results of Experiment 1 can be found in table \ref{tab:scores1}
+The average score of sentences up to 10, 20 and 40 words can be found in table \ref{tab:scores1}.
 
 \begin{table}[!h]
 \centering
@@ -652,6 +641,12 @@ English-Chinese & 0.410 & 0.382 & 0.361\\
 \end{tabular}
 \caption{Results Experiment 1, automatic alignments}\label{tab:scores1}
 \end{table}
+
+Furthermore,  
+ 
+\begin{figure}
+\caption{preservance relations}\label{fig:relpreservation}
+\end{figure}
 
 %table with which results were respected?
 
