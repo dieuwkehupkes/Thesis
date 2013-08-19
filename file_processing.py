@@ -103,7 +103,8 @@ class ProcessFiles():
 					treesf.write("No result, dependency structure inconsistent with sentence")
 					print "Alignments has more words than sentence, skipped"
 			else:
-				labels = dependencies.labels(label_args[0], label_args[1], label_args[2])
+				l = dependencies.labels(label_args[0], label_args[1], label_args[2])
+				labels = dependencies.annotate_span(l)
 				scoring = Scoring(new[0], new[1], labels)
 				#Set arguments for probability function
 				if probability_function == Rule.probability_spanrels:
