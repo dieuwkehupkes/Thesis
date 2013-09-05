@@ -189,7 +189,6 @@ class Alignments:
 				yield rule
 
 
-#	def hat_rules(self, prob_function, span_relations = {}, labels = {}):
 	def hat_rules(self, prob_function, args, labels = {}):
 		"""
 		Returns a generator with all rules of a PCFG

@@ -35,20 +35,22 @@
 \begin{document}
 
 
-\chapter{Background}
+\chapter{Background Machine Translation}
 
-Introduction to background.
+Although we do not aim to create a new model, and our research is mainly an empirical analysis of the English language through translation data, the research is very closely related to machine translation. Not only is the question posed very interesting to a type of MT models,  many of the tools used stems from the field of MT, and builds on previous MT research. Furthermore, people not well known with the field tend to largely (?) underestimate the difficulty of automatic translation, and the number of attempts that have been done to reach this (anders). This chapter is meant not only to provide the reader information about the framework in which this research is conducted, but also to let the reader appreciate this last fact. We will start by briefly describing how the field has developed since the very first attempts, exemplifying the cycle that seems to have occurred in the types of models that were investigated (anders). This brief history will contain references to further sections, in which types of models are further explained. We have tried to keep this history short and concise and although we do think that it provides a good intuition of the developments in MT over the years, we will by no means claim that it gives a complete overview of what has happened in the field. For more elaborate overviews, the reader might want to consult \cite{hutchins1992introduction} (early MT), \cite{somers1999review} (exemplar based MT) or \cite{koehn2008statistical} (statistical MT). The current chapter is a summary and literature study, but does not present original work, for readers that have an extensive knowledge of MT translation, it might thus be superfluous. 
 
-\section{Machine Translation}
+%Furthermore, our description of the model will be mostly theoretical.  Say something about ignoring decoding??
 
-Machine Translation arose as a research field almost immediately after the emergence of the first computers. In these early days, several different approaches were explored. One branch of research approached translation as encoding, such models with a direct approach to translation are now known as the first generation models. Sentences were translated more or less word for word using some contextual information. Figure \ref{fig:georgetown} shows the translation of the words `much' and `many' into Russian, according to on of the early systems \citep{dostert1955georgetown}.
+
+\section{A brief History of Machine Translation}
+
+Machine Translation arose as a research field almost immediately after the emergence of the first computers. In these early days, several different approaches were explored. One branch of research approached translation as encoding, such models with a direct approach to translation are now known as the first generation models. Sentences were translated more or less word for word using some contextual information. Figure \ref{fig:georgetown} contains an example of the translation of the words `much' and `many' into Russian, according to one of the early systems \citep{dostert1955georgetown}.
 
 \begin{figure}
 \begin{framed}
 \footnotesize{
 \begin{enumerate}
 \item[1] Is the preceding word \textit{how}? (yes $\rightarrow$ \textcyr{skol\char126 ko}, no $\rightarrow$ 2)
-%\item[2] \textcyr{skol\char126 ko}
 \item[2] Is the preceding word \textit{as}? (yes $\rightarrow$ \textcyr{stol\char126 ko qe}, no $\rightarrow$ 3)
 \item[3] Is current word \textit{much}? (yes $\rightarrow$ 5, no $\rightarrow$ 6)
 \item[4] Not to be translated
@@ -60,7 +62,7 @@ Machine Translation arose as a research field almost immediately after the emerg
 \caption{Translation of much and many from English to Russian in a direct translation system. Source: \cite[p.56]{hutchins1992introduction}.}\label{fig:georgetown}
 \end{figure}
 
-Another branch of research took a more theoretical approach involving fundamental linguistic research. The most ambitious were approaches aiming at finding an abstract meaning representation (interlingua) from the source text, and generating a target translation from this text. The results of such models were disappointing, and the general consensus in the MT community was that the less ambitious transfer approach, in which different structural representations for source and target language were used, had the best prospects for significant improvements (anders). In such transfer models, an extra stage is added to the process: the source text is first analysed into a structural representation containing information about the meaning and structure of the text and then this representation is mapped to a target side representation from which a target text can be generated. An example of a transfer rule used in the system Ariane (ref), is depicted in Figure \ref{fig:transferex}.
+Another group of researchers followed (?) a more theoretical approach, involving fundamental linguistic research. Such approaches aimed at a translation of language considering the underlying structure of language. The most ambitious approaches aimed at finding representational systems, called interlingua, to express meaning on an abstract level and translate via such abstract meaning representations (thus finding an abstract meaning representation from the source text and generating a target translation from this representation). The results of such models were disappointing, and the general consensus in the MT community was that the less ambitious transfer approach, in which different structural representations for source and target language were used, had the best prospects for significant improvements. In such transfer models, an extra stage is added to the process: the source text is first analysed into a structural representation containing information about the meaning and structure of the text and then this representation is mapped to a target side representation from which a target text can be generated. An example of a transfer rule used in the system Ariane (ref), is depicted in Figure \ref{fig:transferex}.
 
 %better placement of arrow
 \begin{figure}
@@ -72,37 +74,176 @@ Another branch of research took a more theoretical approach involving fundamenta
 \caption{Transfer rule that accounts for the translation of `A supplies B with C' into `A fournit C a B' (accenten)}\label{fig:transferex}
 \end{figure}
 
-Although such systems were sometimes successful in small subdomains of language (e.g., \cite{chandioux1976meteo} for meteorolocial forecasts), it is very hard to formalize all of language in one system. Driven by this thought, a new line of research came of the ground, that was not primarily based on linguistic knowledge, but on large pairs of texts that were translations of each other.\footnote{Such `parallel corpora' were not created for these purposes, but existed by the grace of multilingual governments whose proceedings (?) were kept in two languages. Techniques to align these proceedings at the sentence level ... valuable data for MT research..} Corpus based models can be roughly divided into exemplar based models and statistical models. 
+Although such systems were sometimes successful in small subdomains of language (e.g., \cite{chandioux1976meteo} for meteorolocial forecasts), it is very hard to formalize all of language in one system. Driven by exactly this thought, a new line of research came of the ground, that was not primarily based on linguistic knowledge, but on large pairs of texts that were translations of each other.\footnote{Such `parallel corpora' were not created for these purposes, but existed by the grace of multilingual governments whose proceedings (?) were kept in two languages. Techniques to align these proceedings at the sentence level (ref) made such parallel texts very valuable for MT research.} Corpus based models can be roughly divided into exemplar based models and statistical models. 
 
-Exemplar based machine translation (EBMT) is directly based on analogy: sentences are translated by finding examples in the corpus similar to (fragments of) the sentence, and generate a translation by recombining them. The early EMBT researchers had the misfortune that computational standards were not as they are today, their models often treat only small sublanguages, are computationally not executable and certainly not scalable. 
+Exemplar based machine translation (EBMT) is directly based on analogy: sentences are translated by finding examples in the corpus similar to (fragments of) the sentence, and generate a translation by recombining them. The early EMBT researchers had the misfortune that computational standards were not as they are today, their models often treat only small sublanguages, are computationally not executable and certainly not scalable.
+%Dit moet net iets anders omschreven worden, mensen zijn hier namelijk ook niet op terug gekomen ook al is er nu meer computationele kracht, dus het magere succes lag duidelijk niet alleen daaraan
 
-The first working statistical models \citep{brown1988statistical,brown1990statistical,brown1993mathematics}, however, were ground-breaking. Although they were intrinsically word-based, the quality of their translations was an enormous improvement over any earlier model, not to mention the fact that the models, now known as `IBM model 1-5', were able to output a translation for any given input sentence (even ungrammatical ones). The statistical framework takes the view that every sentence $t$ is a possible translation of every sentence $s$. Modelling translation thus consists of modelling the probability $P(t|s)$ that $t$ is a translation of $s$, and finding the sentence $t$ for which this probability is highest. This probability distribution $P(t|s)$ has to be learned from the parallel corpus. A more detailed description of the models, as well as information on how they deal with phenomena as reordering, can be found in Section \ref{sec:IBM}.
+The first working statistical models \citep{brown1988statistical,brown1990statistical,brown1993mathematics}, however, were ground-breaking. Although they were intrinsically word-based, the quality of their translations was an enormous improvement over any earlier model, not to mention the fact that the models, now known as `IBM model 1-5', were able to output a translation for any given input sentence (even ungrammatical ones). In short (?), the statistical framework, that we will elaborate on later in Section \ref{sec:IBM}, takes the view that every sentence $t$ is a possible translation of every sentence $s$. Modelling translation thus consists of modelling the probability $P(t|s)$ that $t$ is a translation of $s$, and finding the sentence $t$ for which this probability is highest. This probability distribution $P(t|s)$ is learned from the parallel corpus. A more detailed description of the models, as well as information on how they deal with phenomena as reordering, can be found in Section \ref{sec:IBM}.
 
-The statistical IBM models still had the same drawbacks as the first generation of direct translation models: no structure or local context was considered, and a large amount of natural language phenomena could therefore not be accounted for. With the introduction of phrases as basic units in translation models \citep{wang1998grammar,och1999improved} a major leap forward was taken towards a proper treatment of these problem. A phrase translation pair is a pair of contiguous source and target sequences such that the words in the source phrase are aligned only with words in the target phrase, and vice versa \citep{och2000improved}. Phrases are thus not restricted to linguistic phrases, but can be any arbitrary contiguous sequence of words that is translated into a contiguous target sequence (anders). Keeping the architecture (more or less) the same, using phrases instead of words as translation units allows the model to use local context during translation. Phrase-based translation models can therefore capture short contiguous idiomatic translations, as well as small insertions and deletions and local reordering. E.g., both `a casa' and `o casa' are reasonable word for word translations of the English phrase `the house'. However, `o casa' is not a grammatical string in Portugese. The latter observation could be easily captured by a phrase-based model, as `the house' could be translated as one unit, but would be much harder to model in a word-based model. Furthermore, a word-based model would never be able to get the correct idiomatic translation of `kick the bucket' (find other example!), while a phrase-based model would have little trouble finding this translation, provided this specific idiomatic phrase was present in the training corpus. Phrase based models are discussed in more detail in Section \ref{sec:pbmodels}.
+The statistical IBM models still had the same drawbacks as the first generation of direct translation models: no structure or local context was considered, and a large amount of natural language phenomena could therefore not be accounted for. With the introduction of phrases as basic units in translation models \citep{wang1998grammar,och1999improved} a major leap forward was taken towards a proper treatment of these problem. A phrase translation pair is a pair of contiguous source and target sequences such that the words in the source phrase are aligned only with words in the target phrase, and vice versa \citep{och2000improved}. Phrases are thus not restricted to linguistic phrases, but can be any arbitrary contiguous sequence of words that is translated into a contiguous target sequence (anders).
+Phrase-based translation models can therefore capture short contiguous idomatic translations, as well as small insertions and deletions and loca lreordering. E.g., both `a casa' and `o casa' are reasonable word for word translations of the English phrase `the house'. However, `o casa' is not a grammatical string in Portugese. The latter observation could be easily captured by a phrase-based model, as `the house' could be translated as one unit, but would be much harder to model in a word-based model. Furthermore, a word-based model would never be able to get the correct idiomatic translation of `kick the bucket' (find other example!), while a phrase-based model would have little trouble finding this translation, provided this specific idiomatic phrase was present in the training corpus. Phrase based models are discussed in more detail in Section \ref{sec:pbmodels}.
 
-Phrase based models, although still considered state of the art, still suffer from the fact that no structure beyond the phrase level is taken into account. Approaches that addressed this problem by incorporating syntactic information to, e.g., sophisticate phrase selection of a standard phrase-based system \citep{koehn2003statistical} or rerank its output \citep{och2004alignment} were not very successful, which lead a large part of the MT community to move back to models similar to the earlier transfer based models that ruled the field before the emergence of statistical models. A major difference with the older transfer models, however, is that the newer models stayed true to the statistical and corpus based tradition, in which translation was formulated as learning a probability distribution from a parallel corpus. While the rules in the old transfer models were constructed manually, the new batch of transfer models (?) were based on the patterns found in translation corpora, making the models more scalable and robust.
+Phrase based models, although still considered state of the art, suffer from the fact that no structure beyond the phrase level is taken into account. Approaches that addressed this problem by incorporating syntactic information to, e.g., sophisticate phrase selection of a standard phrase-based system \citep{koehn2003statistical} or rerank its output \citep{och2004alignment} were not very successful, which lead a large part of the MT community to move back to models similar to the earlier transfer based models that ruled the field before the emergence of statistical models. A major difference with the older transfer models, however, is that the newer models stayed true to the statistical and corpus based tradition, in which translation was formulated as learning a probability distribution from a parallel corpus. While the rules in the old transfer models were constructed manually, the new batch of transfer models (?) were based on the patterns found in translation corpora, making the models more scalable and robust.
 
-There were several approaches as to detecting the patterns in translation data (anders). Some approaches first parsed the source and target text into a linguistically motivated structure and attempted to establish correspondences between the two of them (anders). This so called `parse-match-parse' method was used by, i.a., \cite{poutsma2000data}, \cite{galley2004s}, \cite{galley2006scalable} and \cite{melamed2004generalized,melamed2004statistical}, example?. As the parse-match-parse method requires fully automated parsers for both the source and target language, the number of languages pairs that can be treated as such is very limited. Furthermore, monolingual grammars are not designed for translation purposes, which makes it often very hard to find correspondences for all nodes in the tree.
+%Give references for linguistic oriented models?
+Translation structures, however, are yet another thing that are not directly visible from translation data, but need to be learned, which is a task that is not straight forward at all. Some approaches tried to base the structures involved in translation on monolingual syntactic structures, by first parsing the source and target sentence into such a structure, and try to establish correspondences between their nodes. This so called `parse-match-parse' method has a couple obvious limitations. As a fully automated parser that can parse large amounts of text efficiently are required for both source and target language, which extremely limits the amount of language pairs that can be treated with this approach. Furthermore, monolingual grammars are not designed for translation purposes, and there is no guarantee that source and target structures are similar enough to find correspondences for every part of them. %Some finishing statement, maybe explaining that they are computationally to heavy, and give a reference to where we will further discuss them
 
-A second approach is to forget about linguistic information, and concentrate on the structures suggested by the translation data. Models using this strategy are based solely on alignments (see section \ref{sec:alignments}), which describe which source words are translated into which target words, and the structures they induce (see Section \ref{sec:alignmenttrees}. As alignments generally give rise to a huge number of rules for every sentence, models using this method are hindered by computational issues. Several different solutions to restricting the rule space have been presented, in some of which formal criteria were used, while in others linguistic information was incorporated. We will discuss these methods in Section \ref{sec:SCFGs}, in which the more practical sides of such models is elaborated upon (?).
+A second approach is to forget about linguistic information, and concentrate on the structures suggested by the translation data. Models using this strategy are based solely on alignments (see section \ref{sec:alignments}), which describe which source words are translated into which target words, and the structures they induce (see Section \ref{sec:alignmenttrees}). As alignments generally give rise to a huge number of rules for every sentence, models using this method are hindered by computational issues. Several different solutions to restricting the rule space have been presented, in some of which formal criteria were used, while in others linguistic information was incorporated. We will discuss these methods in Section \ref{sec:SCFGs}. In this section we will also pay more attention to the practical side of such models.
 
-Current state of the art models ....
-
-\newpage
+Current state of the art models ....??? combine the two.. (?)
 
 \section{IBM models}
 \label{sec:IBM}
 
+In this section, a explanation of the main concepts used in the word-based models presented by \cite{brown1993mathematics} will be presented. These models, that were the first working statistical models, focussed on learning the probability distributions $P(t|s)$ - the probability that a target sentence $t$ is a translation of a source sentence $s$ - from a parallel corpus. That is, the predefined model for  $P(t|s)$ has parameters that can be learned from a parallel corpus\footnote{For instance, $P(t|s)$ might be dependent on the probability distribution of the translation of the word `obvious' in the corpus.}, which we will get back to later. The hope is, that the learned distribution coincides with human intuitions about translation. For instance, $P(t|s)$ should be high for ($t,s)$ = (`I grow chilli plants in my backyard', `ik kweek chili plantjes in mijn achtertuin'), and low for ($t,s$)= (`I grow chilli plants in my backyard',`gisteren is mijn portemonnee gestolen').
+
+\citeauthor{brown1988statistical} use Bayes' rule to split the translation probability into multiple probability distributions, yielding the following expression:
+
+\[
+P(t|s) = \frac{P(t)P(s|t)}{P(s)}
+\]
+
+As $P(s)$ does not depend on $t$, this results in the following expression (called `The Fundamental Equation of Machine Translation' by the authors) for the desired translation $\hat{t}$:
+
+\[
+\hat{t} = \operatorname*{arg\,max}_t P(t)P(s|t)
+\]
+
+The equation splits the translation task in two: modelling the translation probability $P(s|t)$, and modelling the language probability $P(t)$. In \cite{brown1993mathematics}, 5 different models of increasing complexity are presented to model the translation probability. These models are generally referred to with the names `IBM models 1-5'. In all these models, the probability $P(s|t)$ is modelled by marginalizing over all possible ways in which the words in $t$ could have been generated by the words in $s$, which is expressed by an alignment function $a$ (more information on which can be found in Section \ref{sec:alignments}). Thus: $P(s|t) = \sum_a P(s,a|t)$. $P(s,a|t)$ cannot be computed exactly, and the 5 IBM models differ in the complexity of their approximation. For instance, in IBM models 1, all the alignments are assumed to have the same probability, and the probability $P(s,a|t)$ is the (normalized) product of all the lexical translation probabilities $p(s_j|f_{t(j)})$ indicated by the alignment. The translation probabilities for sentences $t$ with the same words in different orders are thus identical. To address this issue, an alignment probability distribution is added in IBM model 2. In later models, also fertility of the input words is considered, and the distortion model is made more sophisticated. In Figure \ref{fig:IBM-model} an example of IBM-style translation is depicted. The parameters of the IBM models (e.g., lexical translation probabilities, fertilities of the words, alignment probabilities) are learnt from a parallel corpus using the expectation maximization algorithm \citep{dempster1977maximum}, on which a short explanation can be found in Section \ref{sec:alignments}. Mathematical details on the exact procedure of parameter estimation for the IBM models can be found in \cite{brown1993mathematics}.
+
+\begin{figure}[!ht]
+\begin{framed}
+\scriptsize{
+Consider the following pair of sentences and a possible alignment (the numbers indicate the alignment: (Le chien e battu per Jean, John (6) does beat (3,4) the (1) dog (2)). The probability $P(s,a|t)$ is computed as follows:\begin{enumerate}
+\item Compute the lexical probabilities of the source words being translated into the target words, thus compute: $P(Jean|John)\cdot P(est|beat)\cdot P(battu|beat)\cdots$
+\item factor in the fertility probabilities of the source words, thus multiply with:  $P(f\!=\!1|John)\cdot \cdot P(f\!=\!1|does) \cdot P(f\!=\!2|beat)\cdots $
+\item Factor in the distortion probabilities, that are in this model just depending on source and target position and target length, thus multiply with: $P(1|4,l\!=\!6)\cdot P(2|5,l\!=\!6)\cdot P(3|3,l\!=\!6) \cdots $
+\end{enumerate}
+The parameters for this IBM model are thus: a set of lexical translation probabilities $P(f|e)$, a set of fertility probabilities $P(n|e)$ and a set of distortion probabilities $P(i|j,l)$ for each target position $i$, source position $j$ and target length $l$. In practice, $i,j,l$ and $n$ are maximally $25$.
+}
+\end{framed}
+\caption{Example from \cite[p.3]{brown1990statistical}, that shows the workings of the IBM word-based translation model}\label{fig:IBM-model}
+\end{figure}
+
+The language model, a probability distribution for $P(t)$, is supposed to account for fluency and grammaticality of the target language string. That is, to prevent from putting too much probability mass on not well formed target strings. In the IBM models, the probability distribution is an $n$-gram model, whose parameters can be estimated through relative frequency estimation on the target side of the parallel corpus. The set-up in which a separate language model is used to assign probabilities to translations is used by almost every current state of the art MT-model.
 
 
 \section{Phrase-based models}
 \label{sec:pbmodels}
 
+%Explain difference in generative model phrase-based and word-based translation
+Using sequences of words as basic units in translation models rather than single words, allows the translation model to take into account local context. For instance, the translation of a sentence with a simple phrase based models could go as follows: the foreign sentence is first broken up into phrases. These phrases are then translated as a whole, and the probability of the source sentence\footnote{A quick reminder: the generative model of phrase-based models is largely similar to the word-based IBM models, the translation probability is still inverted due to application of Bayes' rule.} is defined as the product of the phrasal translation probabilities and distortion based on how far every phrase was moved relatively to the previously translated phrase \citep{koehn2003statistical}. After taking into account the language model, the target sentence with the highest probability $P(t|s)$ can be found. (anders)
+
+To translate with phrases, a phrase translation table is needed in which probabilities are assigned to the translation of source phrases in target phrases. Phrase-tables can be acquired in different ways \citep{marcu2002phrase,och1999improved,koehn2003statistical}, details of which are not relevant to this thesis. More relevant to this thesis is what is means for a phrase to be consistent with the alignment, more attention will be paid to this in a later section (\ref{sec:alignmenttrees}).
+
+Phrase-based translation has some obvious advantages over word-based translation. First of all, it can account for short idiomatic translations in an intuitive fashion: directly assigning a probability to `of course' as the translation of `natuurlijk' makes intuitively more sense than having two separate entries for that assign probabilities to `of' and `course' being translations for `natuurlijk'. Secondly, phrases can use local context, which means they can make informed decisions about the translation of, e.g., the gender of determiners and adjectives. Finally, phrases can capture local reordering phenomena of phrases seen during training, making it easier to prefer `the beautiful house' over `the house beautiful' as translation of `la casa bella'.
+
+Phrase based models also have certain limitations, of both practical and theoretical nature. Firstly, when it comes to reordering, phrase based models have no means of generalizing beyond what they have seen in the training data. This means that local reordering of previously mentioned phrases like `la casa bella' can be captured by a phrase-based model if the exact phrase occurred in the training data, but the model will not be able to infer that adjectives and nouns in translation between Italian and English generally switch order. For the same reason, phrase-based models are not able to account for global reordering phenomena, although that is also partly due to the fact that no discontinuous phrases are allowed. A second issue concerns the partitioning of the sentence into phrases. The probability of this partitioning is rarely considered, and phrases are not allowed to overlap, resulting in poor modelling of agreement phenomena. Finally, as mentioned before, assigning probabilities to phrase pairs is not straight forward. Several approaches have been used to learn phrase-translation tables \citep[see][p.130]{koehn2008statistical}.
+
 \section{Synchronous Context Free Grammars}
 \label{sec:SCFGs}
+
+To address the global reordering problem, more structure needs to be incorporated, which brings us back to transfer models. For a transfer model that incorporates structure on a more global level, syntactic formalisms for both source and target side are needed, as well as method of combining them. A generative model that is often used in tree-based transfer models is the synchronous grammar, that is assumed to generate source and target sentences simultaneously. The complexity of the monolingual grammars are linked may differ. Although some translation model have incorporated simpler formalisms \citep[e.g., finite state machines, in][]{alshawi2000learning}, the lion's share of the tree based transfer models use context free grammars (CFG's) \citep{chomsky1956three}. A synchronous context free grammar, assumes that both languages can be modelled by a CFG:
+
+
+\begin{definition}[Context Free Grammar]
+A context free grammar (CFG) is a quadruple $G = (V, \Sigma, R, S)$, where\begin{enumerate}
+\item $V$ is a (finite) set of non-terminals, in the context of natural language interpreted as syntactic categories.
+\item $\Sigma$ is a (finite) set of terminals, corresponding to the lexical items of the language.
+\item $R$ is a relation from $V$ to $V\cup\Sigma$, to be interpreted as a set of rewrite rules.
+\item $S\in V$ is a start symbol of the grammar.
+\end{enumerate}
+\end{definition}
+
+Natural language can be modelled fairly well by CFG's, although it is not entirely context free \citep[e.g.,][]{shieber1987evidence}.
+
+An SCFG \citep{aho1969properties} is a grammar linking two CFG's that share a set of non-terminals, describing how their expressions can be generated simultaneously. Parse trees generated by SCFGs thus need to be isomorphic on the non-terminal level (i.e., there is a bijective mapping between the non-terminal nodes of the trees). Formally, we have:
+
+\begin{definition}[Synchronous Context Free Grammar]
+A synchronous context free grammar (SCFG) is a quadruple $G = (V, \Sigma, R, S)$, where\begin{enumerate}
+\item $V$ is a (finite) set of non-terminals, the syntactic categories of both languages.
+\item $\Sigma$ is a (finite) set of terminals, constituted by the union of the terminal symbols of the two languages.
+\item $R$ is a set of rewrite rules of the form $X\rightarrow\langle\gamma,\alpha,\sim\rangle$, $\gamma\in (V\cup\Sigma)^{*}$,  $\alpha\in (V\cup\Sigma)^{*}$ and $\sim$ a one-to-one correspondence between the non-terminal symbols in $\alpha$ and $\gamma$
+\item $S\in V$ is a start symbol of the grammar.
+\end{enumerate}
+\end{definition}
+
+SCFG's implicitly model large scale reordering phenomena and non-contiguous phrases, as can be seen in the example presented in Figure \ref{fig:scfg}.
+
+\begin{figure}[!ht]
+\caption{example SCFG and how it deals with reordering phenomena and non-contiguous phrases}\label{fig:scfg}
+\end{figure}
+
+As well as most MT-models, SCFG's are severely hindered by computational problems. Before describing how SCFG's can be learned, we will highlight one of this problems related to the rank of an SCFG, that has been a motivational factor in many algorithms for learning SCFG's. The rank of an SCFG can be defined as the highest number of non-terminals occurring on the right hand side of a rule in the grammar in a single dimension \citep{gildea2006factoring}. As with monolingual CFG's, parsing with SCFG's is much more efficient if all the rules are binary (thus the rank of the grammar is 2). Contrary to monolingual CFG's, the rank of an SCFG can not always be reduced to two by rewriting the rules. That is, synchronous CFG's can not always be binarised \citep{huang2009binarization}. 
+
+%As parsing is a crucial part of translating with SCFG's, many simpl
+
+
+\subsection{Learning SCFG's}
+\label{subsec:learningSCFGs}
+
+SCFG's are very popular as generative model in SMT, even approaches that are not explicitly concerned with them can often be reformulated as such. Learning an SCFG from translation data is a far from trivial task, which is amplified by the fact that bilingual data often do not coincide with monolingual linguistic structures. That is, trees generated by SCFG's are isomorphic on the non-terminal level, which is often not the case if two separate non adjusted parsers are used to generate source and target side trees. Furthermore, the parts considered constituents by a monolingual CFGs are not necessarily translation admissible parts according to the translation data.\footnote{Translation admissible parts of the source sentence are parts that are translated as a whole into the target sentence. For now, an intuitive understanding suffices, We will later put this on a more formal footage.} Translation models solely relying on monolingual syntactic structures thus exceed the power of SCFG's, we will briefly discuss them in Section \ref{sec:bcf}.
+
+In almost all working SCFG models, the grammar is induced from a parallel corpus by regarding the data as primary source of information (in contrast to using external (linguistic) knowledge). This approach - introduced by \cite{wu1995algorithm} in the form of an inversion transduction grammar (ITG), that lies at the heart of many later approaches - is based on word-alignments and the constraints on structures they prescribe. In Section \ref{sec:alignments} and Section \ref{sec:alignmenttrees}, respectively, we will take a closer look at alignments, and how exactly rules can be extracted from them.
+
+Purely data-driven models reinforce the computational problems of SCFG's, as the number of rules that can be extracted from a sentence grows exponentially with the length of the sentence\citep{quirk2006dependency}. Without considering additional information, there is no a priori reason to prefer one rule over another, yet some serious pruning of the rule space is necessary to make parsing computationally feasible. Furthermore, without linguistic information, a grammar naturally lacks non-terminal labels. Models differ in the number and kind of non-terminal labels that we invent. In the remainder of this section we will briefly discuss two strategies that have been proposed to address the previously mentioned issues. The strategies are not mutually exclusive, some models use them both. The explanation is meant to exemplify endeavours to address these problems, and although several references to models are provided it is not meant to give a complete overview of these.
+%Maybe say something about other approaches that we won't discuss: log-linear framework, feature based approaches
+
+\subsubsection{Restricting according to Rank}
+
+A remedy that is often used to reduce the number of rules is to select only the rules of which the number of righthand side non-terminals does not exceed a certain maximum number. In most cases, the rules are restricted to binary, which reduces both the rule space and the parsing complexity \citep[e.g,]{wu1997stochastic,chiang2005hierarchical,mylonakis2011learning}. The solution is thus computationally attractive, and easy to implement. Of course, the assumption that all of language can be captured in binary structures seems rather strong. \citeauthor{wu1997stochastic} claimed to be unable to find real-life examples of translations that could not be explained by such trees, but this was later refuted by others \citep[e.g.,][maybe meer refs?]{galley2004s}. However, the coverage of binary transduction grammars is still a hot issue in MT, to which we will come back later in Chapter \ref{ch:empirical}. 
+
+Several of the models using this paradigm to prune the rule space to not really address the non-terminal label issue. \citepos{wu1995algorithm} contains only a single non-terminal label, his model thus merely learns a high-level reordering preference, without considering further contextual information. An improvement on this was presented by \cite{chiang2005hierarchical,chiang2007hierarchical}. Although his grammar also had no more than one non-terminal label, he allowed the right-hand side of his rules to contain both terminals and non-terminals, such that lexical information could be incorporated. An example of such a rule would be:
+
+\[
+\text{X } \rightarrow \langle\text{ X}_1 \text{ de X}_2 \text{, the X}_2 \text{ that X}_1\rangle
+\]
+
+which captures the fact that Chinese relative clauses modify noun phrases on the left, whereas English relative clauses modify on the right \citep{chiang2007hierarchical}.\footnote{To combine different non-terminals into a sentence, some more rules are needed. \cite{chiang2007hierarchical} adds the following two `glue rules' to his grammar:\begin{align*}
+ \text{S } \rightarrow \langle\text{ S}_1\text{X}_2 \text{,S}_1\text{X}_2\rangle\\
+\text{S } \rightarrow \langle\text{ X}_1 \text{,X}_1\rangle 
+\end{align*}
+
+}
+
+The framework introduced by Chiang combines the strengths of rule-based and phrase-based models, and is referred to with the term `Hierarchical Phrase Based Translation'. A model with a similar set-up was presented by \cite{mylonakis2010learning}, who extended a standard HPB model with two extra non-terminal labels to decode whether a phrase-pair tends to take part in other switching. They showed that it is possible to train a complete all-phrase binary grammar with cross validated EM. Besides their model, and the one presented in \cite{blunsom2008bayesian}, there are no other models that learn syntactic categories without invoking linguistic knowledge.
+
+
+\subsubsection{Incorporating Linguistic Information}
+
+A tangible solution to address the previously mentioned issues with structure-based transfer models is to incorporate linguistic knowledge. Information from monolingual parsers can be used to, e.g., reduce the space of possible node spans, and to induce linguistically motivated terminal labels.
+
+The later was done by, e.g., \cite{zollmann2006syntax} and \cite{almaghout2010ccg}, who augmented a standard phrase-based grammar with syntactically motivated non-terminal labels, based on constituency grammars and ccg \citep{steedman2011combinatory}, respectively. \cite{mylonakis2011learning} learn automatically which source-syntax labels fit best with a phrase-based CFG and the translation data.
+
+\cite{li2013modeling}
+
+Clearly, the number of language pairs that can be treated as such, as it requires an automated linguistic parser (or other means of providing linguistic information on alarge scale) for (at least one of) source and target language. However, using available syntactic or semantic knowledge can result in robust models that yet do not ignore or intuition of language, especially if high quality parsers are available.
+
+%Nog aanvullen met andere modellen?
+
+
+%Deze sectie moet je echt nog even goed doorlezen en herschrijven!!!!
+
+\section{Beyond Context Free}
+\label{sec:bcf}
+
+Formally it is desirable to create grammars that generate isomorphic tree pairs for sentences that are each others translation, but there is no a priori reason that dictates that such structures exist. In fact, as CFG's have been proved to sometimes be inadequate to model certain natural language phenomena, more power transformation methods might be suitable for the expressive syntactic transformations going on during the translation of natural language. As the necessity of deviating from conventional syntax is smaller, models of this class tend to stay closer to traditional linguistic structures.
+
+\subsection{Synchronous Tree Substitution Grammars}
+
+The class of Synchronous Tree Substitution Grammars (STSG's) is a strict superset of the class of SCFG's, and STSG's are therefore a natural extension to them. Models working with STSG's are, i.a., \cite{poutsma2000data} and \cite{galley2004s,galley2006scalable}. The core method of the former is to align chunks of parse trees of source and target sentences, and transform them into rules. \cite{poutsma2000data} requires the existence of a parallel corpus aligned on the subtree level. Such datasets were not available and the paper is merely a description of the STSG framework.  The model presented by \citeauthor{galley2004s} has a somewhat different set-up, learning rules to transform an source-language string into a target language tree. \cite{galley2006scalable} does provide an implementation, yielding promising results.\\
+An approach that does not explicitly use STSG's, but whose grammar rules do exceed the power of CFG rules, is presented by \cite{melamed2004generalized}. In their generalized multitext grammar (GMTG) they let go of the requirement that constituents need to be contiguous, which allows them to synchronise languages generated by mildly context-sensitive languages. (anders) Also \citeauthor{melamed2004generalized} present a framework with suggestions for further work, rather than an implementation.
+
+\subsection{Semantic Mappings}
+
+The last category of models we will discuss, attempts to find mappings between more semantically oriented structures, that specify the predicate-argument structure of the sentence, that is often assumed to be somewhat universal. Such an approach is taken in \cite{menezes2003best}, in which transfer rules are extracted by aligning pairs of Logical Form structures. Another predicate-argument structure that is often used is the dependency parse (for more information on the dependency parse, see Section \ref{sec:depgram}), rules are inferred by either projecting or learning target-side paths. As such rules sometimes create or merge dependents according to the alignment, the dependency structures of source and target side need not be isomorphic, and such models can formally also be seen as STSG's (as made explicit in \cite{eisner2003learning}). Finding a mapping between two dependency trees is not only attractive because dependency trees represent the semantic structure of a sentence more closely than a constituency tree, but also because it is computationally more feasible, as dependency trees contain fewer nodes than constituency trees of the same sentence. Presented models differ in the linguistic plausibility of the target side dependency parse. E.g., \cite{eisner2003learning} learns mappings between two dependency trees (his article lacks a working implementation, although it does give a description of algorithms suitable for parsing with his model). \cite{lin2004path}, extracts transfer rules that correspond to linear paths in the source side dependency tree, but not necessarily to linguistic dependency parses on the target side. The models presented in \cite{quirk2005dependency,quirk2006dependency,quirk2006we} also have clear dependency part, but employ several other strategies as well. They project source dependency trees to target dependency trees, following a set of rules, and extract from the resulting corpus a set of \textit{treelets} - arbitrary connected sub graphs - that are used in translation.
+
  
+\chapter{Empirical}\label{ch:empirical} 
  
-\newpage
+Introduction of empirical chapter 
+ 
  
 \section{Alignments}
 \label{sec:alignments}
@@ -180,27 +321,80 @@ A perfect score can thus be achieved by an alignment that has all the sure align
 
 \subsubsection{Automatic Word-alignments}
 
+Word alignments are established as a by-product for the word-based IBM models, and despite multiple efforts to improve on these (e.g., refs), it is still common practice to use the alignments produced by the SMT toolkit used to train the IBM models \citep{och03:asc}. We will not discuss further methods for automatically word aligning corpora, but just briefly explain how the IBM alignments arise, and how many-to-many alignments are derived from them.
+
+One step in the IBM models, is to learn a lexical translation model from a parallel corpus. If a word-alignment was directly visible from the data, this would be an easy task, as one could just count for each word how often it occurred in the text and how it was translated, and estimate a probability from these counts using relative frequency estimation (which happens to be the maximum likelihood solution) (anders). Conversely, given the lexical probability model, the most possible word-alignment could be estimated. Learning word-alignments and lexical probabilities from a parallel corpus can thus be seen as a problem of incomplete data, that can be addressed with the expectation maximization (EM) algorithm \citep{dempster1977maximum}, which works as follows:\begin{enumerate}
+\item Initialize the lexical probabilities (often with uniform distributions).
+\item Compute the most probable alignment from the lexical probabilities (expectation).
+\item Recompute the lexical probabilities from the alignment found in the previous step (maximization)
+\item Iterate steps 2 and 3 until convergence.
+\end{enumerate}
+
+In IBM model 1 and 2, the model that describes how the alignments depend on the lexical probabilities are sufficiently simple to exhaustively run the EM algorithm (ref), and a (global) optimum is thus guaranteed to be found. To find the most probable alignments in the higher IBM models, stochastic hill climbing is used (ref?). Excellent examples of how the algorithm works on the IBM models can be found in \cite[p88-113]{koehn2008statistical}.
+
+According to the generative model of IBM models 1-5 (anders), each target word is seen of as being generated by one source words. Therefore, although source words can be aligned to more target words, every target word is aligned to at most one source word and the resulting alignments are thus many-to-one. However, many-to-many alignments are often desired, as they are very common in practice. (Anders) Alignments used to train SMT models on are often created by running the IBM models in both directions, and combining the resulting alignments. The three most common methods of merging alignments $A_1$ and $A_2$ are:\begin{enumerate}
+\item Union: $A_1\cup A_2$, containing all links from both alignments. The recall of the union will be high (as it contains many links), but as it contains all faulty alignment links from both alignments too, the precision is often quite low.\footnote{Give definition of recall and precision}
+\item Intersection: $A_1\cap A_2$, containing only the links that occur in both alignments. The resulting alignment is thus a one-to-one alignment. Contrary to taking the union, the intersection of $A_1$ and $A_2$ (anders) will have a high precision, but a lower recall.
+\item A more sophisticated method for combining alignments $A_1$ and $A_2$, is to first take the intersection, ending up with a selection of reliable alignment points, and then extending the alignment by adding neighbouring links as well as links $(i,j)$ for which holds that neither $e_i$ nor $e_j$ was aligned in the intersection \citep{och2000improved}, a heuristic called `grow-diag-final'. Pseudocode of this heuristic can be found in \cite{koehn2008statistical}.
+\end{enumerate}
+
+Most current MT models making use of alignments use the grow-diag-final method to obtain their alignments. The resulting alignments have a relatively high precision and recall \citep{och2000improved}, although they still contain several faulty alignment links. As mentioned before, several different alignment models that claim to have better alignment models have been reported (anders). Such methods are often based on .... list some things + references if you come across them. However, none of these methods has really found its way in the MT community. Besides the fact that it is hard to compare alignment methods across domains, it has been shown that improving alignment models does not necessarily result in better MT models... (anders, vind ref, kijk in wu alignment \cite{indurkhya2010handbook}).
 
 
-As huge amounts of .... needed, automatically ....
-
-
-explain IBM and EM
-
-explain there are some other options and why we will not discuss them
-
-%How to generate word alignments + problems with word-alignments plus some info on manual word alignments?
-
-
-
-\newpage
 
 \section{Alignment Trees}
 \label{sec:alignmenttrees}
 
+As word-alignments also on larger granularities than words indicate which parts of the target sentence are the translation of which parts of the target sentence, they can be interpreted as instructions of how the translation was built up from its parts. That is, they can be factorized into trees that recursively describe fashions in which the sentence could have been compositionally translated. For whom it is not entirely clear how, an example is included in Figure \ref{fig:atree}.
+
+\begin{figure}
+\caption{Example compositional translation tree}\label{fig:atree}
+\end{figure}
+
+%Explain relation SCFG's and alignment trees
+As the rules of a 
+Devising alignment trees is thus closely related to the formally syntactic transfer models described in section \ref{subsec:learningSCFGs}.
+
+
+
+
+In this thesis, we are interested in the constraints an alignment puts on the structure of the source sentence. As this depends solely on the positions the source words were mapped, we will introduce, as far as this thesis goes, a slight change in notation, that better serves this purpose. Following \cite{simaan2013hats}, we will represent an alignment by an ordered sequence of sets, of which the $n$th element specifies to which target word the $n$th source word maps. In case of a one-to-one alignment, this sequence is thus a permutation of the target word-positions, while in more complex alignment some of the target positions may appear multiple times in the sequence, or not at all. We will refer to such a sequence describing an alignment with the term set-permutation, which is formally defined in Definition \ref{def:sperm}. (anders)
+
+
+\begin{definition}[Set-permutation]\label{def:sperm}
+Given a source sentence $s = s_0 \ldots s_n$, its translation $t = t_0 \ldots t_m$, and an alignment $a$, let $a(i) = \{j~|~(i,j)\in a\}$ be the set with target positions that is linked to source position $i$. The set-permutation $\pi$ uniquely describing $a$ is defined as the ordered sequence of sets
+$\langle a(0), \ldots, a(n) \rangle$
+\end{definition}
+
+%Add example
+The set-permutation $\pi=\langle \pi_0,\ldots\pi_n\rangle$ describing the alignment ..... give example for whichever alignment was depicted last. In the coming definitions, we will assume that $\bigcup_{i=0}^{n} \pi_i$ constitutes a contiguous sequence of numbers. In practice, such a situation can always be achieved by only numbering the aligned target positions that are aligned, effectively switching the position numbers to the left whenever an unaligned word is found, and can thus be assumed without lot of generality.
+
+
+\subsection{Translation Equivalence}
+
+%Eerder leg ergens de link tussen compositional translation and transfer!!!
+To build trees that describe how an alignment was built up from his parts, we need to have a notion of translation equivalence, describing which subsequences can be seen as parts. According to the principle of compositionality of translation, these parts should be each others translation, resulting in the following definition (in terms of alignment):
+
+\begin{definition}[Translation Equivalence]
+Let $(s,t)$ be a pair of a source and target sentence, let $a$ be an alignment between $t$ and $s$, and $a(x)$ the set of words source word $x$ is aligned to. Two sets of source and target words, referred to with $S = s_1,s_2,\ldots s_k$ and $T = t_1,\ldots,t_k$ are called translation equivalent if and only if $\forall s_i\in S a(s_i)  = x \rightarrow (x = \{\} \lor \forall y \in x \exists t_i\in T x = t_i$
+\end{definition}
+
+%Explain how this notion coincides with original phrase pairs blabla, except for contiguousness, explain why we often want contiguousness (continuous non-terminals), but why it is often not a good representation of real language. Also explain that it is often required that there is at least one aligned word on both source and target side (to have some lexical evidence.
+
+
+
+
+\subsection{nodes}
+
+
+
+
+
+
 \newpage
 
 \section{Dependency Grammars}
+\label{sec:depgram}
 
 This section will provide some information about dependency structures, that we will use as guide in our search for consistency in alignment structures. After a short motivation and background section on dependency grammars, we will give a formal definition and some clarifying examples. Subsequently, we will motivate the suitability of dependency structures for translation. We will end with a short section on the current state of the art dependency parsers.
 

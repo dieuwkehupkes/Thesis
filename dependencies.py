@@ -120,29 +120,6 @@ class Dependencies():
 				deplist.append(self.get_span(item[0]))
 			self.wordspans[key] = (min(min(deplist)),max(max(deplist)))
 			return self.wordspans[key]
-
-#	def spanrelations(self):
-#		"""
-#		Create a dictionary of relations between
-#		word-positions and word spans. Go through the
-#		dependency dictionary and replace heads by the
-#		span that constitutes their position and dependents
-#		by their wordspan. I.e., if 
-
-#			pos_head: [pos_dependent, reltype]
-
-#		was in the dependency dictionary, then
-
-#			(pos_head-1, pos_head): span[pos_dependent]
-
-#		will be in the dictionary returned by this function.
-#		"""	
-#		spanrels = {}
-#		for key in self.deps:
-#			spanrels[(key-1,key)] = []
-#			for dependent in self.deps[key]:
-#				spanrels[(key-1,key)].append(self.wordspans[dependent[0]])
-#		return spanrels
  
  	def spanrelations(self, rightbranching = False, leftbranching = False):
  		"""
@@ -315,6 +292,10 @@ class Dependencies():
  		
  	
  	def update_labels(self,label_dict):
+ 		"""
+ 		Update an inputted dictionary with
+ 		the labels from dependency object.
+ 		"""
  		for key in self.deps:
  			for dependent in self.deps[key]:
  				label = dependent[1]
