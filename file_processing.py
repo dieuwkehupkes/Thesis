@@ -38,7 +38,42 @@ class ProcessFiles():
 			dependency_list.append(new_dependent)
 			new_dependent = self.dependency_file.readline()
 		return new_alignment, new_sentence, dependency_list
-				
+	
+	def random_sample(self, samplesize):
+		"""
+		Create a random sample of sentences from the inputed 
+		sentence file. Create a file with the sentences, and
+		a file with the matching alignments and dependencies.
+		Return an array with the list of sentence numbers that
+		were selected.
+		"""
+		# determine the number of sentences in the file
+		# and select a sample by generating a random
+		# sequence of numbers
+		import random
+		self._reset_pointer()
+		f_length = 0
+		for line in self.sentence_file:
+			f_length+= 1
+		selection = random.sample(range(1,f_length+1),samplesize)
+		selection.sort()
+		# create files
+		self._reset_pointer()
+		a = open('sample_sentences.txt', 'w')
+		s = open('sample_alignments.txt','w')
+		d = open('sample_dependencies.txt','w')
+		i=0
+		while i < selection[-1]:
+			i +=1
+			new = self.next()
+			if i in selection:
+				a.write(new[0]), s.write(new[1])
+				for  dependency in new[2]:
+					d.write(dependency)
+				d.write('\n')
+		a.close(), s.close(), d.close()
+		return selection
+			
 	def check_consistency(self, sentence, dep_list):
 		"""
 		Check whether a list with dependencies is
@@ -219,5 +254,6 @@ class ProcessFiles():
 			f.write(key + '\t\t' + str(dictionary[key]) + '\n')
 		f.close()
 
-
-
+def test_random():
+	f = ProcessFiles('Data/en-fr.aligned_manual.100','Data/1-100-final.en','Data/1-100-final.en.dependencies')
+	return f.random_sample(100)
