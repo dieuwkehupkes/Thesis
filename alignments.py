@@ -13,7 +13,7 @@ class Alignments:
 	side span, and to create CFG's that uniquely generate all
 	alignment trees, or all hierarchical alignment trees.
 	"""
-	def __init__(self,alignment, sentence):
+	def __init__(self,alignment, sentence, targetsentence = ''):
 		"""
 		Class is initialized with a string representation of
 		the alignment that starts counting at 0 of the form 
@@ -21,6 +21,7 @@ class Alignments:
 		During intialization, a set-representation of the alignment
 		is created.
 		"""
+		self.ts = targetsentence
 		self.lengthS = len(sentence.split())
 		self.consistent = True
 		self.alignment = self.make_set(alignment)
@@ -240,7 +241,26 @@ class Alignments:
 			rhs = [sent[i]]
 			probability = 1.0
 			yield WeightedProduction(lhs, rhs, prob=probability)
-
+			
+	def texstring(self):
+		"""
+		Generate latexcode for displaying the alignment.
+		"""
+		if self.ts == '':
+			raise ValueError('cannot create representation without targetstring')
+		source_list = self.sentence.split()
+		target_list = self.ts.split()
+		for link in self.alignment:
+			dist = link[0]-link[1]
+			if dist >= 0:
+				arr = 'dd'+ 'l' * dist
+			else:
+				arr = 'dd' + 'r' * -dist
+			source_list[link[0]] += ' \\ar @{-} [%s]' %arr
+		sourcestring = ' & '.join(source_list)
+		targetstring = ' & '.join(target_list)
+		texstring = '\\scriptsize{\n$\n\\xymatrix@C-2.3pc{\n%s\\\\\\\\\n%s\n}$}' % (sourcestring, targetstring)
+		return texstring
 
 class Waypoint:
 	"""

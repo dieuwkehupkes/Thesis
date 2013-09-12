@@ -24,6 +24,7 @@ class Dependencies():
 
 			pos_head: [pos_dependent, reltype]
 		"""
+		self.dep_list = dependency_list
 		self.nr_of_deps = -1
 		self.head_pos = None
 		self.deps = self.set_dependencies(dependency_list)
@@ -61,7 +62,7 @@ class Dependencies():
 		of the rootnote.
 		"""
 		if len(self.deps) == 0:
-			return False
+			return True
 		rootspan = self.wordspans[self.head_pos]
 		for head in self.deps:
 			if head < rootspan[0] or head > rootspan[1]:
@@ -71,6 +72,49 @@ class Dependencies():
 					return False
 		return True
 		
+	def find_head_pos(self, relation):
+		return int(re.search('(?<=-)[0-9]*(?=, )',relation).group(0))
+	
+	def find_head(self, relation):
+		return re.search('(?<=\().*(?=-[0-9]*,)',relation).group(0)
+		
+	def find_dependent_pos(self, relation):
+		return int(re.search('(?<=-)[0-9]*(?=\)$)', relation).group(0))
+	
+	def find_dependent(self, relation):
+		return re.search('(?<=, ).*(?=-)',relation).group(0)
+	
+	def find_relationtype(self, relation):
+		return re.match('[a-z\_]*(?=\()',relation).group(0)
+		
+	def reconstruct_sentence(self):
+		"""
+		Reconstruct the sentence corresponding to the 
+		dependency parse. Output as list.
+		"""
+		sentence = [''] * (self.wordspans[self.head_pos][1] +1)
+		for relation in self.dep_list:
+			pos_word = self.find_dependent_pos(relation)
+			word = self.find_dependent(relation)
+			sentence[pos_word] = word
+		return sentence
+	
+	def textree(self):
+		"""
+		Print string that will generate a dependency tree in
+		pdf with package tikz-dependency.
+		"""
+		textree = '\\begin{dependency}[theme=simple]\n\\begin{deptext}[column sep=.5cm, row sep=.1ex]\n'
+		sentence = self.reconstruct_sentence()
+		s = '\\&'.join(sentence[1:])+'\\\\\n'
+		n = '\\&'.join(map(str,range(len(sentence)))) + '\\\\\n'
+		textree = textree + s + n +'\\end{deptext}\n'
+		textree = textree + '\\deproot{%s}{}\n' % str(self.head_pos)
+		for head in self.deps:
+			for dependent in self.deps[head]:
+				textree = textree + '\\depedge{%s}{%s}{%s}\n' % (head, dependent[0], dependent[1])
+		textree = textree + '\\end{dependency}'
+		return textree
 
 	def comp_score(self):
 		"""
@@ -257,7 +301,7 @@ class Dependencies():
 					labelled_span = (left_index, right_index)
 					labels[labelled_span] = labels.get(labelled_span, new_label)
  		return labels
-
+	
 	def argument_list(self,head_span):
 		"""
 		return a list with spans of the head and
@@ -335,14 +379,14 @@ def test1():
 	dependencies = ['nn(President-2, Mr-1)','nsubj(welcome-6, President-2)','nsubj(welcome-6, I-4)','aux(welcome-6, would-5)','root(ROOT-0, welcome-6)','det(action-8, some-7)','dobj(welcome-6, action-8)','prep(action-8, in-9)','det(area-11, this-10)','pobj(in-9, area-11)']
 	d = Dependencies(dependencies)
 	print d.deps
+	print d.reconstruct_sentence()
 	return
 
 def test2():
 	sentence = 'madam president , i shall keep to the subject of the minutes .'
 	dependencies = ['ccomp(keep-6, madam-1)','dobj(madam-1, president-2)','nsubj(keep-6, i-4)','aux(keep-6, shall-5)','root(ROOT-0, keep-6)','prep(keep-6, to-7)','det(subject-9, the-8)','pobj(to-7, subject-9)','prep(subject-9, of-10)','det(minutes-12, the-11)','pobj(of-10, minutes-12)']
 	d = Dependencies(dependencies)
-	labels = d.labels(2,2,3)
-	print d.print_labels(labels)
+	print d.textree()
 #	d.print_labels(labels), '\n'
 
 def print_scores():
