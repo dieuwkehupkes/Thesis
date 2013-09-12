@@ -13,13 +13,17 @@ class ProcessFiles():
 	containing alignments, sentences and
 	dependency parses.
 	"""
-	def __init__(self, alignmentfile, sentencefile, dependencyfile):
+	def __init__(self, alignmentfile, sentencefile, dependencyfile, targetfile = False):
 		"""
 		During initialization the files are loaded for reading.
 		"""
 		self.dependency_file = open(dependencyfile,'r')
 		self.sentence_file = open(sentencefile,'r')
 		self.alignment_file = open(alignmentfile,'r')
+		if targetfile:
+			self.target_file = open(targetfile,'r')
+		else:
+			self.target_file = False
 		self.label_dict = {}
 		
 	def next(self):
@@ -30,6 +34,10 @@ class ProcessFiles():
 		new_alignment = self.alignment_file.readline()
 		new_sentence = self.sentence_file.readline()
 		new_dependent = self.dependency_file.readline()
+		if self.target_file != False:
+			new_target = self.target_file.readline()
+		else:
+			new_target = ''
 		#If end of file is reached, return False
 		if new_alignment == '':
 			return False
@@ -37,13 +45,15 @@ class ProcessFiles():
 		while new_dependent != '\n' and new_dependent != '':
 			dependency_list.append(new_dependent)
 			new_dependent = self.dependency_file.readline()
-		return new_alignment, new_sentence, dependency_list
+		return new_alignment, new_sentence, dependency_list, new_target
 	
-	def random_sample(self, samplesize):
+	def sample(self, samplesize, display = False):
 		"""
-		Create a random sample of sentences from the inputed 
-		sentence file. Create a file with the sentences, and
-		a file with the matching alignments and dependencies.
+		Create a sample of sentence from the inputted files.
+		Create a file with the sentences, and files with the
+		matching alignments, dependencies and targetsentences.
+		If display = True, create a texfile that can be ran
+		to give a visual representation of the selected sentences.
 		Return an array with the list of sentence numbers that
 		were selected.
 		"""
@@ -62,18 +72,32 @@ class ProcessFiles():
 		a = open('sample_sentences.txt', 'w')
 		s = open('sample_alignments.txt','w')
 		d = open('sample_dependencies.txt','w')
+		t = open('sample_source.txt','w')
+		if display == True:
+			disp = open('sample.tex','w')
+			disp.write(self.tex_preamble())
 		i=0
 		while i < selection[-1]:
 			i +=1
 			new = self.next()
 			if i in selection:
-				a.write(new[0]), s.write(new[1])
+				a.write(new[0]), s.write(new[1]), t.write(new[3])
 				for  dependency in new[2]:
 					d.write(dependency)
 				d.write('\n')
-		a.close(), s.close(), d.close()
+				if display == True:
+					disp.write('\section*{Sentence %i}' %i)
+					disp.write(self.texstring(new))
+		if display == True:
+			disp.write('\end{document}')
+			disp.close()
+		a.close(), s.close(), d.close(), t.close()
 		return selection
-			
+	
+	def tex_preamble(self):
+		tex_preamble = '\documentclass{report}\n\usepackage[english]{babel}\n\usepackage{fullpage}\n\usepackage[all]{xy}\n\usepackage{tikz-dependency}\n\\author{Dieuwke Hupkes}\n\\title\n{Dependencies}\n\\begin{document}'
+		return tex_preamble
+	
 	def check_consistency(self, sentence, dep_list):
 		"""
 		Check whether a list with dependencies is
@@ -253,7 +277,25 @@ class ProcessFiles():
 		for key in dictionary:
 			f.write(key + '\t\t' + str(dictionary[key]) + '\n')
 		f.close()
+		
+	def texstring(self,new):
+		"""
+		Output a texstring with the alignment, the dependency
+		and the 
+		ew = alignment, sentence, dep
+		"""
+		sentence = '\\subsection*{Sentences}\n%s\n\\noindent %s\n' % (new[1],new[3])
+		dep = Dependencies(new[2])
+		a = Alignments(new[0], new[1], new[3])
+		dstring = '\\subsection*{Parse}\n%s\n' % dep.textree()
+		alignment = '\\subsection*{Alignment}\n%s\n' % a.texstring()
+		texstring = '\n\n%s\n\n%s\n\n%s\\newpage' % (sentence, dstring, alignment)
+		return texstring
+		
 
 def test_random():
 	f = ProcessFiles('Data/en-fr.aligned_manual.100','Data/1-100-final.en','Data/1-100-final.en.dependencies')
-	return f.random_sample(100)
+
+def test_tex():
+	f = ProcessFiles('Data/en-fr.aligned_manual.100','Data/1-100-final.en','Data/1-100-final.en.dependencies', 'Data/1-100-final.fr')
+	f.sample(100,True)
