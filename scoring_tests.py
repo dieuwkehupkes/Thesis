@@ -135,3 +135,32 @@ def score_test6():
 	tree, score = scoring.score(Alignments.hat_rules, Rule.probability_labels, [labels])
 	print(tree)
 	print score
+	
+def score_test7():
+	"""
+	Test to check workings for interpunction.
+	"""
+	sentence = "the minutes of the sitting on thursday , 21 september have been distributed ."
+	dependencies = ['det(minutes-2, the-1)','nsubjpass(distributed-13, minutes-2)','prep(minutes-2, of-3)','pobj(of-3, the-4)','amod(the-4, sitting-5)','prep(the-4, on-6)','pobj(on-6, Thursday-7)','num(September-10, 21-9)','nsubjpass(distributed-13, September-10)','aux(distributed-13, have-11)','auxpass(distributed-13, been-12)','root(ROOT-0, distributed-13)']
+	alignment = '3-5 6-8 11-13 1-3 2-4 12-14 10-12 9-10 1-2 5-7 13-15 0-0 1-1 8-9 4-6 10-11'
+	deps = Dependencies(dependencies)
+	scoring = Scoring(alignment,sentence)
+	relations = deps.spanrelations(True,True)
+	nr_of_deps = deps.nr_of_deps
+	tree, score = scoring.score(Alignments.hat_rules, Rule.probability_spanrels, [relations, nr_of_deps])
+	return score == 1.0
+	
+def score_test8():
+	"""
+	Second interpunction check.
+	"""
+	sentence = "yes indeed , mrs thors , we shall amend the minutes accordingly ."
+	alignment = "8-7 7-6 6-5 5-4 12-12 4-3 3-2 10-10 10-11 10-9 2-1 1-0 0-0 9-8"
+	dependencies = ["discourse(mrs-4, yes-1)","dep(yes-1, indeed-2)","ccomp(amend-9, mrs-4)","dobj(mrs-4, thors-5)","nsubj(amend-9, we-7)","aux(amend-9, shall-8)",'root(ROOT-0, amend-9)','det(minutes-11, the-10)','dobj(amend-9, minutes-11)','advmod(amend-9, accordingly-12)']
+	deps = Dependencies(dependencies)
+	scoring = Scoring(alignment,sentence)
+	relations = deps.spanrelations(True,True)
+	nr_of_deps = deps.nr_of_deps
+	tree, score = scoring.score(Alignments.hat_rules, Rule.probability_spanrels, [relations, nr_of_deps])
+	return score == 1.0
+	

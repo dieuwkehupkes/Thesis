@@ -106,7 +106,7 @@ def lr_test():
 	man_relations = {(1, 2): set([(0, 1), (2, 4), (4, 6)]), (5, 6): set([(4, 5)]), (3, 4): set([(2, 3)]), (0,4): set([(4,6)]), (0,2): set([(2,4)])}
 	return relations == man_relations
 
-def allr_test():
+def allr_test1():
 	"""
 	Test left branching relations for sentence 'I give the boy some flowers'
 	"""
@@ -116,8 +116,27 @@ def allr_test():
 	man_relations = {(1, 2): set([(0, 1), (2, 4), (4, 6)]), (5, 6): set([(4, 5)]), (3, 4): set([(2, 3)]), (0,4): set([(4,6)]), (0,2): set([(2,4)]), (1,4): set([(0,1),(4,6)]), (1,6): set([(0,1)])}	
 	return relations == man_relations
 
+def allr_test2():
+	dependencies = ['det(minutes-2, the-1)','nsubjpass(distributed-13, minutes-2)','prep(minutes-2, of-3)','pobj(of-3, the-4)','amod(the-4, sitting-5)','prep(the-4, on-6)','pobj(on-6, Thursday-7)','num(September-10, 21-9)','nsubjpass(distributed-13, September-10)','aux(distributed-13, have-11)','auxpass(distributed-13, been-12)','root(ROOT-0, distributed-13)']
+	d = Dependencies(dependencies)
+	relations = d.spanrelations(True,True)
+	man_relations = {(8, 13): set([(0, 7), (0,8)]), (5, 6): set([(6, 7)]), (10, 13): set([(8, 10),(7,10)]), (9, 10): set([(8, 9)]), (2, 3): set([(3, 7)]), (3, 5): set([(5, 7)]), (1, 2): set([(0, 1), (2, 7)]), (12, 13): set([(11, 12), (10, 11), (8, 10), (0, 7), (0,8), (7,10)]), (1, 7): set([(0, 1)]), (3, 4): set([(4, 5), (5, 7)]), (0, 2): set([(2, 7)]), (11, 13): set([(10, 11)]), (7,13): set([(0,7)])}
+#	for key in man_relations.keys():
+#		if man_relations[key] != relations[key]:
+#			print 'key', key
+#			print 'man', man_relations[key], 'auto', relations[key]
+#	d.print_labels(relations)
+#	d.print_labels(man_relations)
+	return relations == man_relations
+
+def a():
+	d = Dependencies(['det(minutes-2, the-1)'])
+	deplist = [(0,3),(3,5),(5,7)]
+	for l in d._alternative_deplist(deplist):
+		print l
+
 def dependencies_test_all():
 	"""
 	Run all dependency tests.
 	"""
-	return spanrelations_test() and labels_test1() and labels_test2() and labels_annotation_test() and labels_test3() and rr_test() and lr_test() and allr_test()
+	return spanrelations_test() and labels_test1() and labels_test2() and labels_annotation_test() and labels_test3() and rr_test() and lr_test() and allr_test1() and allr_test2()

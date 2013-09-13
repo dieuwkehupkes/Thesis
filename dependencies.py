@@ -165,7 +165,7 @@ class Dependencies():
 			self.wordspans[key] = (min(min(deplist)),max(max(deplist)))
 			return self.wordspans[key]
  
- 	def spanrelations(self, rightbranching = False, leftbranching = False):
+ 	def spanrelations(self, rightbranching = False, leftbranching = False, interpunction = True):
  		"""
  		Create a dictionary with spanrelations that are 'deeper'
  		than the standard relations in the dependency parse, and allow
@@ -174,6 +174,9 @@ class Dependencies():
  		will be included that first combine with the right arguments, and then
  		with the left arguments, and vise versa for leftbranching. If both left-
  		and rightbranching are true, ......
+ 		If interpunction is set to True, gaps are taken into account in allowed
+ 		dependency relations returned (i.e., if (0,7) (8,13) is an allowed relation 
+ 		and (7,8) is a comma, also (0,8) (8,13) and (0,7) (7,13) are added.
  		"""
  		#Create normal span relations
  		spanrels = {}
@@ -186,7 +189,14 @@ class Dependencies():
 		for head in spanrels:
 			relations = []
 			deplist = self.argument_list(head)
+			if interpunction:
+				self._interpunction_update(deep_spanrels,deplist,head)
+				deplists = self._alternative_deplist(deplist) + [deplist]
+			else:
+				deplists = [deplist]
+			#check for gaps
 			index_head = deplist.index(head)
+			#determine orders in which arguments may be combined
 			if leftbranching and rightbranching:
 				left = [(i,j,j+1) for i in xrange(len(deplist)-2) for j in xrange(index_head,len(deplist)-1) if j>i ]
 				right = [(i+1,j, i) for j in xrange(index_head,len(deplist)) for i in xrange(index_head) if i+1<j]
@@ -199,17 +209,71 @@ class Dependencies():
 				left = [ ( i+1, index_head ,i) for i in xrange(index_head-1) ]
 				right = [ (0,i,i+1) for i in xrange(index_head, len(deplist)-1) ]
 				relations = left + right
-			# add relations to dctionary
-			for tuples in relations:
-				rel1 = (deplist[tuples[0]][0],deplist[tuples[1]][1])
-				rel2 = deplist[tuples[2]]
-				rel_list = deep_spanrels.get(rel1,set([]))
-				rel_list.add(rel2)
-				deep_spanrels[rel1] = rel_list
-		#Create both left and right-branching arguments
+			# add relations to dictionary
+			for deplist in deplists:
+#				print 'deplist', deplist
+				for tuples in relations:
+#					print 'tuple', tuples
+					rel1 = (deplist[tuples[0]][0],deplist[tuples[1]][1])
+					rel2 = deplist[tuples[2]]
+#					print 'rel1', rel1
+#					print 'rel2', rel2
+					deep_spanrels[rel1] = deep_spanrels.get(rel1,set([]))
+					deep_spanrels[rel1].add(rel2)
 		return deep_spanrels
 				
-						
+	def _alternative_deplist(self, deplist):
+		"""
+		Check for gaps in deplist created by
+		interpunction not taken into account
+		by dependency parser. Start with
+		first gap and recursively go through list.
+		Assumes a gap is not larger than 1.
+		"""
+		deplists = []
+		#find first gap:
+		gap = False
+		for i in xrange(1,len(deplist)):
+			if deplist[i-1][1] != deplist[i][0]:
+				gap = i
+				break
+		if not gap:
+			return [deplist]
+		else:
+			#fill from left
+			new_deplist1 = copy.copy(deplist)
+			new_deplist1[i] = (deplist[i][0]-1, deplist[i][1])
+			#fill from right
+			new_deplist2 = copy.copy(deplist)
+			new_deplist2[i-1] = (deplist[i-1][0],deplist[i-1][1]+1)
+		deplists = self._alternative_deplist(new_deplist1) + self._alternative_deplist(new_deplist2)
+		return deplists
+	
+	def _interpunction_update(self, spanrels, deplist, head):
+		"""
+		Update the current relations such that
+		gaps in the dependency parse due to
+		interpunction are accounted for. For instance
+		if (5,6) and (7,8) are related, and (6,7) = ',',
+		then add (5,7) - (7,8) and (5,6) - (6,8)
+		"""
+		for gap in [i for i in xrange(1,len(deplist)) if deplist[i-1][1] != deplist[i][0]]:
+			gapl, gapr = deplist[gap-1], deplist[gap]
+			if gapl != head and gapr != head:
+				dep_new1 = (gapl[0],gapl[1]+1)
+				dep_new2 = (gapr[0]-1, gapr[1])
+				spanrels[head].add(dep_new1)
+				spanrels[head].add(dep_new2)
+				continue
+			elif gapr == head:
+				hnew = (head[0]-1,head)
+			else:
+				hnew = (head[0],head[1]+1)
+			for key in spanrels[head]:
+				spanrels[hnew] = set([])
+				spanrels[hnew].add(key)
+		return spanrels
+		
  
  	def get_comp_spanrels(self):
  		"""
