@@ -185,16 +185,10 @@ class Dependencies():
 			for dependent in self.deps[key]:
 				spanrels[(key-1,key)].add(self.wordspans[dependent[0]])
 		#create deeper span relations
-		deep_spanrels = copy.copy(spanrels)
+		deep_spanrels = copy.deepcopy(spanrels)
 		for head in spanrels:
 			relations = []
 			deplist = self.argument_list(head)
-			if interpunction:
-				self._interpunction_update(deep_spanrels,deplist,head)
-				deplists = self._alternative_deplist(deplist) + [deplist]
-			else:
-				deplists = [deplist]
-			#check for gaps
 			index_head = deplist.index(head)
 			#determine orders in which arguments may be combined
 			if leftbranching and rightbranching:
@@ -210,17 +204,15 @@ class Dependencies():
 				right = [ (0,i,i+1) for i in xrange(index_head, len(deplist)-1) ]
 				relations = left + right
 			# add relations to dictionary
-			for deplist in deplists:
-#				print 'deplist', deplist
-				for tuples in relations:
-#					print 'tuple', tuples
-					rel1 = (deplist[tuples[0]][0],deplist[tuples[1]][1])
-					rel2 = deplist[tuples[2]]
-#					print 'rel1', rel1
-#					print 'rel2', rel2
-					deep_spanrels[rel1] = deep_spanrels.get(rel1,set([]))
-					deep_spanrels[rel1].add(rel2)
-		return deep_spanrels
+			for tuples in relations:
+				rel1 = (deplist[tuples[0]][0],deplist[tuples[1]][1])
+				rel2 = deplist[tuples[2]]
+				deep_spanrels[rel1] = deep_spanrels.get(rel1,set([]))
+				deep_spanrels[rel1].add(rel2)
+		if interpunction == True:
+			return self._gap_account(deep_spanrels)
+		else:
+			return deep_spanrels
 				
 	def _alternative_deplist(self, deplist):
 		"""
@@ -230,15 +222,27 @@ class Dependencies():
 		first gap and recursively go through list.
 		Assumes a gap is not larger than 1.
 		"""
-		deplists = []
-		#find first gap:
+#		print 'function executed on deplist:', deplist
+#		deplists = []
 		gap = False
 		for i in xrange(1,len(deplist)):
 			if deplist[i-1][1] != deplist[i][0]:
 				gap = i
 				break
 		if not gap:
-			return [deplist]
+			deplists = [deplist]
+#			deplists = [deplist]
+			#check for gaps at end and start
+			if deplist[0][0]-1 != -1 and deplist[0][0]-1 not in self.wordspans:
+				new_deplist = copy.copy(deplist)
+				new_deplist[0] = (deplist[0][0]-1, deplist[0][1])
+				deplists.append(new_deplist)
+			if deplist[-1][1]+1 not in self.wordspans and deplist[-1][1]+2 in self.wordspans:
+				new_deplist = copy.copy(deplist)
+				new_deplist[-1] = (deplist[-1][0], deplist[-1][1]+1)
+				deplists.append(new_deplist)
+#			print 'no gap, deplist returned as it is:', deplist
+			return deplists
 		else:
 			#fill from left
 			new_deplist1 = copy.copy(deplist)
@@ -246,8 +250,48 @@ class Dependencies():
 			#fill from right
 			new_deplist2 = copy.copy(deplist)
 			new_deplist2[i-1] = (deplist[i-1][0],deplist[i-1][1]+1)
-		deplists = self._alternative_deplist(new_deplist1) + self._alternative_deplist(new_deplist2)
-		return deplists
+			return self._alternative_deplist(new_deplist1) + self._alternative_deplist(new_deplist2)
+	
+	
+	def _gap_account(self, spanrels):
+		"""
+		Return a new dictionary that accounts for
+		possible gaps in the dependency parse.
+		For instance, if (5,6) and (7,8) are 
+		related, and (6,7) = ',', then add 
+		 (5,7) - (7,8) and (5,6) - (6,8)
+		"""
+		#Add extra spans in the keys
+		gap_spanrels = copy.deepcopy(spanrels)
+		for head in spanrels:
+#			print 'head', head
+			for relation in spanrels[head]:
+#				print 'rel', relation
+				l,r = relation[0], relation[1]
+				if l != 0 and l not in self.wordspans:
+#					print 'gap left, add', (l-1,r), 'to relations'
+					gap_spanrels[head].add((l-1,r))
+				if r+1 not in self.wordspans and r+2 in self.wordspans:
+#					print 'gap right, add', (l, r+1), 'to relations'
+					gap_spanrels[head].add((l,r+1))
+		for head in spanrels:
+#			print 'head', head
+			nheads = []
+			l,r = head[0], head[1]
+			if l!=0 and l not in self.wordspans:
+				nheads.append((l-1,r))
+#				print 'gap left, add', (l-1,r), 'to heads'
+			if r+1 not in self.wordspans and r+2 in self.wordspans:
+#				print 'gap right, add', (l, r+1), 'to heads'
+				nheads.append((l,r+1))
+			for nhead in nheads:
+				gap_spanrels[nhead] = set([])
+				for key in gap_spanrels[head]:
+					if key[1] <= nhead[0] or key[0] >= nhead[1]:
+						gap_spanrels[nhead].add(key)
+		return gap_spanrels
+			
+		
 	
 	def _interpunction_update(self, spanrels, deplist, head):
 		"""
@@ -257,6 +301,7 @@ class Dependencies():
 		if (5,6) and (7,8) are related, and (6,7) = ',',
 		then add (5,7) - (7,8) and (5,6) - (6,8)
 		"""
+		#gaps in the middle
 		for gap in [i for i in xrange(1,len(deplist)) if deplist[i-1][1] != deplist[i][0]]:
 			gapl, gapr = deplist[gap-1], deplist[gap]
 			if gapl != head and gapr != head:
@@ -269,9 +314,28 @@ class Dependencies():
 				hnew = (head[0]-1,head)
 			else:
 				hnew = (head[0],head[1]+1)
+			spanrels[hnew] = set([])
 			for key in spanrels[head]:
-				spanrels[hnew] = set([])
 				spanrels[hnew].add(key)
+		#gaps at begin or end
+		if deplist[0][0] != 0 and deplist[0][0] not in self.wordspans:
+			if deplist[0] != head:
+				dep_new1 = (deplist[0][0]-1, deplist[0][1])
+				spanrels[head].add(dep_new1)
+			else:				
+				hnew = (head[0]-1, head[1])
+				spanrels[hnew] = set([])
+				for key in spanrels[head]:
+					spanrels[hnew].add(key)
+		if deplist[-1][1]+1 not in self.wordspans and deplist[-1][1]+2 in self.wordspans:
+			if deplist[-1] != head:
+				dep_new2 = (deplist[-1][0], deplist[-1][1]+1)
+				spanrels[head].add(dep_new2)
+			else:
+				hnew = (head[0], head[1]+1)
+				spanrels[hnew] = set([])
+				for key in spanrels[head]:
+					spanrels[hnew].add(key)
 		return spanrels
 		
  
