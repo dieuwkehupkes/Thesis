@@ -47,7 +47,7 @@ class ProcessFiles():
 			new_dependent = self.dependency_file.readline()
 		return new_alignment, new_sentence, dependency_list, new_target
 	
-	def sample(self, samplesize, display = False):
+	def sample(self, samplesize, maxlength = False, display = False):
 		"""
 		Create a sample of sentence from the inputted files.
 		Create a file with the sentences, and files with the
@@ -58,14 +58,21 @@ class ProcessFiles():
 		were selected.
 		"""
 		# determine the number of sentences in the file
-		# and select a sample by generating a random
-		# sequence of numbers
 		import random
 		self._reset_pointer()
 		f_length = 0
+		sentences = []
 		for line in self.sentence_file:
 			f_length+= 1
-		selection = random.sample(range(1,f_length+1),samplesize)
+			if maxlength and len(line.split()) <= maxlength:
+				 sentences.append(f_length)
+		# select a sample by generating a random
+		# sequence of numbers
+		if not maxlength:
+			selection = random.sample(range(1,f_length+1),samplesize)
+		else:
+			s = random.sample(range(len(sentences)),samplesize)
+			selection = [sentences[i] for i in s]
 		selection.sort()
 		# create files
 		self._reset_pointer()
@@ -298,4 +305,4 @@ def test_random():
 
 def test_tex():
 	f = ProcessFiles('Data/en-fr.aligned_manual.100','Data/1-100-final.en','Data/1-100-final.en.dependencies', 'Data/1-100-final.fr')
-	f.sample(100,True)
+	f.sample(20,10,True)
