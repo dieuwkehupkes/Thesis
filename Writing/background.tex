@@ -19,6 +19,10 @@
 \newcommand\textcyr[1]{{\fontencoding{OT2}\fontfamily{wncyr}\selectfont #1}}
 \newcommand{\myparagraph}[1]{\paragraph{#1}\mbox{}\\}
 \bibliographystyle{plainnat}
+\renewcommand\topfraction{0.85}
+\renewcommand\bottomfraction{0.85}
+\renewcommand\textfraction{0.1}
+\renewcommand\floatpagefraction{0.85}
 \author{}
 \title{}
 
@@ -666,17 +670,6 @@ We have discussed compositional structures for natural languages, we have discus
 
 We can find a set of structures according to which the sentence has been compositionally translated, we can find a set of structures that (possibly linguistically motivated) expresses the compositional structure of a sentence, but we do not know if it possibles to find consistency along these two sets. This topic is the main concern of this thesis.
 
-%\begin{figure}[!ht]
-%\begin{tabular}{lll}
-%X $\rightarrow$ $\langle$ X$_1$ X$_2$ X$_3$ X$_4$, X$_1$ X$_2$ X$_3$ X$_4$  $\rangle$ && X $\rightarrow$ $\langle$ give, geef $\rangle$\\
-%X $\rightarrow$ $\langle$ X$_1$ X$_2$, X$_1$ X$_2$ $\rangle$ && X $\rightarrow$ $\langle$ I, ik $\rangle$ \\
-%X $\rightarrow$ $\langle$ my, mijn $\rangle$ && X $\rightarrow$ $\langle$  little, small $\rangle$ \\
-%X $\rightarrow$ $\langle$ brother, broertje $\rangle$ && X $\rightarrow$ $\langle$ a, een $\rangle$
-%X $\rightarrow$ $\langle$ ball, bal $\rangle$\\
-%\end{tabular}
-%\end{figure}
-
-
 \section{Empirically Studying Compositional Translation}
 
 Thus far, we have discussed compositional translation on a practical yet unspecific level, as we have relied on intuition to determine both linguistic and translation equivalent parts (and structures). If compositional translation were to be used in an MT-model, however, means are needed to establish equivalences automatically and large scaled. The same holds, for empirical analyses of translation data (anders). In the current section, we will discuss these means, and the simplifications that are made in the process.
@@ -766,7 +759,7 @@ As translation equivalent parts, word-alignments are not directly visible when l
 
 The precise definition of a word-alignment varies from paper to paper. Throughout this thesis we will use the following definition:
 
-\begin{definition}[Alignment]
+\begin{definition}[Alignment]\label{def:alignment}
 Given a source sentence $s = s_0 \ldots s_n$ and its translation $t = t_0 \ldots t_m$, an alignment is a set $a \subseteq \{0,1,\ldots,n\} \times \{0,1,\ldots,m\}$ such that $(x,y)\in a$ iff $s_x$ is translated into $t_y$.
 \end{definition}
 
@@ -948,74 +941,318 @@ A second line of empirical research does not restrict source (or target) side tr
 
 \chapter{Own work}
 
-It seems that in all these analyses, still no sufficient answer is found to the most general empirical question ....
+It seems that in all these analyses, still no sufficient answer is found to the most general empirical question (anders): is it possible to match up compositionality of translation and compositionality of language, such that an entire translation corpus can be covered. In this thesis, we will address this question, where we hope to implicitly also find an answer to the question: are predicate argument structures preserved over language. To do so, we will consider a broad set of translation structures: all maximally compositional tree structures in which the non-terminal nodes are contiguous parts, and the discontinuous units are generated as terminals. In other words: all source structures that can be mapped to a target structure through a bijective mapping of the non-terminal nodes \citep[this set was previously defined in][]{simaan2013hats}. We will devise an algorithm for generating these structures in an easily accessible format that allows for investigation of the structures.
 
-explain once again contribution this paper?
-- define a set of structures (say differently, not my structures)
-- develop a system that produces these sets in an accessible structure, that can be investigated (also by other researchers, output in standard NLTK format)
-- investigate if these structures can consistently be labelled using dependency grammars
-- investigate the main causes of deviation of these structures of standard linguistic syntax.
+In this thesis, we will focus on the consistency of the translation structures with dependency grammars, that we believe have, given their semantic nature, potential for being consistent across languages. We will, making the same assumptions with regard to the translation data earlier investors did, investigate how well the translation structures cohere with dependency parses, and study the main causes of deviation of the translation structures of conventional linguistic syntax.
 
-We will use a similar structure. First, we will define the set of translation structures we are considering, ...., then, we will say how we obtain compositional structures for language, then how we combine them.
+The structure of this chapter is similar to the structure of the previous chapter. First, we will define the set of translation structures we are considering. We will give some examples to hopefully provide a more intuitive feeling for this set, and explain how we will obtain and represent these structures (Section \ref{sec:transstr}). The next section addresses our compositional system of language (Section \ref{sec:compstr}). As we have discussed dependency parses quite elaborately earlier on, this section is of a more practical nature than the previous one. In Section \ref{sec:comb}, we will discuss how we will combine the two compositionality systems, giving formal definitions of consistency and examples to illustrate and motivate our procedures.
 
 
 \section{Translation Structures}
+\label{sec:transstr}
 
-The set of translation structures considered in this thesis is in nature similar to the structures considered by \cite{chiang2005hierarchical}: nodes can have both terminal and non-terminal childen (as before) blablabla but deeper structure as well, minimally branching blabla provide somewhat intuitive motivation of the set of structures. + refer to article khalil.
+The set of translation structures considered in this thesis is the set as described in \cite{simaan2013hats}. We will first give a formal description of this set of structures (\ref{subsec:hats}), and then try to give a more intuitive description that illustrates the power of the set (\ref{subsec:intuition}). In the last part of this section (\ref{subsec:representation}, we will discuss the representational system we will use to describe and assess these structures.
 
-In this section, we will define this set of structures, and discuss methods of representing them.
+\subsection{Formally}
+\label{subsec:hats}
 
-%Give example alignment, that we can refer to for the definitions
+As the space of possible translation structures depends solely on the possible `parts' in translation, in the current set-up this space is completely determined by the positions of the source words and the positions they were mapped to, as described by the word-alignments. The current representation of alignments, as defined in Definition \ref{def:alignment}, is not optimal for devising translation structures. We will introduce, as far as this thesis goes, a change in notation. The alignment depicted in Figure \ref{fig:alignment2} will be referred to for clarification and explanation.
 
-\subsection{A new representation of alignments}
+\begin{figure}
+\centering
+\includegraphics[scale=0.6]{alignment1.png}
+\caption{A one-to-many alignment of the English sentence `My dog also likes eating sausages.' and its translation `Mijn hond houdt ook van worstjes eten'.%schrijf welke tool is gebruikt
+\cite{maillette2010visualizing}
+}\label{fig:alignment2}
+\end{figure}
 
-Alignments as defined before do not have an optimal representation for blabla, introduce new notation.
+\subsubsection{Set-permutations}
 
-The translation structures induced depend solely on the positions the source words were mapped to. We will introduce, as far as this thesis goes, a slight change in notation, that better serves the purpose
-
-Following \cite{simaan2013hats}, we will represent an alignment by an ordered sequence of sets, of which the $n$th element specifies to which target word the $n$th source word maps. In case of a one-to-one alignment, this sequence is thus a permutation of the target word-positions, while in more complex alignment some of the target positions may appear multiple times in the sequence, or not at all. We will refer to such a sequence describing an alignment with the term set-permutation, which is formally defined in Definition \ref{def:sperm}. (anders)
-
+Following \cite{simaan2013hats}, we will represent an alignment by an ordered sequence of sets, of which the $n$th element specifies to which target word the $n$th source word maps. In case of a one-to-one alignment, this sequence is thus a permutation of the target word-positions, while in more complex alignment some of the target positions may appear multiple times in the sequence, or not at all. We will refer to such a sequence describing an alignment with the term set-permutation, which is defined as follows:
 
 \begin{definition}[Set-permutation]\label{def:sperm}
 Given a source sentence $s = s_0 \ldots s_n$, its translation $t = t_0 \ldots t_m$, and an alignment $a$, let $a(i) = \{j~|~(i,j)\in a\}$ be the set with target positions that is linked to source position $i$. The set-permutation $\pi$ uniquely describing $a$ is defined as the ordered sequence of sets
 $\langle a(0), \ldots, a(n) \rangle$
 \end{definition}
 
-%Add example
-The set-permutation $\pi=\langle \pi_0,\ldots\pi_n\rangle$ describing the alignment ..... give example for whichever alignment was depicted last. In the coming definitions, we will assume that $\bigcup_{i=0}^{n} \pi_i$ constitutes a contiguous sequence of numbers. In practice, such a situation can always be achieved by only numbering the aligned target positions that are aligned, effectively switching the position numbers to the left whenever an unaligned word is found, and can thus be assumed without lot of generality.
+\noindent The set-permutation $\pi = \langle\pi_0, ..., \pi_n\rangle$ describing the alignment depicted in Figure \ref{fig:alignment2} would thus be $\langle \{0\}, \{1\}, \{3\}, \{2,4\}, \{6\}, \{5\}\rangle$. 
 
-\subsection{Translation Equivalence for set-permutations}
+\subsubsection{Translation Equivalence for Set-permutations}
 
-Define translation equivalence for setpermutations
+With the altered definition for alignment, a new definition for translation equivalence is required. In the following definitions, we will assume that $\bigcup_{i=0}^{n} \pi_i$ constitutes a contiguous sequence of numbers (thus there are no unaligned words). Although this is not always the case in practice, such a situation can always be achieved by only numbering the aligned target positions that are aligned, effectively switching the position numbers to the left whenever an unaligned word is found, and can thus be assumed without loss of generality.
+
+\begin{definition}[Translation Admissibility]\label{def:transadd}
+Let $\pi = \pi_1 \ldots \pi_n$ be a set-permutation describing a sentence pair $(s,t)$, a subset $\{\pi_i,\ldots,\pi_j\}$ is translation admissible if and only if for every integer $x \in (\pi_i\cup \ldots \cup\pi_j)$ holds that $x \notin (\pi_0\cup \ldots \cup \pi_{j-1} \cup \pi_{i+1}\cup\ldots\cup \pi_n)$.
+\end{definition}
+
+\noindent The notion of translation admissible does not require contiguousness on either source or target side, which is desirable, as words are not necessarily translated into adjacent words in another language (for instance, in the running example `likes' translates into `houdt ... van'). A projective tree representation of a compositional translation, however, demands that that non-terminal cover contiguous subsequences in both source and target language, which leads to the following definition of translation part:
+
+\begin{definition}[Translation Part]\label{def:transpart}
+Let $\pi = \pi_1 \ldots \pi_n$ be a set-permutation describing a sentence pair $(s,t)$, a subset $\{\pi_i,\ldots,\pi_j\}$ is translation admissible if and only if $(\pi_i\cup \ldots \cup \pi_j)$ constitutes a contiguous range of integers (contiguousness on the target side), is a contiguous sequence in $\pi$ (contiguousness on the source side) and is translation admissible according to Definition \ref{def:transadd}.
+\end{definition}
+
+\noindent In the alignment depicted in Figure \ref{fig:alignment2} thus has 6 translation admissible sequences of length 1, 3 of length 2, 1 of length 3, 2 of length 4, 1 of length 5 and 1 of length 6 (see Figure \ref{fig:transequi}.
+
+The number of translation parts in an alignment depends on the type of the alignment and is largest in case of a monotone alignment, that does not restrict the set of possible translation units at all. A completely monotone alignment of a sentence of $n$ words has $\frac{n\times n+1}{2}$ translation units. Note that unaligned words can cause exponential growth in the number of translation units.
+
+\begin{figure}[!ht]
+\begin{framed}
+\small{
+\begin{itemize}
+\item \{0\} \hfill \{1\} \hfill \{3\} \hfill \{6\} \hfill \{5\} \hfill
+\item \{\{0\},\{1\}\} \hfill  \{\{6\},\{5\}\} \hfill \{\{3\},\{2,4\}\}
+\item \{\{1\},\{3\},\{2,4\}\}
+\item \{\{0\},\{1\},\{3\},\{2,4\}\} \hfill \{\{3\},\{2,4\},\{6\},\{5\}\}
+\item \{\{1\},\{3\},\{2,4\},\{6\},\{5\}\}
+\item \{\{0\},\{1\},\{3\},\{2,4\},\{6\},\{5\}\}
+\end{itemize}
+}
+\end{framed}
+\caption{Translation units of alignment from \ref{fig:alignment2}}\label{fig:transequi}
+\end{figure}
 
 
+\subsubsection{Set-permutation Trees}
 
-\subsection{Set-permutation trees.}
+The set of compositional translation trees follows relatively straight-forwardly from the notion of parts: a compositional translation tree is a tree whose root span covers the entire sentence, and all of whose nodes correspond with translation equivalent units. To account for non-contiguous parts, nodes are allowed to expand in a combination of terminal and non-terminal nodes as well, provided that the terminals together constitute a translation admissible subset of the total sentence. A compositional translation tree will be defined in terms of allowed node expansions. If the top node of a tree covers the entire sentence, and all nodes are expanded as described in Definition \ref{def:exp1}, it recursively follows that all non-terminal nodes are translation parts and all leafnodes together constitute a translation admissible subset, and the tree is thus a compositional translation tree for the corresponding sentence.
 
-Define set-permutation-trees. Explain o.a., hoe node expansions eruit mogen zien, de minimal branching factors van de boom
+\begin{definition}[Expansion of a translation part]\label{def:exp1}
+Let $\pi = \langle \pi_0, \ldots,\pi_n\rangle$ be a set-permutation that constitutes a part of a translation. A allowed expansion of $\pi$ into parts is described by a segmentation of $\pi$ as an ordered set of indices $B = \{j_0 = 0, j_1, \ldots ,j_{m-1},j_m = n+1\}$ that segments $\pi$ into $m$ adjacent, non-overlapping and contiguous segments such that for all $0\leq i < m$ holds that the subsequence $\pi_{j_i}\ldots\pi_{j_{i+1}-1}$ is a new non-terminal node that is a translation part, or $\pi_{j_i}\ldots\pi_{j_{i+1}-1}$ constitutes a translation admissible sequence with ....
+\end{definition}
+
+Using Definition \ref{def:exp1}, a translation tree can be constructed top down, by recursively segmenting the entire sequence until only sequences of length 1 are left. Figure \ref{fig:alignment_tree} shows a possible alignment tree for the alignment from the running example: the sentence is firstly split into the two translation parts `my dog' and `also likes eating sausage', the former is then further split into two `my' and `dog', that also both constitute allowed translation parts. Also the right tree is further split up into translation parts, until the segmentation of `also likes' is reached, and no further division into allowed translation parts is possible. The phrase is therefore segmented into the non-terminal node covering part `also', and the leafnode covering the translation admissible word `likes'. Depending on its type, an alignment may have many different possible alignment trees. The current alignment has more than 40 different trees. The number of alignment trees can be exponential in the length of the sentence, if no restriction is placed on the branching factor of the nodes. Every alignment can be assigned at least one structure (the completely flat one).
+
+\begin{figure}[!ht]
+\centering
+\Tree [.\{\{0\},\{1\},\{3\},\{2,4\},\{6\},\{5\}\} [.\{\{0\},\{1\}\} [.\{0\}  my ] [.\{1\} dog ] ] [.\{\{3\},\{2,4\},\{6\},\{5\}\} [.\{\{3\},\{2,4\}\} [.\{3\} also ] [.likes ] ] [.\{\{6\},\{5\}\} [.\{5\} eating ] [.\{6\} sausage ] ] ] ]
+\caption{A possible alignment tree for the alignment of Figure \ref{fig:alignment} \label{fig:alignment_tree}}
+\end{figure}
+
+\subsubsection{Maximally Compositional Trees}
+
+In this thesis, we will consider only a subset of the alignment trees we have just described: the ones that are maximally compositional in the sense that every node was expanded into a minimal number of child nodes (i.e.,the number of syntactic rules used in the sentence was maximal). The trees are thus minimally branching, if a node can expand into two parts, there will be no compositional translation tree in our set in which this node has more than 2 children.
+
+Of course, there is a computational advantage to considering only minimally branching trees. Not only does it significantly reduce the space of trees to be considered (in case of the running example, 5 instead of 44), it also simplifies parsing, as the lower-rank rules that can be extracted from minimally branching trees  can be more efficiently treated by a parsing algorithm (ref?). Although these considerations are very relevant if a model were to be constructed from the
+findings of this investigations, it seems that an empirical analysis assessing the underlying assumptions of models should not be primarily driven by computational issues. However, there are also theoretical advantages to considering only minimally branching trees. First of all, it secures the underlying system is indeed compositional. The set of all compositional translation trees contains many flat trees, that can under some perspective be seen as compositional (as compositionality is highly underspecified), but can not be seen as recursive or systematic. A grammar containing a separate rule for almost every sentence, specifying how the meaning can be derived from \textit{all of its words} does certainly not correspond with human intuitions about compositionality, not to mention the fact that such a grammar would be infinite. Considering only minimally branching trees solves this problem. Secondly, considering only expansions that are maximally compositional maximises the chance that generalisation to new data is possible (ref?): a rule that specifies how an argument can be combined with a predicate is more useful than a rule specifying how `I' can be combined with `like'. Minimum depth expansions are more probable to be applicable in new situations.
+
+\subsection{Intuition}
+\label{subsec:intuition}
+
+In words, the set of structures considered in this thesis can be characterised by the following properties:
+\begin{enumerate}
+\item The structures are projective trees.
+\item The non-terminal nodes in the tree correspond to subsequences that were possible parts in the translation, while sibling terminal nodes toghether constitute a translation admissible part, herewith respecting the strategy of compositional translation.
+\item Nodes can have both non-terminal nodes and terminal children.
+\item All nodes of the tree have a minimal branching factor.
+\end{enumerate}
+
+\noindent The set of structures considered is thus associated with a synchronous context-free grammar, in which expansion into the most general non-terminals is preferred over expansions into words, and phrasal translations are used only when necessary. This captures the intuition that even in complicated cases like syntactic divergence, the parts constituting the most important elements of the sentence are grossly the same, and the difference in syntactic structure is reflected only in a few words. We will provide some examples to elucidate this.
+
+\begin{figure}[!ht]
+\centering
+\begin{tikzpicture}
+\draw node (I) at (0,0) {I};
+\draw node (dont) at (0.7,0) {don't};
+\draw node (like) at (1.5,0) {like};
+\draw node (cars) at (2.2,-0.05) {cars};
+
+\draw node (Je) at (5.0,0) {Je};
+\draw node (n) at (5.45,0) {n'};
+\draw node (aime) at (6.0,-0.02) {aime};
+\draw node (pas) at (6.8,-0.07) {pas};
+\draw node (les) at (7.4,0) {les};
+\draw node (voitures) at (8.3,-0.01) {voitures};
+
+\coordinate (Je_) at (5.0,0.4);
+\coordinate (like_) at (1.5,0.3);
+\coordinate (I_) at (0,0.4);
+\coordinate (aime_) at (6.0,0.4);
+\coordinate (naimepas) at (6.0,1);
+\coordinate (dontlike) at (1.2,0.8);
+\coordinate (Idontlike) at (0.6,1.3);
+\coordinate (Jenaimepas) at (5.6,1.4);
+\coordinate (lesvoitures) at (7.8,0.2);
+\coordinate (all) at (1,1.8);
+\coordinate (tout) at (6.6,2.2);
+\coordinate (n_) at (5.45,-0.2);
+
+\foreach \coordinate in {dontlike, like_, I_, Je_, aime_, Idontlike, all, tout, Jenaimepas, naimepas}
+	\filldraw (\coordinate) circle (0.035);
+
+\foreach \from/\to in {naimepas/aime_, naimepas/n, naimepas/pas, dontlike/like_, dontlike/dont, Idontlike/I_, Idontlike/dontlike, all/Idontlike, all/cars, Jenaimepas/Je_, Jenaimepas/naimepas, tout/Jenaimepas, tout/lesvoitures}
+	\draw (\from) -- (\to);
+
+\foreach \from/\to in {cars/voitures, cars/les}
+	\draw[<->, bend left = -35, thick, blue] (\from) to (\to);
+
+\foreach \from/\to in {dont/n_, dont/pas, tout/all, Jenaimepas/Idontlike, aime_/like_, Je_/I_}
+	\draw[<->, bend left = -35, thick, green] (\from) to (\to);
+
+\draw[<->, bend left = -35, thick, red] (I) to (Je);
+
+\end{tikzpicture}
+\caption{Translation of negation, French-English}\label{fig:nepas}
+\end{figure} 
 
 
+A famous example that is often taken as troublesome in MT (refs?) is the translation of (English) negation in the non-contiguous French `ne ... pas'. Figure \ref{fig:nepas} shows a compositional translation tree that accounts for such a translation in the system sketched in this thesis. The translation tree shows that `I dont like' is the translation of `Je n'aime pas', but also contains the information that `don't' is phrasally translated as `ne ... pas'. Removing the negation in the English sentence results in the grammatical English sentence `I like cars', removing its translation equivalent in the France sentence in its (almost) grammatical `Je aime les voitures'. 
+
+An example containing syntactic divergence in translation between Russian and English is depicted in Figure \ref{fig:russian}. In Russian, `X has Y` is (communistically) translated as `with X is Y', the object in English is thus the subject in Russian. Figure \ref{fig:russian} shows how this is dealt with in a translation structure. Note that although this translation tree is easily extendible to longer sentences with the same construction. By expanding the non-terminal nodes it can also capture sentences like `the girl with the long blond hair has a very old car with broken windows'.
+
+\begin{figure}[!ht]
+\centering
+\begin{tikzpicture}
+
+\draw node (the) at (0,0.02) {The};
+\draw node (girl) at (0.75,0) {girl};
+\draw node (has) at (1.4,0.04) {has};
+\draw node (a) at (1.9,0) {a};
+\draw node (car) at (2.4,0) {car};
+\draw node (y) at (4,0) {\textcyr{u}};
+\draw node (girlr) at (4.9,-0.02) {\textcyr{devuxka}};
+\draw node (is) at (6.1,0.02) {\textcyr{est\char126}};
+\draw node (carr) at (7.5,0.04) {\textcyr{avtomobil}};
+
+\coordinate (thegirl) at (0.4,0.6);
+\coordinate (acar) at (2.1,0.6);
+\coordinate (thegirlhas) at (0.8,1);
+\coordinate (all) at (1.4,1.5);
+\coordinate (carr_) at (7.5, 0.3);
+\coordinate (girlr_) at (4.9,0.3);
+\coordinate (girlhas) at (4.9,0.8);
+\coordinate (allr) at (5.9, 1.2);
 
 
-%Maybe something about the advantages of HATs??
+\foreach \coordinate in {thegirl, acar, thegirlhas,all,carr_, girlr_, girlhas, allr}
+	\filldraw (\coordinate) circle (0.035);
+
+\foreach \from/\to in {thegirl/girl, thegirl/the, acar/a, acar/car, thegirlhas/thegirl, thegirlhas/has, all/thegirlhas, all/acar, girlhas/girlr_, girlhas/y, girlhas/is, allr/girlhas, allr/carr_}
+	\draw (\from) -- (\to);
+
+\foreach \from/\to in {the/girlr, girl/girlr}
+	\draw[<->, bend left = -35, thick, blue] (\from) to (\to);
+
+\foreach \from/\to in {has/y, has/is, allr/all, girlhas/thegirlhas, carr_/acar, girlr_/thegirl}
+	\draw[<->, bend left = -35, thick, green] (\from) to (\to);
+
+\foreach \from/\to in {a/carr, car/carr}
+	\draw[<->, bend left = -35, thick, red] (\from) to (\to);
+
+
+\end{tikzpicture}
+\caption{Translation of possession, Russian-English}\label{fig:russian}
+\end{figure}
+
+The system is on some level thus very similar to a standard HPB model as presented by \cite{chiang2005hierarchical}. The major differences reside in rule selection, and the emphasis on exploring recursivity past the lexical level, which was underrepresented in Chiang's model, as only two glue rules were used.
+
+\subsection{Representation and Generation}
+\label{subsec:representation}
+
+To study sets of translation structures, means to generate them are necessary. Hence, a suitable representation needs to be found, as generating and storing all trees separately would be both time and space consuming, and would impede a flexible search through them. We will represent the set of trees by a context-free grammar with spans as non-terminal nodes, that describes the allowed expansions of each span and uniquely generates the entire parse forest of the given sentence. An example is given in Figure \ref{fig:grammar}.
+
+\begin{figure}[!ht]\begin{framed}
+\small{
+\begin{tabular}{llllll}
+(0-6] $\rightarrow$ (0-1]  (1-6] && (4-6] $\rightarrow$ (4-5]  (5-6] && (0-1] $\rightarrow$ My\\
+(0-6] $\rightarrow$ (0-2]  (2-6] && (0-4] $\rightarrow$ (0-1]  (1-4] && (1-2] $\rightarrow$ dog\\
+(0-6] $\rightarrow$ (0-4]  (4-6] && (0-4] $\rightarrow$ (0-2]  (2-4] && (2-3] $\rightarrow$ also\\
+(1-6] $\rightarrow$ (1-4]  (4-6] && (1-4] $\rightarrow$ (1-2]  (2-4] && (4-5] $\rightarrow$ eating\\
+(1-6] $\rightarrow$ (1-2]  (2-6] && (0-2] $\rightarrow$ (0-1]  (1-2] && (5-6] $\rightarrow$ sausages\\
+(2-6] $\rightarrow$ (2-4]  (4-6] && (2-4] $\rightarrow$ (2-3] likes\\
+\end{tabular}
+\caption{The grammar generating the translation tree forest for the sentence
+`My dog also likes eating sausages', with set-permutation $\langle _0\{0\}_1,~ _1\{1\}_2,~ _2\{3\}_3,~ _3\{2,4\}_4, ~_4\{6\}_5,~ _5\{5\}_6\rangle$ would be (the subscripts indicating the span annotation, which is left exclusive and right inclusive)}\label{fig:grammar}
+}
+\end{framed}
+\end{figure}
+
+The allowed expansions were found with an algorithm similar to \citepos{dijkstra1959note} shortest path algorithm, that was adapted to be more efficient given the extra knowledge of the alignment graph (Algorithm \ref{alg:shortest paths}).
+
+\begin{algorithm}[!ht]
+\caption{Shortest Paths}\label{alg:shortest paths}
+\begin{algorithmic}
+\STATE \textbf{Input:} A graph $G = (V,E)$ describing an alignment and two vertices $i$ and $j$ for which $(i,j)\in E$ is true.
+\STATE \textbf{Output:} All non-trivial shortest paths from $i$ to $j$
+\STATE \textit{\#Initialization}
+\STATE visited = $\emptyset$, depth = $0$, paths = $\{j\}$
+\STATE $\forall n\in\mathbb{N}:$ reachable(n) = $\emptyset$; reachable($0$) = $\{j\}$
+\STATE depth\_finished = False
+\STATE \textit{\# Start backwards search through graph}
+\WHILE{not depth\_finished or $i\notin$ visited}
+	\WHILE{reachable(depth) $\neq\emptyset$}
+		\STATE depth\_finished $\leftarrow$ False
+		\STATE current\_node $\leftarrow N$ an arbitrary element $v$ from reachable(depth)
+		\STATE reachable(depth) $\leftarrow$ reachable(depth) $-$ $\{$current\_node$\}$
+		\FOR{ ($l$,current\_node) $\in E$}
+			\IF{$l\notin $visited $\cup$ reachable(depth) \AND depth $\neq 0$}
+				\STATE reachable(depth+1) $\leftarrow$ reachable(depth+1) $\cup$ $\{l\}$
+				\FOR{path (current\_node,\ldots, $j) \in$ paths}
+					\STATE path $\leftarrow$ ($l$,current\_node,\ldots, $j)$
+				\ENDFOR
+			\ENDIF
+		\STATE visited $\leftarrow$ visited $\cup$ $\{l\}$
+		\ENDFOR
+	\STATE depth\_finished $\leftarrow$ True
+	\STATE depth $\leftarrow$ depth+1
+	\ENDWHILE
+\ENDWHILE
+\STATE \textbf{Return} paths
+\end{algorithmic}
+\end{algorithm}
+
 
 \section{Compositional Structures}
 
-Short recap dependency structures + why we think they are suitable. The explanation that dependency structures are not in the format we desire, as they do not directly describe parts
+The compositional system for language we will use in this thesis is the dependency grammar, as was already indicated in Chapter \ref{ch:empirical}. In this chapter, we have argued for the suitability of dependency grammars as translation minded compositional system of language, gave some background information, and provided a formal description. A short recap: dependency structures describe the relation between words, instead of describing a hierarchical structure between phrases, aiming to capture the cognitive perception of sentences in the human brain. Dependency structures can be seen as predicate arguments structures of sentences, that are highly semantically motivated.
+
+\subsection{Formally}
+
+A rather formal description of dependency grammars was already given, we will use this subsection to sharpen notational affairs and define dependency parses as they are used in our experimental part. We will define a dependency tree as a set of relations, holding between the (positions of the) words of the sentence:
+
+\begin{definition}[Dependency structure]
+A dependency structure of a sentence $s = w_0\cdots w_n$ is a set of dependencies $D = \{ (i,j) |$ there is a dependency arrow from word $w_i$ to word $w_j \}$. 
+\end{definition}
+
+There are many conditions that can be imposed on $D$ \citep{de2006generating}, of which in this thesis the most common ones will used\begin{enumerate}
+\item When seen as a relation, $D$ constitutes a single-headed a-cyclic graph in which the words in $s$ are the nodes. (tree-constraint)
+\item When the words are placed in the original order, the branches of the dependendency tree do not cross. (projectivity)
+\end{enumerate}
+
+The span of a word according to a dependency tree is defined as follows:
+
+\begin{definition}
+If $T_d$ is a dependency tree for $s$, $w$ is a word in $s$ and $i$ and $j$ are the maximum and minimum positions, respectively, that can be reached from $w$ by following the directed dependency arrows. Then span($w$) = $[i,j]$. 
+\end{definition}
+
+\subsection{Generation and Representation}
+
+To assign dependency structures to sentences, we used the Stanford Dependency Parser, that can be downloaded from their website, as well as used online  \citep{de2006generating}. The parser provides 5 variants of a typed dependency representation, of which the most basic one corresponds to the earlier imposed conditions on dependency structures. An example dependency parse as generated by the parser is depicted in Figure \ref{fig:deptree1}.
+
+\begin{figure}[!h]\label{fig:deptree1}
+\centering
+\begin{dependency}[theme=simple]%[hide label]
+\begin{deptext}[column sep=.5cm, row sep=.1ex]
+%PRP\$ \& NN \& RB \&[.5cm] VBZ \& VBG \& NN \\
+My \& dog \& also \& likes \& eating \& sausage \\
+\end{deptext}
+\deproot{4}{}
+\depedge{2}{1}{poss}
+\depedge{4}{2}{nsubj}
+\depedge{4}{3}{xvmod}
+\depedge{4}{5}{xcomp}
+\depedge{5}{6}{dobj}
+\end{dependency}
+\caption{Stanford Dependency Tree}
+\end{figure}
+
+Say something about stanford dependency parsers not including punctuation
 
 
-%Although dependency grammars do not postulate the existence of non-terminal syntactic categories, dependency graphs do give rise to an hierarchical structure that specifies from which smaller parts the sentence was composed. In case of non-projectivity, the constituents in this structure are not necessarily continuous. For instance, the dependency graph depicted in Figure \ref{fig:npdeptree} tells us that `likes' is the head word of the sentence, and that the sentence is composed of 4 parts: the head `likes', its modifier `also', its noun subject whose head is `dog' and the open clausal complement whose head is `eating'. The complement and subject are further divisible in `My' and `dog', and `eating' and `sausage', respectively. As the tree is projective, all constituents are continuous. Also the graph in Figure \ref{fig:depgraph} prescribes an hierarchical structure: it is composed of the subject `I', the headword `know', and the phrase headed by `liet', that is in its turn built up from its head `liet', `dat', `hij' and the discontinous phrase `me winnen'. Such an hierarchical can not be captured by a phrase structure grammar
-%
-%
-%
-%
-%
-%
-%As dependency grammars can be seen as of both syntactic and semantic nature, they seem a good candidate formalism to use in translation. Furthermore, if projectivity is not required, is is independent of word order, which addresses on of the major issues of MT. (anders). E.g., all permutations of \textcyr{devuxka vidit mal\char126 qika} are reasonable translations of `The girl sees the boy', which might be hard to capture with a constituency grammar, but is trivial if the dependency structure is considered.
-
+Formally, dependency grammars are not interpreted as a compositional grammar, as they do not postulate the existence of non-terminal syntactic categories, and therefore do not explicitly specify how a sentence was built up from its parts. However, dependency graphs do give rise to an hierarchical structure that specifies from which smaller parts the sentence was composed. For instance, the dependency graph depicted in Figure \ref{fig:deptree1} tells us that `likes' is the head word of the sentence, and that the sentence is composed of 4 parts: the head `likes', its modifier `also', its noun subject whose head is `dog' and the open clausal complement whose head is `eating'. The complement and subject are further divisible in `My' and `dog', and `eating' and `sausage', respectively. As the tree is projective, all parts are continuous. Also the graph in Figure \ref{fig:depgraph} prescribes an hierarchical structure: it is composed of the subject `I', the headword `know', and the phrase headed by `liet', that is in its turn built up from its head `liet', `dat', `hij' and the discontinous phrase `me winnen'. Such an hierarchical structure can not be captured by a phrase structure grammar.
 
 \section{Combining Translation Structures and Dependency Parses}
 
+To combine dependency parses and translation structures, means need to be find to quantify consistency and similarity between them. We have arrived at the situation depicted in Figure \ref{fig:depshats}.
 
 \begin{figure}[!ht]
 \centering
@@ -1032,7 +1269,7 @@ Short recap dependency structures + why we think they are suitable. The explanat
 \draw[->,bend right = 55,thick] (2.9,0) to (2.3,0);
 
 \coordinate (ts) at (7.5,0);
-\node [below] at (ts) {hierarchical alignment trees};
+\node [below] at (ts) {compositional translation structures};
 
 %\draw (6,0) -- (0.6,2) (9,0) -- (6.6,2);
 \draw (6,0) -- (6.9,2) (9,0) -- (6.9,2);
@@ -1044,13 +1281,154 @@ Short recap dependency structures + why we think they are suitable. The explanat
 
 \coordinate (startarrow) at (3.1,0.7);
 \coordinate (endarrow) at (5.9,1.2);
-\node (t) at (4.4,1.5) [above]{consistency};
+\node (t) at (4.4,1.5) [above]{consistency?};
 
 \draw[<->,bend left =35, thick] (startarrow) to (endarrow);
 
 \end{tikzpicture}
-\caption{New situations: finding consistency between dependency parses and HATS}
+\caption{New situations: finding consistency between dependency parses and compositional translation structures}\label{fig:depshats}
 \end{figure}
+
+\noindent In this section, we will define coherence between dependency parses and compositional translation structures. In particular, we will define two methods to determine if a dependency parse is respected by a compositional translation tree,  and a recursive procedure for assigning a similarity score to compositional translation trees accordingly. 
+
+\subsection{Direct Similarity}
+
+Intuitively, a compositional translation tree is consistent with a dependency tree if they prescribe the same parts. An obvious similarity choice would thus be F-score (ref?), according to which the output of syntactic constituency parsers is evaluated. However, as we are comparing with dependency relations between words, it seems just as important that the parts are correctly combined, which is accounted for in our new definition of consistency. 
+
+\begin{definition}[Consistency between Dependency relation and Alignment Tree]\label{def:depHAT}
+Let $s = w_1 w_2 \dots w_n$ be a sentence, and $D = \{ (i,j) |$ there is a dependency arrow from word $w_i$ to word $w_j \}$ a set of dependencies describing a dependency tree for $s$. Let span($j$) be the range $[m,n]$ in which $m$ and $n$ are the maximum and minimum position that can be reached from $w_j$ by following the directed dependency arrows, respectively. A dependency relation $(i,j)$ is said to be respected by an alignment tree $T$ over $s$ if and only if there is a node in $T$ of which both $[i,i]$ and span($j$) are children.
+\end{definition}
+
+\noindent This consistency definition expresses the intuition that a predicate and its arguments are all generated one syntactic rule, and should thus be children of the same node. A dependency relation is respected by a compositional translation tree if the head and the entire phrase the dependent is heading are siblings in the tree.
+
+\subsection{Deeper Similarity?}
+
+The type of consistency defined in Definition \ref{def:depHAT} is very direct, and might assign many trees that seem perfectly in line with dependency parses a rather low score, due to different types of recursivity. Dependency structures are created by linguists, and although they certainly have a generality too them, they are not constructed to be \textit{maximally} recursive, as the set of used translation structures. We will give two examples to illustrate this.
+
+Firstly, consider the sentence `I give you flowers', which contains one predicate (`give') with three arguments (the subject `I', the object `flowers' and the indirect object `you'). Its Dutch translation `Ik geef jou bloemen' has exactly the same predicate argument structure \textit{and} word-order, whereby the branching factor in any of its HATs will not exceed two. However, a maximum score can only be obtained by a tree in which `I', `give', `you', and `flowers' are siblings, whose mother will have a branching factor of (at least) four. Even though the translation of this sentence seems perfectly compositional, no HAT will thus obtain the maximum score, because the dependency structure is not minimally branching.
+
+A second example, that is more related to translational divergence, arises when two arguments are translated into one (which happens, e.g., when arguments are translated as pre- or suffixes, when verbs do not require a subject or when spaces are emitted). Consider for instance the sentence 'Can you give me the salt' and its Italian translation 'puoi passarmi il sale'. Once again, the predicate-argument structure of the sentence is well preserved. However, the dependency parse prescribes that `the salt', `can' and `you' should be siblings of `give', which will be the case in none of the HATs over $\{\{0\},\{0\},\{1\},\{1\},\{2\},\{3\}\}$, as `give' and `me' are together translated into `passarmi', and `can you' into `puoi'.
+
+To account for this discrepancy between maximally recursive alignment structures and dependency parses, we allow a predicate to combine with its arguments 'one-by-one', which would allow both given examples to get a maximal score. A dependency relation is thus respected by a compositional translation structure if the phrase headed by the dependent is siblings with the head itself, or the head plus arguments the head earlier combined with, which is defined in Definition \ref{def:depHAT2}.
+
+\begin{definition}[Consistency2]\label{def:depHAT2}
+Let $s = w_1 w_2 \dots w_n$ be a sentence, and $D = \{ (i,j) |$ there is a dependency arrow from word $w_i$ to word $w_j \}$ a set of dependencies describing a dependency tree for $s$. Let span($j$) be the range $[m,n]$ in which $m$ and $n$ are the maximum and minimum position that can be reached from $w_j$ by following the directed dependency arrows, respectively. Let $(i,j)$ be a dependency relation in $D$, and let $l_1,\ldots,l_n$ and $r_1,\ldots r_k$ be the left and right dependents of $i$, respectively, for which holds that $r_k < j$ or $l_1 > j$. A dependency relation $(i,j)$ is said to be respected by an alignment tree $T$ over $s$ if and only if one of the following three conditions is true: \begin{enumerate}
+\item There is a node in $T$ f which both $[i,i]$ and span($j$) are children.
+\item $\exists x$  and a node in $T$ of which span($l_x\ldots l_n~i~\ldots r_1 r_k$) and span($j$) are both children.
+\item $\exists x$  and a node in $T$ of which span($l_1\ldots l_n~i~r_1\ldots r_x$) and span($j$) are both children.
+\end{enumerate} 
+\end{definition}
+
+
+\subsection{Scoring Trees}
+
+The (not yet normalised) score of a compositional translation tree can now be recursively defined as follows:
+
+\begin{definition}[Scoring]
+Let $s = w_1 w_2 \dots w_n$ be a sentence, and $D = \{ (i,j) |$ there is a dependency arrow from word $w_i$ to word $w_j \}$ a set of dependencies describing a dependency tree for $s$. Let $d_{i,j}$ be the set of relations that could make $(i,j)$ true in $T$, let $D'$ = $\{d_{i,j}| (i,j)\in D\}$. Let $H$ be an alignment tree for $s$. The (unnormalised) score of $H$ with $D$ is now defined as the score of its highest node $N$:
+
+$$
+E(N_a,D) = \sum_{c\in C_{N_a}} E(c,D)+ \sum_{c_1\in C_{N_a}} \sum_{c_2\in C_{N_a}} B(c_1,c_2)
+$$
+
+\noindent With base case $E(N,D) = 0$, $B(c_1,c_2) = 1$ iff  $(c_1,c_2)\in D'$, and $C_N$ the set of child nodes of $N$.
+
+The score can be normalised by dividing by $|D|$.
+\end{definition}
+
+An example is given in the next subsection.
+
+\subsection{Example}
+
+We will provide an example for scoring the similarity between a compositional translation structure and a dependency parse according to direct similarity. Consider once again the dependency depicted in Figure \ref{fig:deptree1}. The set of dependencies $D$ is:
+
+$$ \{ (0,4), (2,1), (4,2), (4,3), (4,5), (5,6) \}.$$
+
+
+\noindent As direct similarity is used as consistency measure, $d_{i,j}$ = $[i,i], span(j)]$, thus we have:
+
+$$D' = \{([1,1],[2,2]), ([4,4],[1,2]), ([4,4], [3,3]), ([4,4],[5,6]), ([5,5],[6,6])\}$$
+
+\noindent The following tree (which is not maximally recursive) would receive the optimal score of 5/5, as all the 5 dependencies are present in the tree:\\
+
+\Tree [.{[}1,6] [.{[}1,2] [.{[}1,1] my ] [.{[}2,2] dog ] ] [.{[}3,3] also ] [.{[}4,4] likes ] [.{[}5,6] [.{[}5,5] eating ] [.{[}6,6] sausage ] ]  ]
+
+\noindent While the tree (also not maximally recursive)
+
+\Tree [.{[}1,6] [.{[}1,2] [.{[}1,1] my ] [.{[}2,2] dog ] ] [ [.{[}3,3] also ] ] [.{[}4,6] [.{[}4,4] likes ] [.{[}5,6] [.{[}5,5] eating ] [.{[}6,6] sausage ] ] ] ] 
+
+\noindent receives a slightly lower score of 3/5 as we miss dependencies (likes, also) and (likes, dog).
+
+
+
+\chapter{Results}
+
+We have ....
+In this chapter, we will discuss the results of the automatic analysis of the translation data, and manually analyse these. (?)
+This chapter is structured as follows. In Section \ref{sec:data}, we will start with a description of the data we have used for our analyses .. blablabla In Section \ref{sec:results1}, we will  discuss our results on the automatically aligned corpora
+
+We will start with a description of our data, and the exact tools used to blablabla. In section ... blablabla
+
+
+
+
+
+\section{Data}
+\label{sec:data}
+
+We will give a description of our data and the alignments blabla
+
+\subsection{Corpora}
+
+We ran our tests on several corpora, that were either aligned automatically or manually. The translation direction considered was always from English to foreign language. The English side of the corpus was parsed with the Stanford dependency parser \citep{de2008stanford} using newlines as delimitation, as to respect the sentence alignment of the corpora, to obtain basic typed dependencies of the sentences. Note that the dependency parser used does not take into account punctuation, which sometimes complicates the analysis. We will now give a short description of the data used, a summary can be found in \ref{tab:datasets}.
+
+\subsubsection{Automatically Aligned Corpora}
+The larger, automatically aligned, corpora for English-French, English-Dutch and English-German consisted of 200.000 sentences drawn from the Europarl corpus (ref?), while the English-Chinese corpus used consisted of 200.000 sentences from .... . The corpora were all automatically aligned with the Giza++ tool (ref) designed by IBM, using the previously described `grow-diag-and-final'-heuristic, with 4 iterations on model 1, 3 on the hmm model, model 3 and model 4.
+
+
+\subsubsection{Manually Aligned Corpora}
+We attempted to further analyse the consistency between dependency parses and translation data by also testing manually aligned data, that contain more reliable alignment links and are thus more suitable for empirical analysis. As far as the author knows, no manually aligned corpora for translation from English to Dutch are available, we did find two manually aligned corpora for translation from English to French, and one for translation from English to German. In addition, we analysed  2 new language pairs, of which manually aligned corpora were available: English-Portuguese and English-Spanish. The data were manually aligned by \cite{graca2008building} (en-fr, en-sp and en-pt), \cite{pado2006optimal} (en-de) and \cite{och2000improved} (en-fr).
+
+\begin{table}
+\begin{tabular}{llllll}
+Language & Corpus & & Section & Aligned\\
+\hline
+English - Dutch & Europarl & & automatic \\
+English - French & Europarl & automatic \\
+English - German & Europarl & automatic \\
+English - Chinese & & & automatic \\
+English- French & Hansard & & manual\\
+\end{tabular}
+\caption{Datasets}\label{tab:datasets}
+\end{table}
+
+
+We parsed the English side of the corpus with the Stanford dependency parser \citep{de2008stanford} using newlines as delimitation, to obtain basic typed dependencies of the sentences. Note that punctuation is thus not taken into account.
+
+\section{Direct Similarity}
+
+
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{l|ccc}
+& \multicolumn{3}{c}{Multi-column}\\
+Language pair & |s| < 10 & |s| < 20 & |s| < 40\\
+\hline
+English-Dutch & 0.47 & 0.42 & 0.40 \\
+English-French & 0.45 & 0.42 & 041 \\
+English-German & 0.44 & 0.41 & 0.38 \\
+English-Chinese & 0.59 & 0.48 & 0.42\\
+\end{tabular}
+\caption{Results Experiment 1, automatic alignments}\label{tab:scores1}
+\end{table}
+
+\appendix
+\chapter{Implementation}
+\label{appendix:impl}
+
+\chapter{Manual Analysis}
+\label{appendix:analysis}
 
 
 
