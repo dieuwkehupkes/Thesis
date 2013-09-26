@@ -12,7 +12,7 @@ class Dependencies():
 	like the stanford dependency parses.
 	"""
 
-	def __init__(self, dependency_list):
+	def __init__(self, dependency_list, sentence = False):
 		"""
 		Initialize with a list of dependencies represented as a string
 		as follows:
@@ -25,6 +25,7 @@ class Dependencies():
 			pos_head: [pos_dependent, reltype]
 		"""
 		self.dep_list = dependency_list
+		self.sentence = sentence
 		self.nr_of_deps = -1
 		self.head_pos = None
 		self.deps = self.set_dependencies(dependency_list)
@@ -78,7 +79,6 @@ class Dependencies():
 	def find_head(self, relation):
 		return re.search('(?<=\().*(?=-[0-9]*,)',relation).group(0)
 		
-	def find_dependent_pos(self, relation):
 		return int(re.search('(?<=-)[0-9]*(?=\)$)', relation).group(0))
 	
 	def find_dependent(self, relation):
@@ -92,12 +92,19 @@ class Dependencies():
 		Reconstruct the sentence corresponding to the 
 		dependency parse. Output as list.
 		"""
-		sentence = [''] * (self.wordspans[self.head_pos][1] +1)
-		for relation in self.dep_list:
-			pos_word = self.find_dependent_pos(relation)
-			word = self.find_dependent(relation)
-			sentence[pos_word] = word
-		return sentence
+		if self.sentence:
+			# If sentence was input or already computed
+			# return sentence
+			self.sentence = self.sentence.split()
+		else:
+			# create sentence from dependency parse
+			sentence = [''] * (self.wordspans[self.head_pos][1] +1)
+			for relation in self.dep_list:
+				pos_word = self.find_dependent_pos(relation)
+				word = self.find_dependent(relation)
+				sentence[pos_word] = word
+			self.sentence = sentence
+		return self.sentence
 	
 	def textree(self):
 		"""
@@ -222,7 +229,6 @@ class Dependencies():
 		first gap and recursively go through list.
 		Assumes a gap is not larger than 1.
 		"""
-#		print 'function executed on deplist:', deplist
 #		deplists = []
 		gap = False
 		for i in xrange(1,len(deplist)):
@@ -231,7 +237,6 @@ class Dependencies():
 				break
 		if not gap:
 			deplists = [deplist]
-#			deplists = [deplist]
 			#check for gaps at end and start
 			if deplist[0][0]-1 != -1 and deplist[0][0]-1 not in self.wordspans:
 				new_deplist = copy.copy(deplist)
@@ -241,7 +246,6 @@ class Dependencies():
 				new_deplist = copy.copy(deplist)
 				new_deplist[-1] = (deplist[-1][0], deplist[-1][1]+1)
 				deplists.append(new_deplist)
-#			print 'no gap, deplist returned as it is:', deplist
 			return deplists
 		else:
 			#fill from left
@@ -264,25 +268,18 @@ class Dependencies():
 		#Add extra spans in the keys
 		gap_spanrels = copy.deepcopy(spanrels)
 		for head in spanrels:
-#			print 'head', head
 			for relation in spanrels[head]:
-#				print 'rel', relation
 				l,r = relation[0], relation[1]
 				if l != 0 and l not in self.wordspans:
-#					print 'gap left, add', (l-1,r), 'to relations'
 					gap_spanrels[head].add((l-1,r))
 				if r+1 not in self.wordspans and r+2 in self.wordspans:
-#					print 'gap right, add', (l, r+1), 'to relations'
 					gap_spanrels[head].add((l,r+1))
 		for head in spanrels:
-#			print 'head', head
 			nheads = []
 			l,r = head[0], head[1]
 			if l!=0 and l not in self.wordspans:
 				nheads.append((l-1,r))
-#				print 'gap left, add', (l-1,r), 'to heads'
 			if r+1 not in self.wordspans and r+2 in self.wordspans:
-#				print 'gap right, add', (l, r+1), 'to heads'
 				nheads.append((l,r+1))
 			for nhead in nheads:
 				gap_spanrels[nhead] = set([])
@@ -290,55 +287,7 @@ class Dependencies():
 					if key[1] <= nhead[0] or key[0] >= nhead[1]:
 						gap_spanrels[nhead].add(key)
 		return gap_spanrels
-			
-		
 	
-	def _interpunction_update(self, spanrels, deplist, head):
-		"""
-		Update the current relations such that
-		gaps in the dependency parse due to
-		interpunction are accounted for. For instance
-		if (5,6) and (7,8) are related, and (6,7) = ',',
-		then add (5,7) - (7,8) and (5,6) - (6,8)
-		"""
-		#gaps in the middle
-		for gap in [i for i in xrange(1,len(deplist)) if deplist[i-1][1] != deplist[i][0]]:
-			gapl, gapr = deplist[gap-1], deplist[gap]
-			if gapl != head and gapr != head:
-				dep_new1 = (gapl[0],gapl[1]+1)
-				dep_new2 = (gapr[0]-1, gapr[1])
-				spanrels[head].add(dep_new1)
-				spanrels[head].add(dep_new2)
-				continue
-			elif gapr == head:
-				hnew = (head[0]-1,head)
-			else:
-				hnew = (head[0],head[1]+1)
-			spanrels[hnew] = set([])
-			for key in spanrels[head]:
-				spanrels[hnew].add(key)
-		#gaps at begin or end
-		if deplist[0][0] != 0 and deplist[0][0] not in self.wordspans:
-			if deplist[0] != head:
-				dep_new1 = (deplist[0][0]-1, deplist[0][1])
-				spanrels[head].add(dep_new1)
-			else:				
-				hnew = (head[0]-1, head[1])
-				spanrels[hnew] = set([])
-				for key in spanrels[head]:
-					spanrels[hnew].add(key)
-		if deplist[-1][1]+1 not in self.wordspans and deplist[-1][1]+2 in self.wordspans:
-			if deplist[-1] != head:
-				dep_new2 = (deplist[-1][0], deplist[-1][1]+1)
-				spanrels[head].add(dep_new2)
-			else:
-				hnew = (head[0], head[1]+1)
-				spanrels[hnew] = set([])
-				for key in spanrels[head]:
-					spanrels[hnew].add(key)
-		return spanrels
-		
- 
  	def get_comp_spanrels(self):
  		"""
  		Create a dictionary of dependencies between word positions
@@ -357,6 +306,28 @@ class Dependencies():
 			if comp_spanrels[(key-1,key)] == []:
 				del comp_spanrels[(key-1,key)]
 		return comp_spanrels
+	
+	def dependency_labels(self):
+		labels = {}
+		#Check if dependencies are nonempty and form a tree
+ 		if self.deps == {} or not self.checkroot():
+ 			print 'no labels were created because dependency list was empty or did not form a tree'
+ 			return labels
+ 		else:
+	 		#manually add label for sentence head and rootspan
+	 		head_span = (self.head_pos -1, self.head_pos)
+	 		labels[head_span] = 'root'
+	 		labels[self.wordspans[self.head_pos]] = 'ROOT'
+	  		for head in self.deps:
+	 			head_span = (head-1, head)
+	 			for dep in self.deps[head]:
+	 				dep_span = self.wordspans[dep[0]]
+	 				labels[dep_span] = dep[1]
+	 				dep_word_span = (dep[0]-1, dep[0])
+	 				labels[dep_word_span] = labels.get(dep_word_span, dep[1]+'-h')
+ 		return labels
+ 			
+		
 	
  	def labels(self, ldepth = 0, rdepth = 0, max_var = 1):
  		"""
@@ -378,26 +349,10 @@ class Dependencies():
  		X+Y/Z or Z\X+Y. 'Normal' labels are prefered over compound labels.
  		"""
  		#first create standard labels:
- 		labels = {}
- 		#In case input is 0,0,0 no labels are preferred:
- 		if ldepth == rdepth == max_var == 0:
- 			return labels
- 		#stop search if dependency list happens to be empty
- 		if self.deps == {} or not self.checkroot():
- 			return labels
- 		#manually add label for sentence head
- 		head_span = (self.head_pos -1, self.head_pos)
- 		labels[head_span] = 'head'
- 		labels[self.wordspans[self.head_pos]] = 'root'
- 		for head in self.deps:
- 			head_span = (head-1, head)
- 			for dep in self.deps[head]:
- 				dep_span = self.wordspans[dep[0]]
- 				labels[dep_span] = dep[1]
- 				dep_word_span = (dep[0]-1, dep[0])
- 				labels[dep_word_span] = labels.get(dep_word_span, dep[1]+'-head')
+ 		labels = self.dependency_labels()
  		if max_var == 1 or (ldepth == 0 and rdepth ==0):
  			return labels
+ 		
  		#loop through labels again to find compound labels  
  		for head in self.deps:
  			head_span = (head-1, head)
@@ -429,6 +384,78 @@ class Dependencies():
 					labelled_span = (left_index, right_index)
 					labels[labelled_span] = labels.get(labelled_span, new_label)
  		return labels
+
+	def label_all(self):
+		"""
+		Labels are generated for all spans, as described in Zollman (2011).
+		Precedence: +, /, \. As we want to have labels for all spans, uglier
+		combined labels are generated if no other label is available.
+		If no sentence is attached, words not included in the 
+		dependency parse will not get a label.
+		"""
+		sentence = self.reconstruct_sentence()
+		s_length = len(sentence)
+		# Create a set with all spans, and initialise labels
+		unlabelled = set([(i,j+1) for i in xrange(s_length) for j in xrange(s_length) if j>=i])
+ 		labels = self.dependency_labels()
+ 		# assign pos-tags to words unlabelled by dependency parse
+ 		for word_pos in xrange(s_length):
+ 			word_span = (word_pos,word_pos+1)
+ 			if word_span not in labels:
+ 				labels[word_span] = self.POStag(sentence[word_pos])
+ 		for word_span in labels:
+ 			unlabelled.remove(word_span)
+ 		# create compound labels with operator +
+		for spans in [(span1,span2) for span1 in labels.keys() for span2 in labels.keys() if span1 != span2]:
+			if spans[0][1] == spans[1][0]:
+				new_span = (spans[0][0],spans[1][1])
+				new_label = '%s+%s' % (labels[spans[0]], labels[spans[1]])
+				labels[new_span] = labels.get(new_span,new_label)
+				unlabelled = unlabelled - set([new_span])				
+		#create compound labels with operators / and \
+		for spans in [(span0,span1) for span1 in labels.keys() for span0 in labels.keys() if (span0 != span1 and span1[0]<=span0[0] and span1[1] >= span0[1])]:
+			L0, L1 = labels[spans[0]],labels[spans[1]]
+			s00,s01,s10,s11 = spans[0][0],spans[0][1],spans[1][0],spans[1][1]
+			if '+' not in L0 and '+' not in L0:
+				if s01 == s11:
+					new_span, new_label = (s10,s00), '%s\%s' % (L1, L0)
+				elif s00 == s10:
+					new_span, new_label = (s01,s11), '%s/%s' % (L0, L1)
+				labels[new_span] = labels.get(new_span,new_label)					
+				unlabelled = unlabelled - set([new_span])
+		#return summation labels for whatever is left unlabelled, set
+		#counter to prevent from infinite looping:
+		i = 0
+		while unlabelled and i < len(unlabelled)*len(unlabelled):
+			i +=1
+			new_span = unlabelled.pop()
+			new_label = self.find_label(new_span,labels)
+			if new_label:
+				labels[new_span] = new_label
+			else:
+				unlabelled.add(new_span)
+		if unlabelled:
+			print 'not for every span a label was found'
+			for item in unlabelled:
+				labels[item] = 'FAIL'
+ 		return labels
+ 	
+ 	def find_label(self,span,labels):
+ 		s0,s1 = span[0],span[1]
+ 		for splitpoint in xrange(s0+1,s1):
+ 			span1, span2 = (s0,splitpoint), (splitpoint,s1)
+ 			if span1 in labels and span2 in labels:
+ 				return '%s+%s' % (labels[span1],labels[span2])
+ 		else:
+ 			return None
+ 	
+ 	def POStag(self, word):
+ 		if word in ("'",",",".",':',';','.'):
+ 			tag = 'PUNCT'
+ 		else:
+ 			tag = 'NOTAG'
+ 		return tag
+ 		
 	
 	def argument_list(self,head_span):
 		"""
