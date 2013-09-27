@@ -152,5 +152,5 @@ class DependencyTests():
 	
 if __name__ == "__main__":
 	x = DependencyTests()
-	x.tt()
+	print x.test_all_labels()
 #	print x.dependencies_test_all()

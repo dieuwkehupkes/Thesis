@@ -127,7 +127,6 @@ class ProcessFiles():
 		else:
 			return False
 	
-	
 	def score_all_sentences(self, rule_function, probability_function, prob_function_args, label_args, max_length = 40, scorefile = '', treefile = ''):
 		self._reset_pointer()
 		parsed_sentences = 0
@@ -220,6 +219,25 @@ class ProcessFiles():
 		self.sentence_file.seek(0)
 		self.alignment_file.seek(0)
 	
+	def all_grammar(self,max_length = 40):
+		self._reset_pointer()
+		sentences = 0
+		sentence_nr = 1
+		new = self.next()
+		while new:
+			print sentence_nr
+			sentence_length = len(new[1].split())
+			dependencies = Dependencies(new[2], new[1])
+			a = Alignments(new[0],new[1])
+			# tests if input is as desired, skip if not
+			if sentence_length >= max_length:
+				pass
+			else:
+				labels = dependencies.label_all()
+				scoring = Scoring(new[0], new[1], labels)
+				productions = Rule.hat_rules(a, Rule.uniform_probability, [], labels)
+				grammar = scoring.grammar(productions)
+	
 	def consistent_labels(self, alignment, sentence, labels):
 		"""
 		Find the percentage of inputted labels that is
@@ -234,7 +252,7 @@ class ProcessFiles():
 		"""
 		label_dict = {}
 		this_alignment = Alignment(alignment,sentence)
-		spans = this_alignment.spans()
+		spans = this_alignment.phrases()
 		for label in labels:
 			consistent = 0
 			if labels[label] in spans:
@@ -305,4 +323,4 @@ def test_random():
 
 def test_tex():
 	f = ProcessFiles('Data/en-fr.aligned_manual.100','Data/1-100-final.en','Data/1-100-final.en.dependencies', 'Data/1-100-final.fr')
-	f.sample(20,10,True)
+	f.sample(100,15,True)

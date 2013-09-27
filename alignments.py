@@ -67,7 +67,6 @@ class Alignments:
 		algorithm presented in Chang & Gildea (2006),
 		implementation could be more efficient.
 		"""
-		phrase_pairs = []
 		F_links = self._links_fromF()
 		E_links = self._links_fromE()
 		#Use a shift reduce algorithm to find phrase pairs
@@ -86,6 +85,27 @@ class Alignments:
 				else:
 					if self._partial_set((x,y),E_links):
 						yield (x,y+1)
+
+	def phrases(self):
+		"""
+		Return a generator with all translation admissable
+		phrases in the alignment.
+		Use an algorithm similar to the one presented in
+		Chiang & Gildea (2006)
+		"""
+		phrases = []
+		F_links = self._links_fromF()
+		E_links = self._links_fromE()		
+		loopList = []
+		for y in xrange(0,self.lengthS):
+			loopList.append(y)
+			for x in reversed(loopList):
+				u_xy = self._maxspan((x,y))
+				l_xy = self._minspan((x,y))
+				f_xy = (F_links[u_xy] - F_links[l_xy-1]) - (E_links[y] - E_links[x-1])
+				if f_xy == 0:
+					phrases.append((x,y+1))
+		return phrases	
 
 	def _partial_set(self,(x,y),E_links):
 		"""
@@ -219,6 +239,21 @@ class Alignments:
 				# set probability
 				prob = prob_function(rule,args)
 				yield rule
+	
+	def label_consistency(self, labels):
+		"""
+		Return percentage of labels that are
+		consistent with alignment.
+		Parameter labels should be a dictionary
+		that assigns labels to word spans
+		"""
+		total_labels = len(labels)
+		phrases = self.phrases()
+		labels_found = 0
+		for word_span in labels:
+			if word_span in phrases:
+				labels_found += 1
+		return float(labels_found)/total_labels
 	
 
 	def lexrules(self, labels = {}):

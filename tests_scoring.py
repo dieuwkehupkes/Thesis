@@ -162,7 +162,6 @@ class ScoreTests():
 		tree, score = scoring.score(Alignments.hat_rules, Rule.probability_spanrels, [relations, nr_of_deps])
 		return score == 1.0
 
-	
 if __name__ == "__main__":
 	x = ScoreTests()
 	print x.score_test_all()
