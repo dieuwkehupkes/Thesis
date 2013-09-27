@@ -172,7 +172,7 @@ class Dependencies():
 			self.wordspans[key] = (min(min(deplist)),max(max(deplist)))
 			return self.wordspans[key]
  
- 	def spanrelations(self, rightbranching = False, leftbranching = False, interpunction = True):
+ 	def spanrelations(self, rightbranching = False, leftbranching = False, arg_combine = False, interpunction = True):
  		"""
  		Create a dictionary with spanrelations that are 'deeper'
  		than the standard relations in the dependency parse, and allow
@@ -180,7 +180,8 @@ class Dependencies():
  		be done in different fashions: if 'rightbranching' is true, relations
  		will be included that first combine with the right arguments, and then
  		with the left arguments, and vise versa for leftbranching. If both left-
- 		and rightbranching are true, ......
+ 		and rightbranching are true, ...... arg_combine specifies whether arguments
+ 		can combine with each other before combining with the head.
  		If interpunction is set to True, gaps are taken into account in allowed
  		dependency relations returned (i.e., if (0,7) (8,13) is an allowed relation 
  		and (7,8) is a comma, also (0,8) (8,13) and (0,7) (7,13) are added.
@@ -327,8 +328,6 @@ class Dependencies():
 	 				labels[dep_word_span] = labels.get(dep_word_span, dep[1]+'-h')
  		return labels
  			
-		
-	
  	def labels(self, ldepth = 0, rdepth = 0, max_var = 1):
  		"""
  		When ran without any variables, produces standard labels for spans
@@ -423,10 +422,12 @@ class Dependencies():
 					new_span, new_label = (s01,s11), '%s/%s' % (L0, L1)
 				labels[new_span] = labels.get(new_span,new_label)					
 				unlabelled = unlabelled - set([new_span])
+		#Ik wil hier nog een ronde met labels die ik nog iets waarschijnlijker vindt: D+E/A\B+C
 		#return summation labels for whatever is left unlabelled, set
 		#counter to prevent from infinite looping:
 		i = 0
-		while unlabelled and i < len(unlabelled)*len(unlabelled):
+		max_iter = len(unlabelled)*len(unlabelled)
+		while unlabelled and i < max_iter:
 			i +=1
 			new_span = unlabelled.pop()
 			new_label = self.find_label(new_span,labels)
