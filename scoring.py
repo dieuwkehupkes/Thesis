@@ -1,10 +1,11 @@
 """
 """
-
+import sys
+import implements_grammar
 from dependencies import *
 from alignments import *
+import nltk
 from nltk import ViterbiParser
-from nltk.grammar import *
 
 class Scoring():
 	"""

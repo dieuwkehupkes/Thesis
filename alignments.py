@@ -2,8 +2,8 @@
 A module for processing alignments.
 """
 
-import nltk
-from nltk.grammar import *
+import sys
+from implements_grammar import *
 from copy import deepcopy
 
 class Alignments:
