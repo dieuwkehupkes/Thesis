@@ -26,6 +26,7 @@ class Alignments:
 		self.consistent = True
 		self.alignment = self.make_set(alignment)
 		self.sentence = sentence
+		self.phrases = False
 
 	def make_set(self,alignment):
 		"""
@@ -86,13 +87,15 @@ class Alignments:
 					if self._partial_set((x,y),E_links):
 						yield (x,y+1)
 
-	def phrases(self):
+	def compute_phrases(self):
 		"""
-		Return a generator with all translation admissable
+		Return a list with all translation admissable
 		phrases in the alignment.
 		Use an algorithm similar to the one presented in
 		Chiang & Gildea (2006)
 		"""
+		if self.phrases:
+			return self.phrases
 		phrases = []
 		F_links = self._links_fromF()
 		E_links = self._links_fromE()		
@@ -105,6 +108,7 @@ class Alignments:
 				f_xy = (F_links[u_xy] - F_links[l_xy-1]) - (E_links[y] - E_links[x-1])
 				if f_xy == 0:
 					phrases.append((x,y+1))
+		self.phrases = phrases
 		return phrases	
 
 	def _partial_set(self,(x,y),E_links):
@@ -176,7 +180,20 @@ class Alignments:
 		else:
 			return max(alignment_links)
 
-
+	def prune_production(self, rule, lex_dict):
+		"""
+		Function that replaces all leafnodes that
+		do not constitute a translation unit with the
+		lexical item specified by the dictionary, such
+		that tree nodes all represent translation units.
+		"""
+		for i in xrange(len(rule.spans)):
+			span = rule.spans[i]
+			if span not in self.compute_phrases():
+				rule.rhs[i] = lex_dict[span]
+		return rule
+				
+			
 	def rules(self, prob_function, args, labels = {}):
 		"""
 		Returns a generator with all rules of a PCFG
@@ -271,6 +288,8 @@ class Alignments:
 		sent = self.sentence.split()
 		length = len(sent)
 		for i in xrange(0,len(sent)):
+#			if (i,i+1) not in self.compute_phrases():
+#				continue
 			lhs_string = labels.get((i,i+1),str(i) + "-" + str(i+1))
 			lhs = Nonterminal(lhs_string)
 			rhs = [sent[i]]

@@ -29,6 +29,19 @@ class Scoring():
 		self.labels = labels
 		self.tokens = sentence.split()
 	
+	def transform_to_WeightedProduction(self, rule):
+		#create list to transform rhs to Nontemrinals
+		rhs_list = []
+		for rhs in rule.rhs:
+			rhs_list.append(Nonterminal(rhs))
+		return WeightedProduction(Nonterminal(rule.lhs), rhs_list, prob = rule.probability)
+	
+	def make_lexdict(self):
+		lexdict = {}
+		for i in xrange(len(self.tokens)):
+			lexdict[(i,i+1)] = self.tokens[i]
+		return lexdict
+	
 	def grammar(self, rules):
 		"""
 		Return a weighted grammar (NLTK-style) given
@@ -38,12 +51,7 @@ class Scoring():
 		# Create a list with productions
 		productions = []
 		for rule in rules:
-			#create list to transform rhs to Nontemrinals
-			rhs_list = []
-			for rhs in rule.rhs:
-				rhs_list.append(Nonterminal(rhs))
-			productions.append(WeightedProduction(Nonterminal(rule.lhs), rhs_list,
-			prob = rule.probability))
+			productions.append(self.transform_to_WeightedProduction(rule))
 		for rule in self.alignment.lexrules(self.labels):
 			productions.append(rule)
 		# Transform into a grammar to parse
