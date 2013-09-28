@@ -389,48 +389,43 @@ In this chapter, we have sketched the background of this thesis. We have present
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  
  
-\chapter{Empirical Research of Transfer Models}
+\chapter{Empirical Research of Transfer Models?? andere titel??}
 \label{ch:empirical} 
 
-In the previous chapter, we have given an overview of the applied field of MT, to which this thesis is related. We have provided a short history of MT, we have have mentioned the relevant techniques applied in MT, and we have briefly discussed the different directions that can be followed in designing a transfer model. In this chapter, we will consider transfer models on deeper, more theoretical level and with more technical details. We will tear apart the assumptions underpinning transfer models, discuss their implications for natural language on a theoretical level, and discuss how they could be assessed on an empirical level. This chapter will alternate depth and breadth, to help the reader, we will start with an overview of the contents.
+%REWRITE INTRODUCTION AND OVERVIEW!!
+In the previous chapter, we have seen why transfer models.... furthermore... transfer models not easy. In this chapter, we will focus on .... what does it mean for a language to be able to captured by a transfer model.. --> 2 assumptions .... we will do it in stages: first very abstract and distant from concrete languages or examples (the two assumptions) + link them. Then more concrete and practical, the same three topics
 
-\subsection*{Overview}
-
-In the first two sections of this chapter, we will discuss the two main assumptions underpinning transfer models, that is:
-
-\begin{enumerate}
-\item Abstract structures of both languages exist, and hence an underlying system generating such structures.
-\item It is possible to systematically map structures from the representational system from one language to the representational system of the other language.
-\end{enumerate}
-
-In both sections, we will start with a theoretical discussion of the assumption, on the basis of literature on compositionality. The second part of both sections, addresses the assumptions on a more practical level, by explaining how they can be interpreted in concrete terms. The third section can be seen as an intermezzo in which the two previous chapters are linked, and related to empirical research. In the fourth section, the two transfer assumptions are addressed on an even more concrete level, as the tools directly related to the assumptions are discussed, preparing the reader for the empirical part of this thesis. In the fifth section, we discuss the assumptions and simplifications that are made to conduct empirical research, and pose some concrete questions such research might provide an answer to. We finish by discussing the answers that have already been found in the literature, prior to this thesis.
+maybe say how it relates to compositionality
+depth and bread, provide an overview?
 
 
+\section{Structures for Language}
 
-\section{Structures of Language}
+The monolingual assumption implicit in transfer models, is that structural representations of natural language sentences exist, from which the meaning can be derived. In other words, it is assumed that there is an underlying system, according to which sentences can be assigned structures (a process often called `parsing'). Such a system can be seen as a grammar for the language. There is no consensus in linguistics as to the existence of such a system. On the one hand, there is the Chomskian group of researchers, that advocate the existence of an underlying compositional grammar universal to all human beings \citep[As first claimed in][]{chomsky1956three}, while others believe no such system exist, and language users rely on some sense of familiarity with what they have heard before \citep[e.g.,][]{scha1990taaltheorie, frank2012hierarchical}. However, cognitive considerations are beyond the scope of this thesis, and we will not further discuss this debate. 
+%say what we WILL do in this section
 
-Transfer models require a method for assigning a structural representation to sentences of a language, wherein the meaning is contained. In other words, it is assumed that there is an underlying representational system, according to which a sentence can be parsed. There is no consensus in linguistics as to the existence of such a system. On the one hand, there is the Chomskian group of researchers, that adhere the existence of an underlying compositional grammar universal to all human beings (ref?), while others believe no such system exist, and language users rely on some sense of familiarity with what they have heard before \citep[e.g.,][]{frank2012hierarchical}. However, cognitive considerations are beyond the scope of this thesis. In this section, we will discuss the implications of compositionality of language on a more theoretical level, and explain how it can be tested in practice.
 
-\subsection{Theory}
+\subsection{Considerations about Monolingual Compositionality}
 
-The stand that language is a compositional system generated by a language is well discussed in the literature. The following theoretical principle captures this property of language:
+The stand that language is a compositional system generated by grammar is well discussed in the literature. The following theoretical principle captures this property of language:
 
 \begin{quote}
 \textbf{The Principle of Compositionality}\\
 The meaning of an expression is a function of the meaning of its parts and the syntactic rule by which they are combined \citep{partee1984compositionality}
 \end{quote}
 
-The principle applies rather obviously to (most) artificial languages created by humans. The meaning of their expressions can be unambiguously determined by considering the atoms and the rules used to combine them. For instance, consider the expression $p\lor q$ in propositional logic. Its truth-value can be determined by plugging in the truth values of $p$ and $q$ into the rule of the $\lor$-connective. Also programming languages can be interpreted by considering their basic units and the rules used to combine them.
+The principle of compositionality applies rather obviously to (most) artificial languages created by humans. The meaning of their expressions can be unambiguously determined by considering the atoms and the rules used to combine them. For instance, consider the expression $p\lor q$ in propositional logic. Its truth-value can be determined by plugging in the truth values of $p$ and $q$ into the rule of the $\lor$-connective. Also programming languages can be interpreted by considering their basic units and the rules used to combine them.
 
-Intuitively, it seems very reasonable that natural languages should obey this principle as well: we do not store the meaning of all possible sentences of language in our head, and yet we have no trouble understanding new sentences, presumably because we know the words in it, and the methods that can be used to combine them. Besides, we can all perceive a certain systematicity and recursion in the way sentences are constructed. However, it is hard to establish the level of compositionality of language as a whole. The difficulty consists of two, not unrelated, issues.
+Intuitively, it seems very reasonable that natural languages should obey this principle as well: we do not store the meaning of all possible sentences of language in our head, and yet we have no trouble understanding new sentences, presumably because we know the words in it, and the methods that can be used to combine them. Besides, we can all perceive a certain systematicity and recursion in the way sentences are constructed. This sytematicity is often referred to with the term `syntax'. However, it is hard to establish the level of compositionality of language as a whole. The difficulty consists of two, not unrelated, issues.
 
-First of all, creating a grammar that covers \textit{all} grammatical utterances of a natural language, without generating too many ungrammatical ones, has proven a far from trivial task. It is surprisingly difficult to construct such a compositional grammar, even for a finite (but reasonably sized) non-trivial corpus \citep{scha1990taaltheorie}. The bigger the grammar grows, the more phenomena need to be taken into account, as well as how they interact with each other. Also, such a grammar should contain all idiomatic expression of the language, whose meaning cannot be derived from its parts.
+First of all, creating a grammar that covers \textit{all} grammatical utterances of a natural language, without generating too many ungrammatical ones, has proven a far from trivial task. It is surprisingly difficult to construct such a compositional grammar, even for a finite (but reasonably sized) non-trivial corpus \citep{scha1990taaltheorie}. The bigger the grammar grows, the more phenomena need to be taken into account, as well as how they interact with each other. Also, such a grammar should contain all idiomatic expressions of the language, whose meaning cannot be derived from its parts.
 
-The second difficulty concerns ambiguity. In programming and logical language, utterances typically have only one analysis, and their meaning is thus unambiguous. Under all current existing grammar formalisms assigning structures to natural language, all sentences (of some length) have many different structural analyses, of which mostly only one or two are perceived by humans \citep{scha1990taaltheorie}. Even sentences that are considered unambiguous by humans thus need to be disambiguated.\footnote{Note that this problem differs from one of the standard counter arguments of compositionality, that concerns sentences like `two men carry two chairs', that \textit{are} considered ambiguous by humans, but cannot be assigned two distinct syntactic analyses capturing this difference \citep{pelletier1994principle}. Not particularly relevant, but certainly nice to notice, is that this type of ambiguity is not necessarily problematic for translation, as it might be preserved. For instance, the Dutch translation `twee mannen dragen twee stoelen' of aforementioned sentence has the same two meanings as the English one.} In practice, this issue is often solved by assigning probabilities to the grammar rules, and computing the structure with the maximum probability (or an approximation of this).
+%Actually, this seems to be there in logical languages too, a and b and c is also 'ambiguous', read Scha again?
+The second difficulty concerns ambiguity. In programming languages and logical languages, utterances typically have only one analysis, and their meaning is thus unambiguous. Under all current existing grammar formalisms assigning structures to natural language, all sentences (of some length) have many different structural analyses, of which usually only one or two are perceived by humans \citep{scha1990taaltheorie}. Even sentences that are considered unambiguous by humans thus need to be disambiguated.\footnote{Note that this problem differs from one of the standard counter arguments of compositionality, that concerns sentences like `two men carry two chairs', that \textit{are} considered ambiguous by humans, but cannot be assigned two distinct syntactic analyses capturing this difference \citep{pelletier1994principle}. Not particularly relevant, but certainly nice to notice, is that this type of ambiguity is not necessarily problematic for translation, as it might be preserved. For instance, the Dutch translation `twee mannen dragen twee stoelen' of aforementioned sentence has the same two meanings as the English one.} In practice, when working with compositional grammars, this issue is often solved by assigning probabilities to the grammar rules, and computing the structure with the maximum probability (or an approximation of this).
 
+%I am not entirely sure what I should put here yet, some concluding remark, what is semantics, can we construct the semantics from syntax and the lexical items of the sentence? how large should these building blocks be? small enough to be still intuitively compositional? 
 End paragraph with concluding remark
 
-%In summary, without constructing a grammar that generates all and only all utterances of a natural language, it seems impossible to theoretically establish the level of compositionality. 
 
 \subsection{In Practice}
 

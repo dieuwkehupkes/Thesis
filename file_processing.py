@@ -220,7 +220,12 @@ class ProcessFiles():
 		self.alignment_file.seek(0)
 	
 	def all_grammar(self,max_length = 40):
+		"""
+		Creates a dictionary with grammar rules and counts
+		in the end, writes all grammar rules to a file
+		"""
 		self._reset_pointer()
+		all_grammar = {}
 		sentences = 0
 		sentence_nr = 1
 		new = self.next()
@@ -236,6 +241,7 @@ class ProcessFiles():
 				labels = dependencies.label_all()
 				scoring = Scoring(new[0], new[1], labels)
 				productions = Rule.hat_rules(a, Rule.uniform_probability, [], labels)
+				
 				grammar = scoring.grammar(productions)
 	
 	def consistent_labels(self, alignment, sentence, labels):

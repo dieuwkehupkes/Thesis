@@ -47,7 +47,6 @@ class Scoring():
 		Return a weighted grammar (NLTK-style) given
 		a generator object with all rules.
 		"""
-		from nltk import grammar
 		# Create a list with productions
 		productions = []
 		for rule in rules:
