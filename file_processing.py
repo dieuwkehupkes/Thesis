@@ -177,7 +177,7 @@ class ProcessFiles():
 					args = [dependencies.spanrelations(p1,p2), dependencies.nr_of_deps]
 				else:
 					args = [labels]
-				tree, score = scoring.score(rule_function, probability_function, args)
+				tree, score, rank = scoring.score(rule_function, probability_function, args)
 				#update total scores
 				for key in total_score:
 					if sentence_length < key:
@@ -185,7 +185,7 @@ class ProcessFiles():
 						sentences[key] += 1 
 				#write to files
 				if writeScores:
-					scoref.write("s %i\t\tlength: %i\t\tscore: %f\n" % (sentence_nr, sentence_length, score))
+					scoref.write("s %i\t\tlength: %i\t\tscore: %f\t\trank: %i\n" % (sentence_nr, sentence_length, score, rank))
 				if writeTrees:
 					treesf.write("%s\n\n" % tree)
 				print 'score', score
@@ -244,29 +244,32 @@ class ProcessFiles():
 				
 				grammar = scoring.grammar(productions)
 	
-	def consistent_labels(self, alignment, sentence, labels):
+	def consistent_labels(self, label_type, max_length = 40):
 		"""
-		Find the percentage of inputted labels that is
-		consistent with the alignment without computing
-		the best parse tree.
-		Returns a dictionary with labels as keys and as
-		value a pair with how often the label occurred in
-		the dependency parse and how often it was
-		consistent with the alignment. Parameter labels should
-		be presented as a dictionary assigning labels to spans.
-		Gives an upperbound for the score of the alignment.
+		Determines the consistency of a set of alignments with a type of labels
+		over the entire corpus.
 		"""
+		self._reset_pointer()
+		sentence_nr = 1
 		label_dict = {}
-		this_alignment = Alignment(alignment,sentence)
-		spans = this_alignment.phrases()
-		for label in labels:
-			consistent = 0
-			if labels[label] in spans:
-				consistent = 1
-			current = label_dict.get(label,[0,0])
-			label_dict[label] = [current[0] + 1, current[1] + consistent]
+		new = self.next()
+		while new:
+			print sentence_nr
+			sentence_length = len(new[1].split())
+			if sentence_length < max_length:
+				dependencies = Dependencies(new[2])
+				a = Alignments(new[0],new[1])
+				if label_type == "Dependencies":
+					labels = dependencies.labels()
+				else:
+					raise ValueError("Type of labels not implemented")
+			label_dict = a.consistent_labels(labels, label_dict)
+			new = self.next()
+			sentence_nr+= 1
 		return label_dict
-		
+
+
+	
 	def relation_count(self, max_length):
 		"""
 		Counts occurences of all relations in dependency
@@ -306,8 +309,25 @@ class ProcessFiles():
 		"""
 		f = open(filename, 'w')
 		for key in dictionary:
-			f.write(key + '\t\t' + str(dictionary[key]) + '\n')
+			value = self.transform_contents(dictionary[key])
+			f.write(key + '\t\t' + value + '\n')
 		f.close()
+	
+	def transform_contents(self,value):
+		"""
+		Return a suitable string representation of
+		input
+		"""
+		if isinstance(value,str):
+			return value
+		elif isinstance(value,list) or isinstance(x,tuple):
+			str_list = [str(v) for v in value]
+			return '\t'.join(str_list)
+		elif isinstance(value,int):
+			return str(value)
+		else:
+			#not yet implemented, maybe it can be printed
+			return value
 		
 	def texstring(self,new):
 		"""

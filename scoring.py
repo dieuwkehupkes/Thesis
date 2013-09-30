@@ -30,33 +30,73 @@ class Scoring():
 		self.tokens = sentence.split()
 	
 	def transform_to_WeightedProduction(self, rule):
-		#create list to transform rhs to Nontemrinals
+		"""
+		Transform rule to WeightedProduction object (NLTK-style)
+		"""
+		#create list to transform rhs to Nonterminals
 		rhs_list = []
 		for rhs in rule.rhs:
 			rhs_list.append(Nonterminal(rhs))
 		return WeightedProduction(Nonterminal(rule.lhs), rhs_list, prob = rule.probability)
 	
+	def transform_to_Production(self, rule):
+		"""
+		Transform rule to Production object (NLTK-style)
+		"""
+		#create list to transform rhs to Nonterminals
+		rhs_list = []
+		for rhs in rule.rhs:
+			rhs_list.append(Nonterminal(rhs))
+		return Production(Nonterminal(rule.lhs), rhs_list)
+	
+	
 	def make_lexdict(self):
+		"""
+		Create a dictionary assigning words to spans.
+		"""
 		lexdict = {}
 		for i in xrange(len(self.tokens)):
 			lexdict[(i,i+1)] = self.tokens[i]
 		return lexdict
 	
+	def list_productions(self, rules):
+		productions = []
+		lex_dict = self.make_lexdict()
+		for rule in rules:
+			p_rule = self.alignment.prune_production(rule, lex_dict)
+			productions.append(self.transform_to_Production(p_rule))
+		for rule in self.alignment.lexrules(self.labels, False):
+			productions.append(rule)
+		return productions
+	
+	def grammar_rank(self,rules):
+		"""
+		Determine the maximum rank of a set of rules.
+		"""
+		rank = 0
+		for rule in rules:
+			if rule.rank() > rank:
+				rank = rule.rank()
+		return rank
+	
 	def grammar(self, rules):
 		"""
-		Return a weighted grammar (NLTK-style) given
-		a generator object with all rules.
+		Return a weighted grammar (NLTK-style) and its rank
+		given a generator object with all rules.
 		"""
 		# Create a list with productions
 		productions = []
+		rank = 0
 		for rule in rules:
+			if rule.rank() > rank:
+				rank = rule.rank()
 			productions.append(self.transform_to_WeightedProduction(rule))
 		for rule in self.alignment.lexrules(self.labels):
 			productions.append(rule)
 		# Transform into a grammar to parse
 		startsymbol = self.labels.get((0,len(self.tokens)), "0-"+str(len(self.tokens)))
 		start = Nonterminal(startsymbol)
-		return WeightedGrammar(start,productions)
+		return WeightedGrammar(start,productions), rank
 			
 	def parse(self, grammar):
 		"""
@@ -79,7 +119,7 @@ class Scoring():
 		args should be [spanrels, normalization_factor]
 		"""
 		productions = rule_function(self.alignment, prob_function, args, self.labels)
-		grammar = self.grammar(productions)
+		grammar,rank = self.grammar(productions)
 		parse = self.parse(grammar)
 		score = parse.prob()
 		if prob_function == Rule.probability_spanrels:
@@ -95,6 +135,6 @@ class Scoring():
 				score = 1- math.log(score,2)/parse.nr_of_nonterminals()
 			else:
 				score = 0
-		return parse, score
+		return parse, score, rank
 
 

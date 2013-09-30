@@ -256,23 +256,8 @@ class Alignments:
 				# set probability
 				prob = prob_function(rule,args)
 				yield rule
+		
 	
-	def label_consistency(self, labels):
-		"""
-		Return percentage of labels that are
-		consistent with alignment.
-		Parameter labels should be a dictionary
-		that assigns labels to word spans
-		"""
-		total_labels = len(labels)
-		phrases = self.phrases()
-		labels_found = 0
-		for word_span in labels:
-			if word_span in phrases:
-				labels_found += 1
-		return float(labels_found)/total_labels
-	
-
 	def lexrules(self, labels = {}, all_rules = True):
 		"""
 		Returns an generator with the terminal rules
@@ -299,7 +284,25 @@ class Alignments:
 				yield WeightedProduction(lhs, rhs, prob=probability)
 			else:
 				yield Production(lhs, rhs)
-		
+	
+	def consistent_labels(self,labels,label_dict):
+		"""
+		Measures the consistency of the alignment with a dictionary
+		that assigns labels to spans.
+		Outputs a dictionary with labels, how often
+		they occurred in the input set and how often they were preserved
+		"""
+		phrases = self.compute_phrases()
+		for span in labels:
+			label = labels[span]
+			consistent = 0
+			if span in phrases:
+				consistent = 1
+			current = label_dict.get(label,[0,0])
+			label_dict[label] = [current[0] + 1, current[1] + consistent]
+		return label_dict
+
+	
 	def texstring(self):
 		"""
 		Generate latexcode for displaying the alignment.
@@ -430,7 +433,7 @@ class Node:
 		else:
 			self.reachable[nid] = False
 			yield False
-
+	
 	def shortest_paths_to(self,node):
 		"""
 		Finds all shortest paths from current node
@@ -557,14 +560,11 @@ class Rule:
 		self.rhs()
 		self.lhs()
 	
-	def isbinary(self):
+	def rank(self):
 		"""
-		Return True if a rule is (at most) binary, flase otherwise.
+		Return the rank of a rule.
 		"""
-		if len(self.spans) >= 2:
-			return True
-		else:
-			return False
+		return len(self.spans)
 	
 	def probability_spanrels(self, span_relations):
 		"""
