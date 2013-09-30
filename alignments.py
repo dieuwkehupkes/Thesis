@@ -273,7 +273,7 @@ class Alignments:
 		return float(labels_found)/total_labels
 	
 
-	def lexrules(self, labels = {}):
+	def lexrules(self, labels = {}, all_rules = True):
 		"""
 		Returns an generator with the terminal rules
 		of the grammar. (i.e., the `lexicon', that tells 
@@ -288,14 +288,18 @@ class Alignments:
 		sent = self.sentence.split()
 		length = len(sent)
 		for i in xrange(0,len(sent)):
-#			if (i,i+1) not in self.compute_phrases():
-#				continue
+			if not all_rules:
+				if (i,i+1) not in self.compute_phrases():
+					continue
 			lhs_string = labels.get((i,i+1),str(i) + "-" + str(i+1))
 			lhs = Nonterminal(lhs_string)
 			rhs = [sent[i]]
 			probability = 1.0
-			yield WeightedProduction(lhs, rhs, prob=probability)
-			
+			if all_rules:
+				yield WeightedProduction(lhs, rhs, prob=probability)
+			else:
+				yield Production(lhs, rhs)
+		
 	def texstring(self):
 		"""
 		Generate latexcode for displaying the alignment.
@@ -552,7 +556,16 @@ class Rule:
 		self.labels = labels
 		self.rhs()
 		self.lhs()
-		
+	
+	def isbinary(self):
+		"""
+		Return True if a rule is (at most) binary, flase otherwise.
+		"""
+		if len(self.spans) >= 2:
+			return True
+		else:
+			return False
+	
 	def probability_spanrels(self, span_relations):
 		"""
 		Compute the probability of a rule according to
