@@ -5,6 +5,7 @@ simultaneously.
 
 from scoring import *
 import sys
+from constituencies import *
 
 class ProcessFiles():
 	"""
@@ -257,10 +258,13 @@ class ProcessFiles():
 			print sentence_nr
 			sentence_length = len(new[1].split())
 			if sentence_length < max_length:
-				dependencies = Dependencies(new[2])
 				a = Alignments(new[0],new[1])
 				if label_type == "Dependencies":
+					dependencies = Dependencies(new[2])
 					labels = dependencies.labels()
+				elif label_type == "Constituencies":
+					constituencies = Constituencies(new[2][0])
+					labels = constituencies.find_labels()
 				else:
 					raise ValueError("Type of labels not implemented")
 			label_dict = a.consistent_labels(labels, label_dict)

@@ -11,11 +11,12 @@ label_args = [0,0,1]
 all_dependencies = sys.argv[1]
 all_sentences = sys.argv[2]
 all_alignments = sys.argv[3]
-relations = sys.argv[4]
+label_type = sys.argv[4]
+relations = sys.argv[5]
 
 r = open(relations, 'w')
 files = ProcessFiles(all_alignments, all_sentences, all_dependencies)
-label_dict = files.consistent_labels("Constituencies", max_length)
+label_dict = files.consistent_labels(label_type, max_length)
 for label in label_dict:
 	total, found = label_dict[label]
 	r.write('%s %25i %25i %25f\n' % (label, total, found, float(found)/float(total) ))	
