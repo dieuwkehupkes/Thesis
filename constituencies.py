@@ -73,7 +73,7 @@ class Constituencies():
 		a label to it in a dictionary
 		"""
 		if not isinstance(tree,list):
-			raise ValueError("Input is no tree represented as a list")
+			raise ValueError("Input %s is no list representation of tree" % str(tree))
 		label = tree[0]
 		if isinstance(tree[1],str):
 			span = (startpos,startpos+1)
