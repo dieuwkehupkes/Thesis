@@ -16,7 +16,6 @@ class Constituencies():
 		self.sentence = sentence
 		self.labels = {}
 		
-		
 	def reconstruct_sentence(self):
 		if self.sentence:
 			return sentence
