@@ -5,6 +5,7 @@ A module for processing alignments.
 import sys
 from implements_grammar import *
 from copy import deepcopy
+import re
 
 class Alignments:
 	"""
@@ -290,16 +291,18 @@ class Alignments:
 		Measures the consistency of the alignment with a dictionary
 		that assigns labels to spans.
 		Outputs a dictionary with labels, how often
-		they occurred in the input set and how often they were preserved
+		they occurred in the input set and how often they were preserved.
+		Ignore word-labels from dep-parse that end in -h.
 		"""
 		phrases = self.compute_phrases()
 		for span in labels:
 			label = labels[span]
-			consistent = 0
-			if span in phrases:
-				consistent = 1
-			current = label_dict.get(label,[0,0])
-			label_dict[label] = [current[0] + 1, current[1] + consistent]
+			if not re.search('-h$',label) and label != 'root':
+				consistent = 0
+				if span in phrases:
+					consistent = 1
+				current = label_dict.get(label,[0,0])
+				label_dict[label] = [current[0] + 1, current[1] + consistent]
 		return label_dict
 
 	
