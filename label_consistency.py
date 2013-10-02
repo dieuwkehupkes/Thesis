@@ -29,8 +29,5 @@ for label in label_dict:
 #r.write('\n\nTotal\t\t' + str(total) +'\t\t' + str(found) + '\t\t' + str(found/total))
 r.write('\n\nTotal %25i %25i %25f' % (total, found, float(found)/float(total)))
 
-
-
-
 r.close()
 files.close_all()

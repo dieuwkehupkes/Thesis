@@ -211,6 +211,8 @@ class Dependencies():
 				left = [ ( i+1, index_head ,i) for i in xrange(index_head-1) ]
 				right = [ (0,i,i+1) for i in xrange(index_head, len(deplist)-1) ]
 				relations = left + right
+			if arg_combine:
+				pass
 			# add relations to dictionary
 			for tuples in relations:
 				rel1 = (deplist[tuples[0]][0],deplist[tuples[1]][1])

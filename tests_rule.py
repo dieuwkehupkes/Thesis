@@ -56,7 +56,20 @@ class RuleTests():
 		print a1.compute_phrases
 		return set(rules_man) == set(therules)
 		
-
+	def test_pruning(self):
+		"""
+		Test if pruning function works correctly
+		"""
+		sentence = "this would not do justice to the matter ."
+		alignment = "2-1 8-8 2-2 2-4 0-0 3-5 4-5 3-6 1-3 3-3 4-6 4-7 3-7 "	
+		a = Alignments(alignment, sentence)
+		lex_dict = a.lex_dict()
+		for rule in a.hat_rules(Rule.uniform_probability, []):
+			r = a.prune_production(rule, lex_dict)
+			if rule != r:
+			print 'old rule', rule, '\nnew rule:', r
+		#Add manual rule construction
+		return
 	
 
 	def rules_test_all(self):
@@ -67,5 +80,5 @@ class RuleTests():
 		
 if __name__ == "__main__":
 	x = RuleTests()
-#	print x.test_hatrules2()
-	print x.rules_test_all()
+	x.test_pruning()
+#	print x.rules_test_all()

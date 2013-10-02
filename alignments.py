@@ -60,8 +60,8 @@ class Alignments:
 
 	def spans(self):
 		"""
-		Return all a generator with all partial sets and 
-		valid source side spans that are part of a phrase pair.
+		Return all a generator with all valid source side 
+		spans that are part of a phrase pair.
 		Contrary to the convention, also unaligned sequences
 		of words are allowed as spans.
 		
@@ -81,11 +81,8 @@ class Alignments:
 				f_xy = (F_links[u_xy] - F_links[l_xy-1]) - (E_links[y] - E_links[x-1])
 				if f_xy == 0:
 					yield (x,y+1)
-					#for number in xrange(x+1,y):
-					#	if number in loopList:
-					#		loopList.remove(number)
 				else:
-					if self._partial_set((x,y),E_links):
+					if x == y:
 						yield (x,y+1)
 
 	def compute_phrases(self):
@@ -111,27 +108,6 @@ class Alignments:
 					phrases.append((x,y+1))
 		self.phrases = phrases
 		return phrases	
-
-	def _partial_set(self,(x,y),E_links):
-		"""
-		Compute if [x,y] is a single partial set, which is true iff:
-		
-		* [x,y] is not a valid span;
-		
-		* there is at most one aligned word in [x,y]
-		
-		This function will not check if (x,y) is a valid span, as the function
-		is only called from compute_spans if (x,y) is not a valid span.
-		"""
-		nr_aligned = 0
-		for position in xrange(x,y+1):
-			if E_links[position] - E_links[position-1] != 0:
-				nr_aligned += 1
-		if nr_aligned == 1:
-			return True
-		else:
-			return False
-			
 
 	def _links_fromE(self):
 		"""
@@ -270,7 +246,6 @@ class Alignments:
 		::
 			label = {span : label ,...}
 		"""
-		from nltk import tokenize
 		sent = self.sentence.split()
 		length = len(sent)
 		for i in xrange(0,len(sent)):
@@ -305,6 +280,12 @@ class Alignments:
 				label_dict[label] = [current[0] + 1, current[1] + consistent]
 		return label_dict
 
+	def lex_dict(self):
+		lex_dict = {}
+		sentence_list = self.sentence.split()
+		for i in xrange(len(sentence_list)):
+			lex_dict[(i,i+1)] = sentence_list[i]
+		return lex_dict
 	
 	def texstring(self):
 		"""
@@ -559,9 +540,8 @@ class Rule:
 			waypoint = waypoint.link
 
 		self.spans = spans
-		self.labels = labels
-		self.rhs()
-		self.lhs()
+		self.rhs(labels)
+		self.lhs(labels)
 	
 	def rank(self):
 		"""
@@ -606,21 +586,30 @@ class Rule:
 		"""
 		self.probability = 1
 	
-	def lhs(self):
+	def lhs(self, labels):
 		"""
 		Create the left hand sides of the rule
 		and set as an attribute.
 		"""
-		lhs = self.labels.get((self.root[0],self.root[1]), "%s-%s" % (self.root[0],self.root[1]))
+		lhs = labels.get((self.root[0],self.root[1]), "%s-%s" % (self.root[0],self.root[1]))
 		self.lhs = lhs
 		
-	def rhs(self):
+	def rhs(self,labels):
 		"""
 		Create the right hand sight of the rule
 		and set as attribute.
 		"""
-		rhs_list = ([self.labels.get((i,j),"%s-%s" % (i,j)) for (i,j) in self.spans])
+		rhs_list = ([labels.get((i,j),"%s-%s" % (i,j)) for (i,j) in self.spans])
 		self.rhs = rhs_list
+
+	def __eq__(self,other):
+		if isinstance(other, self.__class__):
+			return self.rhs == other.rhs and self.lhs == other.lhs
+		else:
+			return False
+
+	def __ne__(self, other):
+		return not self.__eq__(other)	
 
 	def __repr__(self):
 		"""

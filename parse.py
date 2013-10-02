@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from file_processing import *
 
 #parse all sentences according to variables specified
@@ -27,7 +26,7 @@ else:
 
 # compute trees and scores and write to files
 
-files = ProcessFiles(all_alignments, all_sentences, all_dependencies)
+files = ProcessDependencies(all_alignments, all_sentences, all_dependencies)
 files.score_all_sentences(rule_generator, prob_function, prob_function_args, label_args, max_length, tree_file, scores)
 
 #relations = files.relation_count(40)
