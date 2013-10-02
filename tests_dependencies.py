@@ -137,11 +137,14 @@ class DependencyTests():
 		man_labels.update(deplabels)
 		compound1 = dict(zip([(0,7),(2,6),(1,4),(0,2),(4,7),(1,3),(3,5),(2,5),(5,7),(0,5),(3,6)],['ROOT+PUNCT','iobj+dobj', 'root+iobj','nsubj+root','dobj+PUNCT','root+det','iobj-h+det','iobj+det','dobj-h+PUNCT','ROOT\dobj-h','iobj-h+dobj']))
 		man_labels.update(compound1)
-		compound2 = dict(zip([(0,4),(1,6),(1,7)],['ROOT\dobj','nsubj/ROOT','nsubj/ROOT+PUNCT']))
-		rest = dict(zip([(2,7),(3,7),(0,3),(1,5)],['iobj+dobj+PUNCT','iobj-h+dobj+PUNCT','nsubj+root+det','root+iobj+det']))
+		compound2 = dict(zip([(0,4),(1,6),(1,7)],['ROOT\dobj','nsubj/ROOT','nsubj/(ROOT+PUNCT)']))
+		rest = dict(zip([(2,7),(3,7),(0,3),(1,5)],['(nsubj+root)/(ROOT+PUNCT)','iobj-h+dobj+PUNCT','ROOT\(iobj-h+dobj)','root+iobj+det']))
 		man_labels.update(rest)
 		labels = d.label_all()
 		man_labels.update(compound2)
+#		for key in man_labels.keys():
+#			if man_labels[key] != labels[key]:
+#				print 'key', key, 'man_label', man_labels[key], 'auto', labels[key]
 		return labels == man_labels
 
 	def dependencies_test_all(self):

@@ -417,16 +417,17 @@ class Dependencies():
 		for spans in [(span0,span1) for span1 in labels.keys() for span0 in labels.keys() if (span0 != span1 and span1[0]<=span0[0] and span1[1] >= span0[1])]:
 			L0, L1 = labels[spans[0]],labels[spans[1]]
 			s00,s01,s10,s11 = spans[0][0],spans[0][1],spans[1][0],spans[1][1]
-			if '+' not in L0 and '+' not in L0:
-				if s01 == s11:
-					new_span, new_label = (s10,s00), '%s\%s' % (L1, L0)
-				elif s00 == s10:
-					new_span, new_label = (s01,s11), '%s/%s' % (L0, L1)
-				labels[new_span] = labels.get(new_span,new_label)					
-				unlabelled = unlabelled - set([new_span])
-		#Ik wil hier nog een ronde met labels die ik nog iets waarschijnlijker vindt: D+E/A\B+C
-		#return summation labels for whatever is left unlabelled, set
-		#counter to prevent from infinite looping:
+			if '+' in L0:
+				L0 = '(%s)' % L0
+			if '+' in L1:
+				L1 = '(%s)' % L1
+			if s01 == s11:
+				new_span, new_label = (s10,s00), '%s\%s' % (L1, L0)
+			elif s00 == s10:
+				new_span, new_label = (s01,s11), '%s/%s' % (L0, L1)
+			labels[new_span] = labels.get(new_span,new_label)					
+			unlabelled = unlabelled - set([new_span])
+		#Ik weet niet zo goed welke labels ik hier wil
 		i = 0
 		max_iter = len(unlabelled)*len(unlabelled)
 		while unlabelled and i < max_iter:
@@ -444,6 +445,10 @@ class Dependencies():
  		return labels
  	
  	def find_label(self,span,labels):
+ 		"""
+ 		Find a new label by summing two
+ 		already existing labels
+ 		"""
  		s0,s1 = span[0],span[1]
  		for splitpoint in xrange(s0+1,s1):
  			span1, span2 = (s0,splitpoint), (splitpoint,s1)
