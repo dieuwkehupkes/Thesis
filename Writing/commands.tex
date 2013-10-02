@@ -1,0 +1,49 @@
+\usepackage[english]{babel}
+\usepackage{microtype}
+\usepackage{amsmath,amssymb}
+\usepackage{amsthm}
+\usepackage[round, authoryear]{natbib}
+\usepackage[all]{xy}
+\usepackage{array}
+\usepackage{graphicx}
+\usepackage{framed}
+\usepackage{enumerate}
+\usepackage{qtree}
+\usepackage{mdframed}
+\usepackage{tikz}
+\usepackage{tikz-dependency}
+\usepackage{algorithmic}
+\usepackage{algorithm}
+\usepackage{float}
+\usepackage[OT2,T1]{fontenc}
+\newcommand\textcyr[1]{{\fontencoding{OT2}\fontfamily{wncyr}\selectfont #1}}
+\newcommand{\myparagraph}[1]{\paragraph{#1}\mbox{}\\}
+\bibliographystyle{plainnat}
+\renewcommand\topfraction{0.85}
+\renewcommand\bottomfraction{0.85}
+\renewcommand\textfraction{0.1}
+\renewcommand\floatpagefraction{0.85}
+\author{}
+\title{}
+
+%Define theorem style for definition and metric
+\newtheoremstyle{break}  % follow `plain` defaults but change HEADSPACE.
+  {\topsep}   % ABOVESPACE
+  {15pt}   % BELOWSPACE
+  {\itshape}  % BODYFONT
+  {0pt}       % INDENT (empty value is the same as 0pt)
+  {\bfseries} % HEADFONT
+  {.}         % HEADPUNCT
+  {\newline}  % HEADSPACE. `plain` default: {5pt plus 1pt minus 1pt}
+  {}          % CUSTOM-HEAD-SPEC
+
+\theoremstyle{break}
+\newtheorem{metric}{Metric}
+\newtheorem{notion}{Notion}
+\newtheorem{definition}{Definition}
+\def\citepos#1{\citeauthor{#1}'s (\citeyear{#1})}
+
+%Define new float environment for tables that is boxed
+\floatstyle{boxed}
+\newfloat{tab}{tbp}{lop}
+\floatname{tab}{Table}
