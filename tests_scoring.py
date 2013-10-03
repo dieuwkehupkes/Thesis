@@ -25,10 +25,10 @@ class ScoreTests():
 		nr_of_deps = deps.nr_of_deps
 		relations = deps.spanrelations()
 		scoring = Scoring(alignment, sentence, {})
-		tree1, score1 = scoring.score(Alignments.rules, Rule.probability_spanrels, [relations, nr_of_deps])
-		tree2, score2 = scoring.score(Alignments.hat_rules, Rule.probability_spanrels, [relations, nr_of_deps])
+		tree1, score1, rank1 = scoring.score(Alignments.rules, Rule.probability_spanrels, [relations, nr_of_deps])
+		tree2, score2, rank2 = scoring.score(Alignments.hat_rules, Rule.probability_spanrels, [relations, nr_of_deps])
 		relations = deps.spanrelations(True, True)
-		tree3, score3 = scoring.score(Alignments.hat_rules, Rule.probability_spanrels, [relations, nr_of_deps])
+		tree3, score3, rank3 = scoring.score(Alignments.hat_rules, Rule.probability_spanrels, [relations, nr_of_deps])
 		return score1 == 1.0 and score2 == 0.75 and score3 == 1.0
 
 
@@ -51,10 +51,10 @@ class ScoreTests():
 		nr_of_deps = deps.nr_of_deps
 		relations = deps.spanrelations()
 		scoring = Scoring(alignment, sentence, {})
-		tree1, score1 = scoring.score(Alignments.rules, Rule.probability_spanrels, [relations, nr_of_deps])
-		tree2, score2 = scoring.score(Alignments.hat_rules, Rule.probability_spanrels, [relations, nr_of_deps])
+		tree1, score1, rank1 = scoring.score(Alignments.rules, Rule.probability_spanrels, [relations, nr_of_deps])
+		tree2, score2, rank2 = scoring.score(Alignments.hat_rules, Rule.probability_spanrels, [relations, nr_of_deps])
 		relations = deps.spanrelations(True, True)
-		tree3, score3 = scoring.score(Alignments.hat_rules, Rule.probability_spanrels, [relations, nr_of_deps])
+		tree3, score3, rank3 = scoring.score(Alignments.hat_rules, Rule.probability_spanrels, [relations, nr_of_deps])
 		return score1 == 1.0 and score2 == 0.6 and score3 == 1.0
 
 	def score_test3(self):
@@ -74,10 +74,10 @@ class ScoreTests():
 		nr_of_deps = deps.nr_of_deps
 		relations = deps.spanrelations()
 		scoring = Scoring(alignment, sentence, {})
-		tree1, score1 = scoring.score(Alignments.rules, Rule.probability_spanrels, [relations, nr_of_deps])
-		tree2, score2 = scoring.score(Alignments.hat_rules, Rule.probability_spanrels, [relations, nr_of_deps])
+		tree1, score1, rank1 = scoring.score(Alignments.rules, Rule.probability_spanrels, [relations, nr_of_deps],0)
+		tree2, score2, rank2 = scoring.score(Alignments.hat_rules, Rule.probability_spanrels, [relations, nr_of_deps],0)
 		relations = deps.spanrelations(True, True)
-		tree3, score3 = scoring.score(Alignments.hat_rules, Rule.probability_spanrels, [relations, nr_of_deps])
+		tree3, score3, rank3 = scoring.score(Alignments.hat_rules, Rule.probability_spanrels, [relations, nr_of_deps],0)
 		return score1 == float(6)/7 and score2 == float(3)/7 and score3 == float(5)/7
 
 
@@ -98,10 +98,10 @@ class ScoreTests():
 		nr_of_deps = deps.nr_of_deps
 		relations = deps.spanrelations()
 		scoring = Scoring(alignment, sentence, {})
-		tree1, score1 = scoring.score(Alignments.rules, Rule.probability_spanrels, [relations, nr_of_deps])
-		tree2, score2 = scoring.score(Alignments.hat_rules, Rule.probability_spanrels, [relations, nr_of_deps])
+		tree1, score1, rank1 = scoring.score(Alignments.rules, Rule.probability_spanrels, [relations, nr_of_deps])
+		tree2, score2, rank2 = scoring.score(Alignments.hat_rules, Rule.probability_spanrels, [relations, nr_of_deps])
 		relations = deps.spanrelations(True, True)
-		tree3, score3 = scoring.score(Alignments.hat_rules, Rule.probability_spanrels, [relations, nr_of_deps])
+		tree3, score3, rank3 = scoring.score(Alignments.hat_rules, Rule.probability_spanrels, [relations, nr_of_deps])
 		return score1 == 1.0 and score2 == 1.0 and score3 == 1.0
 
 	def score_test5(self):
@@ -145,7 +145,7 @@ class ScoreTests():
 		scoring = Scoring(alignment,sentence)
 		relations = deps.spanrelations(True,True)
 		nr_of_deps = deps.nr_of_deps
-		tree, score = scoring.score(Alignments.hat_rules, Rule.probability_spanrels, [relations, nr_of_deps])
+		tree, score, rank = scoring.score(Alignments.hat_rules, Rule.probability_spanrels, [relations, nr_of_deps])
 		return score == 1.0
 	
 	def score_test8(self):
@@ -159,7 +159,7 @@ class ScoreTests():
 		scoring = Scoring(alignment,sentence)
 		relations = deps.spanrelations(True,True)
 		nr_of_deps = deps.nr_of_deps
-		tree, score = scoring.score(Alignments.hat_rules, Rule.probability_spanrels, [relations, nr_of_deps])
+		tree, score, rank = scoring.score(Alignments.hat_rules, Rule.probability_spanrels, [relations, nr_of_deps])
 		return score == 1.0
 
 if __name__ == "__main__":

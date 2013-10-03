@@ -50,6 +50,16 @@ class ProcessFiles():
 			new_tree = self.tree_file.readline()
 		return new_alignment, new_sentence, tree_list, new_target
 	
+	def next_sentence(self):
+		"""
+		Return the next sentence. If the end of the file is reached,
+		return None.
+		"""
+		new_sentence = self.sentence_file.readline()
+		if new_sentence == '' or new_sentence == '\n':
+			return False
+		else:
+			return new_sentence
 
 	def print_function(self, to_print, printOn, filename):
 		if not printOn:
@@ -156,7 +166,119 @@ class ProcessFiles():
 		else:
 			#not yet implemented, maybe it can be printed
 			return value
+	
+	def em_iteration(self, grammar, max_length = 40, n=1):
+		"""
+		Parse the corpus with current grammar, extract a
+		new grammar from n best parses and return this grammar.
+		"""
+		#ADD LEXICAL RULES TO MAKE THIS WORK
+		new_grammar = {}
+		self._reset_pointer()
+		new_sentence = self.next_sentence()
+		sentence_nr = 1
+		while new_sentence:
+			print sentence_nr
+			sentence_length = len(new_sentence.split())
+			# tests if input is as desired, skip if not
+			if sentence_length >= max_length:
+				pass
+			else:
+				new_grammar = self.update_grammar_dict(new_sentence, grammar,new_grammar,n)
+			new_sentence = self.next_sentence()
+			sentence_nr += 1
+		grammar_norm = self.normalise(new_grammar)
+		return grammar_norm
+	
+	def update_grammar_dict(self,sentence, grammar, grammar_dict, n=1):
+		"""
+		Parse the corpus with the inputted grammar,
+		and extract a new grammar from the n best trees.
+		Return the new grammar
+		"""
+		print sentence
+		print grammar
+		parser = ViterbiParser(grammar)
+		parser.trace(0)
+		parses = parser.nbest_parse(sentence.split(), n)
+		for parse in parses:
+			for production in parse.productions():
+				lhs = production.lhs
+				rhs = production.rhs
+				if lhs in grammar_dict:
+					grammar_dict[lhs]['COUNTS'] += 1
+					grammar_dict[lhs][rhs] = grammar_dict[lhs].get(rhs,0) +1
+				else:
+					grammar_dict[lhs] = {'COUNTS':1, rhs:1}
+		return grammar_dict
+		
+	def normalise(self,rule_dict):
+		"""
+		Given a nested dictionary that represent rules as follows:
+		{lhs : {rhs1 : count, rhs2: count ...}, ....}, return a
+		similar nested dictionary with normalised counts
+		"""
+		normalised_dict = dict({'TOP': {}})
+		total_lhs = 0
+		for lhs in rule_dict:
+			if lhs != 'COUNTS':
+				normalised_dict[lhs] = {}
+				total = 0
+				#loop twice through dictionary
+				#first to obtain total counts
+				for rhs in rule_dict[lhs]:
+					total += 1
+				# then to adjuct the counts in the
+				# new dictionary
+				for rhs in rule_dict[lhs]:
+					if rhs != 'COUNTS':
+						normalised_dict[lhs][rhs] = rule_dict[lhs][rhs]/float(total)
+				if 'root' in lhs or 'ROOT' in lhs:
+					total_lhs += total
+					normalised_dict['TOP'][(lhs,)] = total
+		for lhs in normalised_dict['TOP']:
+			normalised_dict['TOP'][lhs] = normalised_dict['TOP'][lhs]/float(total_lhs)
+		return normalised_dict
 
+	def normalise2(self, rule_dict):
+		"""
+		More efficient version of normalise, that assumes that total counts
+		of lhs are already present in dictionary under 'counts'.
+		"""
+		rule_dict['TOP'] = {}
+		for lhs in rule_dict:
+			if lhs == 'TOP' or lhs == 'COUNTS':
+				continue
+			for rhs in rule_dict[lhs]:
+				if rule_dict[lhs] == 'COUNTS':
+					continue
+				rule_dict[lhs][rhs] = rule_dict[lhs][rhs]/float(rule_dict[lhs]['COUNTS'])
+			if 'root' in lhs or 'ROOT' in lhs:
+				rule_dict['TOP'][(lhs,)] = rule_dict[lhs]['COUNTS']/float(rule_dict['COUNTS'])
+		return rule_dict
+				
+	def to_WeightedGrammar(self,rule_dict):
+		"""
+		Transforms a set of rules represented in a
+		nested dictionary into a WeightedGrammar object.
+		"""
+		#delete counts from dictionary if present
+		if 'COUNTS' in rule_dict:
+			del rule_dict['COUNTS']
+			for lhs in rule_dict:
+				if 'COUNTS' in rule_dict[lhs]:
+					del rule_dict[lhs]['COUNTS']
+		#create grammar
+		productions = []
+		for lhs in rule_dict:
+			for rhs in rule_dict[lhs]:
+				probability = rule_dict[lhs][rhs]
+				rhs_list = [Nonterminal(tag) for tag in rhs]
+				new_production = WeightedProduction(Nonterminal(lhs),rhs_list,prob=probability)
+				productions.append(new_production)
+		start = Nonterminal('TOP')
+#		print len(productions)
+		return WeightedGrammar(start,productions)
 
 
 class ProcessDependencies(ProcessFiles):
@@ -336,31 +458,6 @@ class ProcessDependencies(ProcessFiles):
 		self.sentence_file.seek(0)
 		self.alignment_file.seek(0)
 	
-	def all_grammar(self,max_length = 40):
-		"""
-		Creates a dictionary with grammar rules and counts
-		in the end, writes all grammar rules to a file
-		"""
-		self._reset_pointer()
-		all_grammar = {}
-		sentences = 0
-		sentence_nr = 1
-		new = self.next()
-		while new:
-			print sentence_nr
-			sentence_length = len(new[1].split())
-			dependencies = Dependencies(new[2], new[1])
-			a = Alignments(new[0],new[1])
-			# tests if input is as desired, skip if not
-			if sentence_length >= max_length:
-				pass
-			else:
-				labels = dependencies.label_all()
-				scoring = Scoring(new[0], new[1], labels)
-				productions = Rule.hat_rules(a, Rule.uniform_probability, [], labels)
-				
-				grammar = scoring.grammar(productions)
-	
 	def consistent_labels(self, label_type, max_length = 40):
 		"""
 		Determines the consistency of a set of alignments with a type of labels
@@ -394,7 +491,7 @@ class ProcessDependencies(ProcessFiles):
 		of the entire file. Returns a Weighted grammar object
 		with normalised counts.
 		"""
-		all_rules = {}
+		all_rules = {'COUNTS':0}
 		self._reset_pointer()
 		sentences = 0
 		sentence_nr = 1
@@ -404,7 +501,8 @@ class ProcessDependencies(ProcessFiles):
 			sentence_length = len(new[1].split())
 			# tests if input is as desired, skip if not
 			if sentence_length >= max_length:
-				continue
+				productions = []
+				lexicon = []
 			else:
 				dependencies = Dependencies(new[2], new[1])
 				a = Alignments(new[0],new[1])
@@ -412,59 +510,30 @@ class ProcessDependencies(ProcessFiles):
 				labels = dependencies.label_all()
 				scoring = Scoring(new[0], new[1], labels)
 				productions = a.hat_rules(Rule.uniform_probability, [], labels)
+				lexicon = a.lexrules(labels)
+
 			for rule in productions:
 				production = a.prune_production(rule,lex_dict)
 				lhs = production.lhs
 				rhs = tuple(production.rhs)
+				if 'root' in lhs or 'ROOT' in lhs:
+					all_rules['COUNTS'] += 1
 				if lhs in all_rules:
+					all_rules[lhs]['COUNTS'] += 1
 					all_rules[lhs][rhs] = all_rules[lhs].get(rhs,0) +1
 				else:
-					all_rules[lhs] = {rhs:1}
+					all_rules[lhs] = {'COUNTS':1, rhs:1}
+#			for lexical_rule in lexicon:
+#				lhs = lexical_rule.lhs()
+#				rhs = lexical_rule.rhs()
+#				if lhs in all_rules:
+#					all_rules[lhs]['COUNTS'] += 1
+#					all_rules[lhs][rhs] = all_rules[lhs].get(rhs,0) +1
+#				else:
+#					all_rules[lhs] = {'COUNTS':1, rhs:1}
 			new = self.next()
 			sentence_nr +=1
 		return all_rules
-
-	
-	def normalise(self,rule_dict):
-		"""
-		Given a nested dictionary that represent rules as follows:
-		{lhs : {rhs1 : count, rhs2: count ...}, ....}, return a
-		similar nested dictionary with normalised counts
-		"""
-		normalised_dict = dict({'TOP': {}})
-		total_lhs = 0
-		for lhs in rule_dict:
-			normalised_dict[lhs] = {}
-			total = 0
-			#loop twice through dictionary
-			#first to obtain total counts
-			for rhs in rule_dict[lhs]:
-				total += 1
-			# then to adjuct the counts in the
-			# new dictionary
-			for rhs in rule_dict[lhs]:
-				normalised_dict[lhs][rhs] = rule_dict[lhs][rhs]/float(total)
-			total_lhs += total
-			normalised_dict['TOP'][lhs] = total
-		for lhs in rule_dict:
-			normalised_dict['TOP'][lhs] = float(total)/total_lhs
-		return normalised_dict
-				
-	def to_WeightedGrammar(self,rule_dict):
-		"""
-		Transforms a set of rules represented in a
-		nested dictionary into a WeightedGrammar object.
-		"""
-		productions = []
-		for lhs in rule_dict:
-			for rhs in rule_dict[lhs]:
-				probability = rule_dict[lhs][rhs]
-				rhs_list = [Nonterminal(tag) for tag in rhs]
-				new_production = WeightedProduction(Nonterminal(lhs),rhs_list,prob=probability)
-				productions.append(new_production)
-		start = Nonterminal('TOP')
-#		print len(productions)
-		return WeightedGrammar(start,productions)
 		
 			
 	def relation_count(self, max_length):

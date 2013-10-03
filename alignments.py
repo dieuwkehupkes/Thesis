@@ -235,7 +235,7 @@ class Alignments:
 				yield rule
 		
 	
-	def lexrules(self, labels = {}, all_rules = True):
+	def lexrules(self, labels = {}):
 		"""
 		Returns an generator with the terminal rules
 		of the grammar. (i.e., the `lexicon', that tells 
@@ -249,17 +249,21 @@ class Alignments:
 		sent = self.sentence.split()
 		length = len(sent)
 		for i in xrange(0,len(sent)):
-			if not all_rules:
-				if (i,i+1) not in self.compute_phrases():
-					continue
-			lhs_string = labels.get((i,i+1),str(i) + "-" + str(i+1))
-			lhs = Nonterminal(lhs_string)
-			rhs = [sent[i]]
-			probability = 1.0
-			if all_rules:
-				yield WeightedProduction(lhs, rhs, prob=probability)
+			if (i, i+1) not in self.compute_phrases():
+				lhs, rhs = Nonterminal(sent[i]), [sent[i]]
+				yield WeightedProduction(lhs, rhs, prob=1)
+#			if not all_rules:
+#				if (i,i+1) not in self.compute_phrases():
+#					continue
 			else:
-				yield Production(lhs, rhs)
+				lhs_string = labels.get((i,i+1),str(i) + "-" + str(i+1))
+				lhs = Nonterminal(lhs_string)
+				rhs = [sent[i]]
+				probability = 1.0
+#			if all_rules:
+				yield WeightedProduction(lhs, rhs, prob=probability)
+#			else:
+#				yield Production(lhs, rhs)
 	
 	def consistent_labels(self,labels,label_dict):
 		"""

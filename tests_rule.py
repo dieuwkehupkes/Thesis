@@ -15,8 +15,10 @@ class RuleTests():
 		a1 = Alignments(alignment, sentence)
 	#	productions = a1.list_productions([])
 		therules = []
+		lex_dict = a1.lex_dict()
 		for rule in a1.rules(Rule.probability_spanrels,[{}]):
-			therules.append(str(rule))
+			r = a1.prune_production(rule, lex_dict)
+			therules.append(str(r))
 		rules_man = ['0-5 -> 0-1 1-5','0-5 -> 0-2 2-5', '0-5 -> 0-3 3-5', '0-5 -> 0-1 1-2 2-5', '0-5 -> 0-1 1-3 3-5', '0-5 -> 0-2 2-3 3-5', '0-5 -> 0-3 3-4 4-5', '0-5 -> 0-1 1-2 2-3 3-5', '0-5 -> 0-1 1-3 3-4 4-5', '0-5 -> 0-2 2-3 3-4 4-5', '0-5 -> 0-1 1-2 2-3 3-4 4-5', '1-5 -> 1-2 2-5', '1-5 -> 1-3 3-5', '1-5 -> 1-2 2-3 3-5', '1-5 -> 1-3 3-4 4-5', '1-5 -> 1-2 2-3 3-4 4-5', '2-5 -> 2-3 3-5', '2-5 -> 2-3 3-4 4-5', '0-3 -> 0-1 1-3', '0-3 -> 0-2 2-3', '0-3 -> 0-1 1-2 2-3', '0-2 -> 0-1 1-2', '1-3 -> 1-2 2-3', '3-5 -> 3-4 4-5']
 		return set(rules_man) == set(therules)
 
@@ -29,9 +31,11 @@ class RuleTests():
 		alignment = '0-0 1-1 2-2 2-3 3-5 4-4'
 		sentence = 'My dog likes eating sausages'
 		a1 = Alignments(alignment, sentence)
+		lex_dict = a1.lex_dict()
 		therules = []
 		for rule in a1.hat_rules(Rule.probability_spanrels, [{}]):
-			therules.append(str(rule))
+			r = a1.prune_production(rule, lex_dict)
+			therules.append(str(r))
 		rules_man = ['0-5 -> 0-1 1-5','0-5 -> 0-2 2-5', '0-5 -> 0-3 3-5', '1-5 -> 1-2 2-5', '1-5 -> 1-3 3-5', '2-5 -> 2-3 3-5', '0-3 -> 0-1 1-3', '0-3 -> 0-2 2-3', '0-2 -> 0-1 1-2', '1-3 -> 1-2 2-3', '3-5 -> 3-4 4-5']
 		return set(rules_man) == set(therules)
 	
@@ -46,6 +50,7 @@ class RuleTests():
 		lex_dict = dict(zip([(0, 1),(1, 2),(2, 3),(3, 4),(4, 5),(5, 6)],['My','dog','also','likes', 'eating', 'sausages']))
 		a1 = Alignments(alignment, sentence)
 		therules = []
+		lex_dict = a1.lex_dict()
 		for rule in a1.hat_rules(Rule.probability_spanrels, [{}]):
 			nrule = a1.prune_production(rule,lex_dict)
 			therules.append(str(nrule))
@@ -66,8 +71,6 @@ class RuleTests():
 		lex_dict = a.lex_dict()
 		for rule in a.hat_rules(Rule.uniform_probability, []):
 			r = a.prune_production(rule, lex_dict)
-			if rule != r:
-			print 'old rule', rule, '\nnew rule:', r
 		#Add manual rule construction
 		return
 	
@@ -80,5 +83,5 @@ class RuleTests():
 		
 if __name__ == "__main__":
 	x = RuleTests()
-	x.test_pruning()
-#	print x.rules_test_all()
+#	x.test_pruning()
+	print x.rules_test_all()
