@@ -77,7 +77,18 @@ class AlignmentsTests():
 		Return True if all span tests return True
 		"""
 		return self.span_test1() and self.span_test2() and self.span_test3() and self.span_test4()
-		
+	
+	def consistency_test1(self):
+		tree = nltk.Tree('(ROOT (NP (NP (NN resumption)) (PP (IN of) (NP (DT the) (NN session)))))')
+		sentence = 'resumption of the session'
+		alignment = '0-0 1-1 2-2 3-3'
+		a = Alignments(alignment,sentence)
+		score = a.agreement(tree)
+		return score == 1
+	
+	def alignment_test_all(self):
+		return self.spans_test_all() and self.consistency_test1()
+	
 if __name__ == "__main__":
 	x = AlignmentsTests()
-	print x.spans_test_all()
+	print x.alignment_test_all()

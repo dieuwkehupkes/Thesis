@@ -6,6 +6,7 @@ import sys
 from implements_grammar import *
 from copy import deepcopy
 import re
+from constituencies import *
 
 class Alignments:
 	"""
@@ -27,6 +28,7 @@ class Alignments:
 		self.consistent = True
 		self.alignment = self.make_set(alignment)
 		self.sentence = sentence
+		self.lex_dict = self.lex_dict()
 		self.phrases = False
 
 	def make_set(self,alignment):
@@ -201,7 +203,7 @@ class Alignments:
 				# set probability
 				rule = Rule((i, j), path, labels)
 				prob = prob_function(rule,args)
-				yield rule
+				yield self.prune_production(rule, self.lex_dict)
 
 
 	def hat_rules(self, prob_function, args, labels = {}):
@@ -232,7 +234,7 @@ class Alignments:
 				rule = Rule((i,j),path, labels)
 				# set probability
 				prob = prob_function(rule,args)
-				yield rule
+				yield self.prune_production(rule, self.lex_dict)
 		
 	
 	def lexrules(self, labels = {}):
@@ -250,20 +252,18 @@ class Alignments:
 		length = len(sent)
 		for i in xrange(0,len(sent)):
 			if (i, i+1) not in self.compute_phrases():
-				lhs, rhs = Nonterminal(sent[i]), [sent[i]]
-				yield WeightedProduction(lhs, rhs, prob=1)
+				continue
+#				lhs, rhs = Nonterminal(sent[i]), [sent[i]]
+#				yield WeightedProduction(lhs, rhs, prob=1)
 #			if not all_rules:
 #				if (i,i+1) not in self.compute_phrases():
 #					continue
 			else:
 				lhs_string = labels.get((i,i+1),str(i) + "-" + str(i+1))
-				lhs = Nonterminal(lhs_string)
+				lhs = nltk.Nonterminal(lhs_string)
 				rhs = [sent[i]]
 				probability = 1.0
-#			if all_rules:
-				yield WeightedProduction(lhs, rhs, prob=probability)
-#			else:
-#				yield Production(lhs, rhs)
+				yield nltk.WeightedProduction(lhs, rhs, prob=probability)
 	
 	def consistent_labels(self,labels,label_dict):
 		"""
@@ -283,6 +283,20 @@ class Alignments:
 				current = label_dict.get(label,[0,0])
 				label_dict[label] = [current[0] + 1, current[1] + consistent]
 		return label_dict
+
+	def agreement(self,tree):
+		"""
+		Output what percentage of the nodes of an inputted tree
+		are consistent with the alignment.
+		:param tree		An nltk tree object.
+		"""
+		t = ConstituencyTree(tree)
+		phrases = self.compute_phrases()
+		nodes_consistent = t.phrases_consistent(t.tree, 0, phrases)
+		nodes_all = t.nr_of_nonterminals()
+		return float(nodes_consistent)/nodes_all
+		
+		
 
 	def lex_dict(self):
 		lex_dict = {}
@@ -544,8 +558,8 @@ class Rule:
 			waypoint = waypoint.link
 
 		self.spans = spans
-		self.rhs(labels)
-		self.lhs(labels)
+		self.rhs = self._rhs(labels)
+		self.lhs = self._lhs(labels)
 	
 	def rank(self):
 		"""
@@ -590,25 +604,25 @@ class Rule:
 		"""
 		self.probability = 1
 	
-	def lhs(self, labels):
+	def _lhs(self, labels):
 		"""
 		Create the left hand sides of the rule
 		and set as an attribute.
 		"""
 		lhs = labels.get((self.root[0],self.root[1]), "%s-%s" % (self.root[0],self.root[1]))
-		self.lhs = lhs
+		return nltk.Nonterminal(lhs)
 		
-	def rhs(self,labels):
+	def _rhs(self,labels):
 		"""
 		Create the right hand sight of the rule
 		and set as attribute.
 		"""
 		rhs_list = ([labels.get((i,j),"%s-%s" % (i,j)) for (i,j) in self.spans])
-		self.rhs = rhs_list
+		return [nltk.Nonterminal(rhs) for rhs in rhs_list]
 
 	def __eq__(self,other):
 		if isinstance(other, self.__class__):
-			return self.rhs == other.rhs and self.lhs == other.lhs
+			return self.rhs == other.rhs and self.lhs == other._lhs
 		else:
 			return False
 
@@ -621,6 +635,12 @@ class Rule:
 		"""
 		return self.__str__()
 
+	def _str(self,rhs):
+		if isinstance(rhs, nltk.Nonterminal):
+			return rhs.symbol()
+		else:
+			return str(rhs)
+
 	def __str__(self):
 		"""
 		Create a string representation of the rule of the form
@@ -628,5 +648,5 @@ class Rule:
 			lhs --> rhs1 rhs2 rhs3
 		"""
 		return ("%s -> %s" % 
-			(self.lhs, " ".join(self.rhs)))
+			(self.lhs.symbol(), " ".join([self._str(rhs) for rhs in self.rhs])))
 
