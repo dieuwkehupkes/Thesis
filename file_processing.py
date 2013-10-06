@@ -61,10 +61,8 @@ class ProcessFiles():
 		else:
 			return new_sentence
 
-	def print_function(self, to_print, printOn, filename):
-		if not printOn:
-			pass
-		else:
+	def print_function(self, to_print, filename):
+		if filename:
 			filename.write(to_print)
 
 	def score_all_sentences(self, rule_function, probability_function, prob_function_args, label_args, max_length = 40, scorefile = '', treefile = ''):
@@ -167,12 +165,66 @@ class ProcessFiles():
 			#not yet implemented, maybe it can be printed
 			return value
 	
-	def em_iteration(self, grammar, max_length = 40, n=1):
+	def evaluate_grammar(self,grammar, max_length, scoref):
+		"""
+		Parse the corpus with inputted grammar and evaluate
+		how well the resulting parses cohere with the
+		alignments.
+		"""
+		if scoref:
+			scoref = open(scoref,'w')
+		parser = ViterbiParser(grammar)
+		sentence_nr,parsed_sentences = 1,0
+		total_score = 0
+		new = self.next()
+		while new:
+			print "evaluating sentence %i" %sentence_nr
+			sentence = new[1]
+			sentence_length = len(sentence.split())
+			if sentence_length < max_length:
+				a = Alignments(new[0],sentence)
+				parse = parser.nbest_parse(sentence.split())[0]
+				score = a.agreement(parse)
+				scorestr = 	"s %i\t\tlength: %i\t\tscore: %f\n" % (sentence_nr, sentence_length, score)
+				self.print_function(scorestr,scoref)
+				parsed_sentences +=1
+				total_score += score
+			new = self.next()
+			sentence_nr += 1
+		scorestr = "\n\ntotal sentences parsed: %i\naverage score: %f\n" % (parsed_sentences, float(total_score)/parsed_sentences)
+		print scorestr
+		self.print_function(scorestr,scoref)		
+		scoref.write(scorestr)
+		scoref.close()
+
+
+	def em(self, start_grammar, max_iter, n=1, max_length = 40,):
+		"""
+		When passing a Weightedgrammar, iteratively
+		parse corpus and infer a new grammar object, until
+		maximum number of iterations is reached. Return the
+		new grammar
+		:param start_grammar	WeightedGrammar
+		:param max_iter			Maximum number of iterations
+		:param max_length		Maximum sentence length considered
+		:param n				Parse trees to be considered to construct new grammar
+		"""
+		#Figure out why not more parses are returned!!
+		i = 0
+		new_grammar = start_grammar
+		while i <= max_iter:
+			new_grammar_dict = self.em_iteration(new_grammar, n, max_length)
+			new_grammar = self.to_WeightedGrammar(new_grammar_dict)
+			i +=1
+		return new_grammar
+		
+	
+	def em_iteration(self, grammar, n=1, max_length = 40):
 		"""
 		Parse the corpus with current grammar, extract a
 		new grammar from n best parses and return this grammar.
+		:param grammar = a WeightedGrammar object
 		"""
-		#ADD LEXICAL RULES TO MAKE THIS WORK
 		new_grammar = {}
 		self._reset_pointer()
 		new_sentence = self.next_sentence()
@@ -187,7 +239,7 @@ class ProcessFiles():
 				new_grammar = self.update_grammar_dict(new_sentence, grammar,new_grammar,n)
 			new_sentence = self.next_sentence()
 			sentence_nr += 1
-		grammar_norm = self.normalise(new_grammar)
+		grammar_norm = self.normalise2(new_grammar)
 		return grammar_norm
 	
 	def update_grammar_dict(self,sentence, grammar, grammar_dict, n=1):
@@ -195,21 +247,26 @@ class ProcessFiles():
 		Parse the corpus with the inputted grammar,
 		and extract a new grammar from the n best trees.
 		Return the new grammar
+		:param grammar			a Weighted grammar
+		:param grammar_dict		a dictionary representing the current new grammar that has to be updated	
 		"""
-		print sentence
-		print grammar
+		#Viterbi parser outputs only one parse
+		print 'update grammatica for sentence: %s' % sentence
 		parser = ViterbiParser(grammar)
 		parser.trace(0)
-		parses = parser.nbest_parse(sentence.split(), n)
+		parses = parser.nbest_parse(sentence.split(),n)
+		nr_of_parses = 1
 		for parse in parses:
+			print 'parse %i' % nr_of_parses
 			for production in parse.productions():
-				lhs = production.lhs
-				rhs = production.rhs
+				lhs = production.lhs()
+				rhs = production.rhs()
 				if lhs in grammar_dict:
 					grammar_dict[lhs]['COUNTS'] += 1
 					grammar_dict[lhs][rhs] = grammar_dict[lhs].get(rhs,0) +1
 				else:
 					grammar_dict[lhs] = {'COUNTS':1, rhs:1}
+			nr_of_parses += 1
 		return grammar_dict
 		
 	def normalise(self,rule_dict):
@@ -218,26 +275,30 @@ class ProcessFiles():
 		{lhs : {rhs1 : count, rhs2: count ...}, ....}, return a
 		similar nested dictionary with normalised counts
 		"""
-		normalised_dict = dict({'TOP': {}})
+		TOP = nltk.Nonterminal('TOP')
+		normalised_dict = dict({TOP: {}})
 		total_lhs = 0
 		for lhs in rule_dict:
-			if lhs != 'COUNTS':
-				normalised_dict[lhs] = {}
-				total = 0
-				#loop twice through dictionary
-				#first to obtain total counts
-				for rhs in rule_dict[lhs]:
-					total += 1
+			if not isinstance(lhs, nltk.Nonterminal):
+				if lhs != 'COUNTS':
+					raise TypeError("Instance should be a nltk.Nonterminal")
+				continue
+			normalised_dict[lhs] = {}
+			total = 0
+			#loop twice through dictionary
+			#first to obtain total counts
+			for rhs in rule_dict[lhs]:
+				total += 1
 				# then to adjuct the counts in the
 				# new dictionary
 				for rhs in rule_dict[lhs]:
 					if rhs != 'COUNTS':
 						normalised_dict[lhs][rhs] = rule_dict[lhs][rhs]/float(total)
-				if 'root' in lhs or 'ROOT' in lhs:
+				if 'root' in lhs.symbol() or 'ROOT' in lhs.symbol():
 					total_lhs += total
-					normalised_dict['TOP'][(lhs,)] = total
-		for lhs in normalised_dict['TOP']:
-			normalised_dict['TOP'][lhs] = normalised_dict['TOP'][lhs]/float(total_lhs)
+					normalised_dict[TOP][(lhs,)] = total
+		for lhs in normalised_dict[TOP]:
+			normalised_dict[TOP][lhs] = normalised_dict[TOP][lhs]/float(total_lhs)
 		return normalised_dict
 
 	def normalise2(self, rule_dict):
@@ -245,17 +306,19 @@ class ProcessFiles():
 		More efficient version of normalise, that assumes that total counts
 		of lhs are already present in dictionary under 'counts'.
 		"""
-		rule_dict['TOP'] = {}
+		new_dict = {}
 		for lhs in rule_dict:
-			if lhs == 'TOP' or lhs == 'COUNTS':
+			if not isinstance(lhs, nltk.Nonterminal):
+				if lhs != 'COUNTS':
+					raise TypeError("Instance should be a Nonterminal")
 				continue
+			new_dict[lhs] = new_dict.get(lhs,{})
 			for rhs in rule_dict[lhs]:
 				if rule_dict[lhs] == 'COUNTS':
 					continue
-				rule_dict[lhs][rhs] = rule_dict[lhs][rhs]/float(rule_dict[lhs]['COUNTS'])
-			if 'root' in lhs or 'ROOT' in lhs:
-				rule_dict['TOP'][(lhs,)] = rule_dict[lhs]['COUNTS']/float(rule_dict['COUNTS'])
-		return rule_dict
+				rule_prob = rule_dict[lhs][rhs]/float(rule_dict[lhs]['COUNTS'])
+				new_dict[lhs][rhs] = rule_prob
+		return new_dict
 				
 	def to_WeightedGrammar(self,rule_dict):
 		"""
@@ -263,21 +326,21 @@ class ProcessFiles():
 		nested dictionary into a WeightedGrammar object.
 		"""
 		#delete counts from dictionary if present
-		if 'COUNTS' in rule_dict:
-			del rule_dict['COUNTS']
-			for lhs in rule_dict:
-				if 'COUNTS' in rule_dict[lhs]:
-					del rule_dict[lhs]['COUNTS']
+		for lhs in rule_dict:
+			if 'COUNTS' in rule_dict[lhs]:
+				del rule_dict[lhs]['COUNTS']
 		#create grammar
 		productions = []
 		for lhs in rule_dict:
 			for rhs in rule_dict[lhs]:
+				if isinstance(rhs, str):
+					if rhs != 'COUNTS':
+						raise TypeError("Instance should be a nltk.Nonterminal")
 				probability = rule_dict[lhs][rhs]
-				rhs_list = [Nonterminal(tag) for tag in rhs]
-				new_production = WeightedProduction(Nonterminal(lhs),rhs_list,prob=probability)
+				rhs_list = list(rhs)
+				new_production = nltk.WeightedProduction(lhs,rhs_list,prob=probability)
 				productions.append(new_production)
-		start = Nonterminal('TOP')
-#		print len(productions)
+		start = nltk.Nonterminal('TOP')
 		return WeightedGrammar(start,productions)
 
 
@@ -287,20 +350,18 @@ class ProcessDependencies(ProcessFiles):
 	occasion in which trees are dependencies.
 	"""
 
-	def score_all_sentences(self, rule_function, probability_function, prob_function_args, label_args, max_length = 40, scorefile = '', treefile = ''):
+	def score_all_sentences(self, rule_function, probability_function, prob_function_args, label_args, max_length = 40, scorefile = False, treefile = False):
 		self._reset_pointer()
 		parsed_sentences = 0
 		sentence_nr = 1
 		new = self.next()
-		writeScores, writeTrees = False, False
+		treesf, scoref = False,False
 		
 		#Create files
-		if scorefile != '':
+		if scorefile:
 			scoref = open(scorefile,'w')
-			writeScores = True
-		if treefile != '':
+		if treefile:
 			treesf = open(treefile, 'w')
-			writeTrees = True
 		
 		#Create dictionary to score different subsets of the file
 		total_score = {10:0, 20:0, 40:0, 100:0}
@@ -343,16 +404,16 @@ class ProcessDependencies(ProcessFiles):
 				print_string_t = "%s\n\n" % tree
 				print 'score', score
 				parsed_sentences +=1
-			self.print_function(print_string_t,writeTrees,treesf)
-			self.print_function(print_string_s,writeScores,scoref)
+			self.print_function(print_string_t,treesf)
+			self.print_function(print_string_s,scoref)
 			sentence_nr += 1
 			new = self.next()
 		#Make a table of the results
 		results_table, results_string = self._results_string(total_score, sentences)
-		if writeScores:
+		if scoref:
 			scoref.write('\n\nSCORES\n\n------------------------------------------------------\n%s' %results_string)
 			scoref.close()
-		if writeTrees:
+		if treesf:
 			treesf.close()	
 
 	def _results_string(self,total_score, sentences):
@@ -491,7 +552,7 @@ class ProcessDependencies(ProcessFiles):
 		of the entire file. Returns a Weighted grammar object
 		with normalised counts.
 		"""
-		all_rules = {'COUNTS':0}
+		all_rules = {nltk.Nonterminal('TOP'):{'COUNTS':0}}
 		self._reset_pointer()
 		sentences = 0
 		sentence_nr = 1
@@ -506,31 +567,30 @@ class ProcessDependencies(ProcessFiles):
 			else:
 				dependencies = Dependencies(new[2], new[1])
 				a = Alignments(new[0],new[1])
-				lex_dict = a.lex_dict()
 				labels = dependencies.label_all()
 				scoring = Scoring(new[0], new[1], labels)
 				productions = a.hat_rules(Rule.uniform_probability, [], labels)
 				lexicon = a.lexrules(labels)
 
-			for rule in productions:
-				production = a.prune_production(rule,lex_dict)
+			for production in productions:
 				lhs = production.lhs
 				rhs = tuple(production.rhs)
-				if 'root' in lhs or 'ROOT' in lhs:
-					all_rules['COUNTS'] += 1
+				if 'root' in lhs.symbol() or 'ROOT' in lhs.symbol():
+					all_rules[nltk.Nonterminal('TOP')]['COUNTS']+= 1
+					all_rules[nltk.Nonterminal('TOP')][(lhs,)] = all_rules[nltk.Nonterminal('TOP')].get((lhs,),0) + 1
 				if lhs in all_rules:
 					all_rules[lhs]['COUNTS'] += 1
 					all_rules[lhs][rhs] = all_rules[lhs].get(rhs,0) +1
 				else:
 					all_rules[lhs] = {'COUNTS':1, rhs:1}
-#			for lexical_rule in lexicon:
-#				lhs = lexical_rule.lhs()
-#				rhs = lexical_rule.rhs()
-#				if lhs in all_rules:
-#					all_rules[lhs]['COUNTS'] += 1
-#					all_rules[lhs][rhs] = all_rules[lhs].get(rhs,0) +1
-#				else:
-#					all_rules[lhs] = {'COUNTS':1, rhs:1}
+			for lexical_rule in lexicon:
+				lhs = lexical_rule.lhs()
+				rhs = lexical_rule.rhs()
+				if lhs in all_rules:
+					all_rules[lhs]['COUNTS'] += 1
+					all_rules[lhs][rhs] = all_rules[lhs].get(rhs,0) +1
+				else:
+					all_rules[lhs] = {'COUNTS':1, rhs:1}
 			new = self.next()
 			sentence_nr +=1
 		return all_rules
@@ -614,65 +674,7 @@ class ProcessConstituencies():
 	"""
 	Subclass adapted for constituencies
 	"""
-	
-	def sample(self, samplesize, maxlength = False, display = False):
-		"""
-		Create a sample of sentence from the inputted files.
-		Create a file with the sentences, and files with the
-		matching alignments, dependencies and targetsentences.
-		If display = True, create a texfile that can be ran
-		to give a visual representation of the selected sentences.
-		Return an array with the list of sentence numbers that
-		were selected.
-		"""
-		# determine the number of sentences in the file
-		import random
-		self._reset_pointer()
-		f_length = 0
-		sentences = []
-		for line in self.sentence_file:
-			f_length+= 1
-			if maxlength and len(line.split()) <= maxlength:
-				 sentences.append(f_length)
-		# select a sample by generating a random
-		# sequence of numbers
-		if not maxlength:
-			selection = random.sample(range(1,f_length+1),samplesize)
-		else:
-			s = random.sample(range(len(sentences)),samplesize)
-			selection = [sentences[i] for i in s]
-		selection.sort()
-		# create files
-		self._reset_pointer()
-		a = open('sample_sentences.txt', 'w')
-		s = open('sample_alignments.txt','w')
-		d = open('sample_trees.txt','w')
-		t = open('sample_source.txt','w')
-		if display == True:
-			disp = open('sample.tex','w')
-			disp.write(self.tex_preamble())
-		i=0
-		while i < selection[-1]:
-			i +=1
-			new = self.next()
-			if i in selection:
-				a.write(new[0]), s.write(new[1]), t.write(new[3])
-				for tree in new[2]:
-					d.write(tree)
-				d.write('\n')
-				if display == True:
-					disp.write('\section*{Sentence %i}' %i)
-					disp.write(self.texstring(new))
-		if display == True:
-			disp.write('\end{document}')
-			disp.close()
-		a.close(), s.close(), d.close(), t.close()
-		return selection
-	
-	def tex_preamble(self):
-		tex_preamble = '\documentclass{report}\n\usepackage[english]{babel}\n\usepackage{fullpage}\n\usepackage[all]{xy}\n\usepackage{qtree}\n\\author{Dieuwke Hupkes}\n\\title\n{Dependencies}\n\\begin{document}'
-		return tex_preamble
-	
+
 
 	def score_all_sentences(self, rule_function, probability_function, prob_function_args, label_args, max_length = 40, scorefile = '', treefile = ''):
 		raise NotImplementedError
@@ -691,19 +693,15 @@ class ProcessConstituencies():
 			sentence_length = len(new[1].split())
 			if sentence_length < max_length:
 				a = Alignments(new[0],new[1])
-				if label_type == "Dependencies":
-					dependencies = Dependencies(new[2])
-					labels = dependencies.labels()
-				elif label_type == "Constituencies":
-					constituencies = Constituencies(new[2][0])
-					labels = constituencies.find_labels()
-				else:
-					raise ValueError("Type of labels not implemented")
+				constituencies = Constituencies(new[2][0])
+				labels = constituencies.find_labels()
 			label_dict = a.consistent_labels(labels, label_dict)
 			new = self.next()
 			sentence_nr+= 1
 		return label_dict
 
+	def all_rules(self,max_length=40):
+		raise NotImplementedError
 
 	
 	def relation_count(self, max_length):
@@ -716,9 +714,8 @@ class ProcessConstituencies():
 
 	def texstring(self,new):
 		"""
-		Output a texstring with the alignment, the dependency
-		and the 
-		ew = alignment, sentence, dep
+		Output a texstring with the alignment, the constituency tree
+		and the alignment.
 		"""
 		raise NotImplementedError
 

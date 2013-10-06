@@ -1,107 +1,64 @@
 import re
+import nltk.tree
 
-class Constituencies():
+class ConstituencyTree():
 	"""
 	A class representing a constuency tree from a sentence.
 	Object is a flat object, is mainly used to view the
 	hierarchical structure of a sentence via labels
 	"""
-	def __init__(self, treestring, sentence= False):
+	def __init__(self, tree, sentence= False):
 		"""
-		Initialise with a string representation of a constituency tree
-		The Constituency object is a 
+		Initialise with a string representation of a constituency tree. 
+		Transform to a nested list representation of the tree.
 		"""
-		self.tree = self.tree_repr(treestring)
-		self.treestring = treestring
+		if isinstance(tree, nltk.Tree):
+			self.tree = tree
+		else:
+			self.tree = nltk.Tree(tree)
 		self.sentence = sentence
 		self.labels = {}
-		
+	
 	def reconstruct_sentence(self):
 		if self.sentence:
 			return sentence
 		else:
-			lexicals = re.findall('\([^\(\)]*\)',self.treestring)
-			words = []
-			for l in lexicals:
-				lex_item = re.search('(?<= ).*?(?=\))',l).group(0)
-				words.append(lex_item)
-			return ' '.join(words)
+			return ' '.join(self.tree.leaves())
 	
-	def tree_repr(self, string_tree):
-		tree_repr = []
-		if '(' not in string_tree:
-			tree_repr = string_tree.strip()
-		else:
-			tag = re.search('(?<=\().*?(?= \()',string_tree)
-			if tag:
-				tree_repr.append(tag.group(0))
-			for child in self.children(string_tree):
-				tree_repr.append(self.tree_repr(child))
-		return tree_repr
-	
-	def children(self,string_tree):
+	def root_span(self,subtree,startpos):
 		"""
-		Find children of the inputted string
+		Recursively compute the span a node covers
 		"""
-		children = []
-		if len(re.findall('\(',string_tree)) == 1:
-			# no nested children present
-			tag = re.search('(?<=\().* ', string_tree).group(0)
-			children.append(tag)
-			lex_item = re.search('(?<= ).*(?=\))', string_tree).group(0)
-			children.append(lex_item)
-		else:
-			#find all children
-			child, brackets, record = '', 0, False
-			for symbol in string_tree[1:]:
-				if symbol == '(':
-					brackets += 1
-					record = True
-				elif symbol == ')':
-					brackets -= 1
-				if record == True:
-					child += symbol
-				if child and brackets == 0:
-					children.append(child)
-					child = ''
-					record = False
-		return children
+		cur_startpos = startpos
+		for child in subtree:
+			if isinstance(child,str):
+				span = (startpos,startpos+1)
+			else:
+				span = self.root_span(child,cur_startpos)
+			cur_startpos = span[1]
+		return (startpos, span[1])
 
-	def find_label(self,tree,startpos):
+	def nr_of_nonterminals(self):
 		"""
-		Compute the word span of a tree, and assign
-		a label to it in a dictionary
+		Return the number of nonterminals in the tree
 		"""
-		if not isinstance(tree,list):
-			raise ValueError("Input %s is no list representation of tree" % str(tree))
-		label = tree[0]
-		if isinstance(tree[1],str):
-			span = (startpos,startpos+1)
-		else:
-			children = tree[1:]
-			span_cur = self.find_label(tree[1],startpos)
-			for i in xrange(1,len(children)):
-				span_cur = self.find_label(tree[1+i],span_cur[1])
-			span = (startpos,span_cur[1])
-		self.labels[span] = label
-		return span
-	
-	def find_labels(self):
-		"""
-		Compute the labels for the wordspans, that together
-		represent the hierarchial constituency structure
-		of the sentence.
-		Return the dictionary
-		"""
-		self.find_label(self.tree,0)
-		return self.labels
+		return len(self.tree.treepositions()) - len(self.tree.leaves())
 
+	def phrases_consistent(self, subtree, startpos, phrase_list):
+		"""
+		Return the number of non-terminal nodes in the tree
+		that occur in the provided list of phrases.
+		"""
+		nr_consistent = 0
+		#Add one if rootnode is in phraselist
+		if self.root_span(subtree,startpos) in phrase_list:
+			nr_consistent+=1
+		cur_startpos = startpos
+		for child in subtree:
+			if isinstance(child,str):
+				cur_startpos += 1
+			else:
+				nr_consistent += self.phrases_consistent(child, cur_startpos, phrase_list)
+				cur_startpos = self.root_span(child,cur_startpos)[1]
+		return nr_consistent
 
-def test():
-	tree = '(ROOT (NP (NP (NN resumption)) (PP (IN of) (NP (DT the) (NN session)))))'
-	x = Constituencies(tree)
-	print x.find_labels()
-#	print x.tree
-	
-
-test()

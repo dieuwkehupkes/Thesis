@@ -1,9 +1,9 @@
 import nltk
 from nltk.grammar import *
 
-class new_WeightedGrammar(ContextFreeGrammar):
+class WeightedGrammar_nn(nltk.WeightedGrammar):
     """
-    Overrides the WeightedGrammar class from nltk.grammar
+	A non-normalised WeightedGrammar
     """
     EPSILON = 0.01
 
@@ -23,7 +23,7 @@ class new_WeightedGrammar(ContextFreeGrammar):
             leftcorner relation. In that case, some optimized chart parsers won't work.
         :type calculate_leftcorners: bool
         """
-        ContextFreeGrammar.__init__(self, start, productions, calculate_leftcorners)
+        nltk.ContextFreeGrammar.__init__(self, start, productions, calculate_leftcorners)
 
         # Make sure that the probabilities sum to one.
         probs = {}
@@ -31,4 +31,4 @@ class new_WeightedGrammar(ContextFreeGrammar):
             probs[production.lhs()] = (probs.get(production.lhs(), 0) +
                                        production.prob())
 
-WeightedGrammar = new_WeightedGrammar
+#nltk.WeightedGrammar = WeightedGrammar
