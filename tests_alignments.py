@@ -86,8 +86,24 @@ class AlignmentsTests():
 		score = a.agreement(tree)
 		return score == 1
 	
+	def consistency_test2(self):
+		tree = nltk.Tree('(ROOT (NP (NP (NN approval)) (PP (IN of) (NP (DT the) (NNS minutes))) (PP (IN of) (NP (DT the) (JJ previous) (NN sitting)))))')
+		sentence = 'approval of the minutes of the previous sitting'
+		alignment = '5-6 4-5 3-4 3-2 2-1 6-8 3-3 1-1 0-0 7-7'
+		a = Alignments(alignment,sentence)
+		score = a.agreement(tree)
+		return score == 0.8
+		
+	def consistency_test3(self):
+		tree = nltk.Tree('(ROOT ( NP ( NP (NN approval )) (PP of the minutes) (PP (IN of) (NP (DT the ) (JJ previous ) (NN sitting ) ))))')
+		sentence = 'approval of the minutes of the previous sitting'
+		alignment = '5-6 4-5 3-4 3-2 2-1 6-8 3-3 1-1 0-0 7-7'
+		a = Alignments(alignment,sentence)
+		score = a.agreement(tree)
+		return score == 1
+	
 	def alignment_test_all(self):
-		return self.spans_test_all() and self.consistency_test1()
+		return self.spans_test_all() and self.consistency_test1() and self.consistency_test2() and self.consistency_test3()
 	
 if __name__ == "__main__":
 	x = AlignmentsTests()
