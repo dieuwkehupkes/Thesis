@@ -32,11 +32,12 @@ class ConstituencyTree():
 		cur_startpos = startpos
 		for child in subtree:
 			if isinstance(child,str):
-				span = (startpos,startpos+1)
+				span = (cur_startpos,cur_startpos+1)
 			else:
 				span = self.root_span(child,cur_startpos)
 			cur_startpos = span[1]
-		return (startpos, span[1])
+		root_span = (startpos, span[1])
+		return root_span
 
 	def nr_of_nonterminals(self):
 		"""

@@ -171,6 +171,7 @@ class ProcessFiles():
 		how well the resulting parses cohere with the
 		alignments.
 		"""
+		self._reset_pointer()
 		if scoref:
 			scoref = open(scoref,'w')
 		parser = ViterbiParser(grammar)
@@ -194,8 +195,8 @@ class ProcessFiles():
 		scorestr = "\n\ntotal sentences parsed: %i\naverage score: %f\n" % (parsed_sentences, float(total_score)/parsed_sentences)
 		print scorestr
 		self.print_function(scorestr,scoref)		
-		scoref.write(scorestr)
-		scoref.close()
+		if scoref:
+			scorefc.close()
 
 
 	def em(self, start_grammar, max_iter, n=1, max_length = 40,):
@@ -257,7 +258,7 @@ class ProcessFiles():
 		parses = parser.nbest_parse(sentence.split(),n)
 		nr_of_parses = 1
 		for parse in parses:
-			print 'parse %i' % nr_of_parses
+#			print 'parse %i' % nr_of_parses
 			for production in parse.productions():
 				lhs = production.lhs()
 				rhs = production.rhs()

@@ -11,7 +11,6 @@ class Main():
 		"""
 		Score the sentences with the given input arguments.		
 		"""
-		files = ProcessDependencies(alignments, sentences, dependencies)
 		files.score_all_sentences(rule_generator, prob_function, prob_function_args, label_args, max_length, tree_file, score_file)
 		files.close_all()
 
@@ -47,7 +46,10 @@ if __name__ == "__main__":
 	parser.add_argument("alignments", help="File with alignments")
 	parser.add_argument("source", help="File with source sentences")
 	parser.add_argument("trees", help="File with parses of the source sentences")
-	parser.add_argument("mode", type=str, choices = ["score","em","evaluate"],help="Specify the running mode of the program")	
+	
+	parser.add_argument("--score", action= "store_true",help="Assign the corpus a consistency score")
+	parser.add_argument("--evaluate",action="store_true",help="Evaluate a grammar, grammar input required")
+	parser.add_argument("--em", action="store_true",help="create a grammar of the corpus using EM")
 	
 	parser.add_argument("--target", help="File with target sentences")
 	
@@ -71,15 +73,16 @@ if __name__ == "__main__":
 	
 	args = parser.parse_args()
 
+	if not (args.score or args.em or args.evaluate):
+		parser.error("No running mode is specified, add --em, --evaluate or --score")
 
-	ruletype = args.rules
-	if ruletype == 'HATs':
-		rule_generator = Alignments.hat_rules
-	elif ruletype == 'all':
-		rule_generator = Alignment.rules	
-	
 	#Run the program
-	if args.mode == "score":
+	if args.score:
+		ruletype = args.rules
+		if ruletype == 'HATs':
+			rule_generator = Alignments.hat_rules
+		elif ruletype == 'all':
+			rule_generator = Alignment.rules	
 		main = Main()
 		if args.dependencies:
 			files = ProcessDependencies(args.alignments,args.source,args.trees)
@@ -87,7 +90,17 @@ if __name__ == "__main__":
 		else:
 			raise NotImplementedError
 	
-	if args.mode == "em":
+	
+	elif args.em and args.evaluate:
+		main = Main()
+		if args.dependencies:
+			files = ProcessDependencies(args.alignments, args.source, args.trees)
+		else:
+			files = ProcessConstituencies(args.alignments, args.source, args.trees)
+		main.em(files, args.max_length, args.grammar_to, args.EM_iterations, 1)
+		main.evaluate_grammar(files, args.grammar_to, args.scores_to, args.max_length)
+	
+	elif args.em:
 		main = Main()
 		if args.dependencies:
 			files = ProcessDependencies(args.alignments, args.source, args.trees)
@@ -95,7 +108,7 @@ if __name__ == "__main__":
 			files = ProcessConstituencies(args.alignments, args.source, args.trees)
 		new_grammar = main.em(files, args.max_length, args.grammar_to, args.EM_iterations, 1)
 
-	if args.mode == "evaluate":
+	elif args.evaluate:
 		main = Main()
 		files = ProcessFiles(args.alignments,args.source,args.trees)
 		main.evaluate_grammar(files, args.grammar, args.scores_to, args.max_length)

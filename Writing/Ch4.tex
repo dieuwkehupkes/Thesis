@@ -4,14 +4,62 @@
 
 \begin{document}
 
-\chapter{Empirical Research on Transfer Models}
+\chapter{A new empirical Investigation of Compositionality}
 
-Chapter introduction, but an overall analysis of how well monolingual compositionality and bilingual compositionality actually match up ... 
+In the previous chapter, we have introduced the problems concerning compositional translation, and we have seen that the matter is far from resolved. 
 
-we will focus on HATs
+\begin{enumerate}
+\item in previous chapter we argued that empirical analysis is necessary
+\item we have introduced the ingredients necessary for empirical analysis
+\item we have discussed existing empirical analyses, that...
+\item furthermore, we observed that in the literature no empirical analysis can be found that combines the monolingual and bilingual perspective.
+\item in this thesis..., both a theoretical and practical purpose
+\item in this chapter...
+\item overview
+\end{enumerate}
+
+We can conclude that compositional translation for natural languages is far from sorted out (anders). Many assumptions are made on the way, and the extent to which these assumptions are true is unknown. In this thesis, we will try to find evidence for how compositional translation of natural language is. We will assume that translation is compositional, and investigate how complex and specific the rules and the parts of this system are. For such a study, an idiomatic expression or a strange phenomenon sitting in a corner of language is no evidence against compositionality, rather, we want to know how many phenomena and expressions are sitting in this corner, and if we can add all these phenomena and expressions to a compositional grammar without loosing the feeling that overall translations were compositional.
+
+
+We will focus on HATs
 We will study the consitency of HATs and dependency grammars, and study the main causes of deviation of the translation structures from conventional linguistic syntax. We will present an easily accessible implementation, that is reusable for various purposes and is thus suitable for further investigation by others. In this chapter, we motivate and explain the procedures that were used, and .... We will start by discussing our translation structures... on a more intuitive level.
 
-\section{Bilingual Compositionality}
+
+\section{Foundations of Empirical Studies}
+
+The analysis of compositionality presented in this thesis is based on real data, that are not always perfect. To appreciate empirical research, it is important to have a good picture of the assumptions that are made about this data, and the influence they might have on the result. In this section, we will mention and discuss these assumptions, some of which may sound obvious, to provide a complete picture of the foundations of empirical studies.
+
+
+\subsection{Correctness of the Translation Data}
+
+Our empirical analysis is based on parallel corpora with text that are each others translation, and thus relies heavily on the correctness of these corpora. As these parallel texts were not designed as data for translation models, they might not be perfectly suitable for this purpose. When training MT models, infrequent mistakes in the data are generally not problematic, as they will receive a low probability. This is not the case in an empirical analysis. There are three bottlenecks:
+
+\subsubsection{Sentence level alignment.}
+Aligning corpora on the sentence level is not as simple as it might seem. Texts are not always translated sentence by sentence. Short sentences may be merged or long ones broken up, and in some languages sentence delimiters do not really exist \citep[p.55]{koehn2008statistical}. However, the techniques for sentence alignment are very good, and as the languages we are considering \textit{do} have clear sentence delimiters it seems very reasonable to assume that the sentences in the corpora are correctly aligned.
+
+\subsubsection{Correctness of translation.}
+The translations of the sentences are produced by humans, who sometimes make mistakes. To use the corpora, we have to assume that the aligned sentences are good translations of each other.
+
+\subsubsection{Translation is literal.}
+One English sentence often has many translations in another language, as similar meanings can be expressed in multiple ways.\footnote{In fact, considering only one target translation is thus also a simplification made in empirical research} For instance `jeg giver dig blomster' is a good Danish translation of `I give you flowers', but so is `jeg giver blomster til dig' (and the amount of rephrasing in this example is even rather minimal). Especially when one text is not a direct translation of the other text, but the two are, for instance, just separate reports of the same event, it might happen that sentences do have the same meaning, but are not very similar in form. In our analysis, we will assume that at least the vast majority of the translations in the corpora are rather literal.
+ 
+\subsection{Correctness Word Alignments}
+
+In empirical analyses, as well as MT-models, word-alignments are used to establish translational correspondences, and are thus of crucial importance. Unfortunately, automatic alignments are not always as good as we want them to be. MT-models generally do not suffer much from this fact, because the number of untrue alignment links is dwarfed by the number that is correct. For empirical research, false alignment links are quite problematic, as even one wrong link can have a huge effect on the space of possible translation trees. An option is to use one of the few manually aligned corpora, but given their small size they are not suitable to draw conclusions about larger parts of language.
+
+\subsection{Dependency Parser}
+
+To determine the dependency structures of the sentences in the corpus, an efficient fully automated dependency parser is needed.  For English, high quality dependency parses are available \citep{cer2010parsing}, but the parses they produce are not perfect, which can be problematic for an empirical analysis.
+
+\subsection{Conclusion?}
+
+Although statistical analysis of the corpora might provide more insight in the type of mistakes that are generally made, the type of mistakes sketched in the previous subsections will harm the outcome of an empirical analysis, making it more pessimistic than it would be if the data were perfect. It therefore seems sensible to see empirical analysis as an upper- or lowerbound (depending on the context), rather than an exact number.
+
+
+
+\section{Translation Structures}
+
+
 
 Recall: translations structures
 In this thesis, we will consider a subset of all alignment trees, that was already mentioned in the previous chapter: the HATs \citep{simaan2013hats}. A HAT is characterized by the fact that it is maximal, i.e., every node has its minimal branching factor.\footnote{Say something about node operators and skeleton} This means that every non-terminal node is expanded into a minimum number of children, but also that phrases are used \textit{only} when they are needed to account for the translation phenomena. An example that illustrates this is depicted in Figure \ref{fig:treephrase}.
@@ -117,45 +165,7 @@ An example containing syntactic divergence in translation between Russian and En
 
 \begin{figure}[!ht]
 \centering
-\begin{tikzpicture}
-
-\draw node (the) at (0,0.02) {The};
-\draw node (girl) at (0.75,0) {girl};
-\draw node (has) at (1.4,0.04) {has};
-\draw node (a) at (1.9,0) {a};
-\draw node (car) at (2.4,0) {car};
-\draw node (y) at (4,0) {\textcyr{u}};
-\draw node (girlr) at (4.9,-0.02) {\textcyr{devuxka}};
-\draw node (is) at (6.1,0.02) {\textcyr{est\char126}};
-\draw node (carr) at (7.5,0.04) {\textcyr{avtomobil}};
-
-\coordinate (thegirl) at (0.4,0.6);
-\coordinate (acar) at (2.1,0.6);
-\coordinate (thegirlhas) at (0.8,1);
-\coordinate (all) at (1.4,1.5);
-\coordinate (carr_) at (7.5, 0.3);
-\coordinate (girlr_) at (4.9,0.3);
-\coordinate (girlhas) at (4.9,0.8);
-\coordinate (allr) at (5.9, 1.2);
-
-
-\foreach \coordinate in {thegirl, acar, thegirlhas,all,carr_, girlr_, girlhas, allr}
-	\filldraw (\coordinate) circle (0.035);
-
-\foreach \from/\to in {thegirl/girl, thegirl/the, acar/a, acar/car, thegirlhas/thegirl, thegirlhas/has, all/thegirlhas, all/acar, girlhas/girlr_, girlhas/y, girlhas/is, allr/girlhas, allr/carr_}
-	\draw (\from) -- (\to);
-
-\foreach \from/\to in {the/girlr, girl/girlr}
-	\draw[<->, bend left = -35, thick, blue] (\from) to (\to);
-
-\foreach \from/\to in {has/y, has/is, allr/all, girlhas/thegirlhas, carr_/acar, girlr_/thegirl}
-	\draw[<->, bend left = -35, thick, green] (\from) to (\to);
-
-\foreach \from/\to in {a/carr, car/carr}
-	\draw[<->, bend left = -35, thick, red] (\from) to (\to);
-
-
-\end{tikzpicture}
+\input{syntactic_linked_structures.tex}
 \caption{Translation of possession, Russian-English}\label{fig:russian}
 \end{figure}
 
