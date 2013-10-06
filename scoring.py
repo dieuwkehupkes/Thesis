@@ -31,22 +31,17 @@ class Scoring():
 	
 	def transform_to_WeightedProduction(self, rule):
 		"""
-		Transform rule to WeightedProduction object (NLTK-style)
+		Transform Rule object to WeightedProduction object (NLTK-style)
 		"""
 		#create list to transform rhs to Nonterminals
-		rhs_list = []
-		for rhs in rule.rhs:
-			rhs_list.append(Nonterminal(rhs))
-		return WeightedProduction(Nonterminal(rule.lhs), rhs_list, prob = rule.probability)
+		return WeightedProduction(rule.lhs, rule.rhs, prob = rule.probability)
 	
 	def transform_to_Production(self, rule):
 		"""
 		Transform rule to Production object (NLTK-style)
 		"""
 		#create list to transform rhs to Nonterminals
-		rhs_list = []
-		for rhs in rule.rhs:
-			rhs_list.append(Nonterminal(rhs))
+		rhs_list = [Nonterminal(rhs) for rhs in rule.rhs]
 		return Production(Nonterminal(rule.lhs), rhs_list)
 	
 	
@@ -96,9 +91,9 @@ class Scoring():
 		# Transform into a grammar to parse
 		startsymbol = self.labels.get((0,len(self.tokens)), "0-"+str(len(self.tokens)))
 		start = Nonterminal(startsymbol)
-		return WeightedGrammar(start,productions), rank
+		return WeightedGrammar_nn(start,productions), rank
 			
-	def parse(self, grammar):
+	def parse(self, grammar, trace=0):
 		"""
 		Parse the sentence with the given grammar
 		using the viterbi parser from the nltk.
@@ -106,12 +101,12 @@ class Scoring():
 		"""
 #		print grammar
 		parser = ViterbiParser(grammar)
-		parser.trace(0)
+		parser.trace(trace)
 		parses = parser.nbest_parse(self.tokens)
 		#return the best parse
 		return parses[0]
 
-	def score(self, rule_function, prob_function, args):
+	def score(self, rule_function, prob_function, args, trace=0):
 		"""
 		Score, args are arguments for prob_function.
 		Thus: if probfunction = Rule.probability_labels, then args
@@ -120,7 +115,9 @@ class Scoring():
 		"""
 		productions = rule_function(self.alignment, prob_function, args, self.labels)
 		grammar,rank = self.grammar(productions)
-		parse = self.parse(grammar)
+		if trace >0:
+			print grammar
+		parse = self.parse(grammar,trace)
 		score = parse.prob()
 		if prob_function == Rule.probability_spanrels:
 			import math

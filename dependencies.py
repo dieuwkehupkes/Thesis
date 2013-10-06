@@ -79,6 +79,7 @@ class Dependencies():
 	def find_head(self, relation):
 		return re.search('(?<=\().*(?=-[0-9]*,)',relation).group(0)
 		
+	def find_dependent_pos(self,relation):
 		return int(re.search('(?<=-)[0-9]*(?=\)$)', relation).group(0))
 	
 	def find_dependent(self, relation):
@@ -95,15 +96,18 @@ class Dependencies():
 		if self.sentence:
 			# If sentence was input or already computed
 			# return sentence
-			self.sentence = self.sentence.split()
+			if isinstance(self.sentence,list):
+				sentence = self.sentence
+			else:
+				sentence = self.sentence.split()
 		else:
 			# create sentence from dependency parse
-			sentence = [''] * (self.wordspans[self.head_pos][1] +1)
+			sentence = [''] * (self.wordspans[self.head_pos][1])
 			for relation in self.dep_list:
 				pos_word = self.find_dependent_pos(relation)
 				word = self.find_dependent(relation)
-				sentence[pos_word] = word
-			self.sentence = sentence
+				sentence[pos_word-1] = word
+		self.sentence = sentence
 		return self.sentence
 	
 	def textree(self):
@@ -427,7 +431,6 @@ class Dependencies():
 				new_span, new_label = (s01,s11), '%s/%s' % (L0, L1)
 			labels[new_span] = labels.get(new_span,new_label)					
 			unlabelled = unlabelled - set([new_span])
-		#Ik weet niet zo goed welke labels ik hier wil
 		i = 0
 		max_iter = len(unlabelled)*len(unlabelled)
 		while unlabelled and i < max_iter:
@@ -449,11 +452,17 @@ class Dependencies():
  		Find a new label by summing two
  		already existing labels
  		"""
+ 		#Weet niet zo goed of dit echt is geimplementeerd zoals ik wil
  		s0,s1 = span[0],span[1]
  		for splitpoint in xrange(s0+1,s1):
  			span1, span2 = (s0,splitpoint), (splitpoint,s1)
  			if span1 in labels and span2 in labels:
- 				return '%s+%s' % (labels[span1],labels[span2])
+ 				s1, s2 = labels[span1], labels[span2]
+ 				if '/' in s1 or '\\' in s1:
+ 					s1 = '(%s)' %s1
+ 				if '/' in s2 or '\\' in s2:
+ 					s2 = '(%s)' %s2
+				return '%s+%s' % (s1,s2)
  		else:
  			return None
  	

@@ -26,7 +26,7 @@ class DependencyTests():
 	def labels_test2(self):
 		"""
 		Test functioning deeper labelling for the sentence
-		'I give the boy flowers'. Test for test for all
+		'I give the boy some flowers'. Test for test for all
 		combinations ldepth = {0,1}, rdepth = {0,1,2},
 		and var_max = {0,1,2,3}
 		"""
@@ -155,5 +155,5 @@ class DependencyTests():
 	
 if __name__ == "__main__":
 	x = DependencyTests()
-	print x.test_all_labels()
-#	print x.dependencies_test_all()
+#	print x.test_all_labels()
+	print x.dependencies_test_all()
