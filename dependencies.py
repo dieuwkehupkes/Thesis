@@ -409,7 +409,10 @@ class Dependencies():
  			if word_span not in labels:
  				labels[word_span] = self.POStag(sentence[word_pos])
  		for word_span in labels:
- 			unlabelled.remove(word_span)
+ 			if word_span not in labels:
+ 				return None
+ 			else:
+ 				unlabelled.remove(word_span)
  		# create compound labels with operator +
 		for spans in [(span1,span2) for span1 in labels.keys() for span2 in labels.keys() if span1 != span2]:
 			if spans[0][1] == spans[1][0]:
