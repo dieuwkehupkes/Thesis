@@ -374,9 +374,11 @@ class ProcessDependencies(ProcessFiles):
 			#consistency check
 			if not self.check_consistency(new[1], new[2]):
 				print "Warning: dependencies and alignment might be inconsistent"
-			sentence_length = len(new[1].split())
+			sentence = new[1]
+			alignment = new[0]
+			sentence_length = len(sentence.split())
 			dependencies = Dependencies(new[2])
-			a = Alignments(new[0],new[1])
+			a = Alignments(alignment,sentence)
 			# tests if input is as desired, skip if not
 			if sentence_length >= max_length:
 				print_string_t = "No result, sentence longer than %i words\n" % max_length
@@ -384,10 +386,12 @@ class ProcessDependencies(ProcessFiles):
 				print_string_t = "No result, dependency structure is no tree"
 			elif not a.consistent:
 				print_string_t = "No result, alignment inconsistent with sentence"
+			elif 'cannot' in sentence:
+				print_string_t = "No result, dependency parse and sentence out of sync due to tokenization 'cannot'"
 			else:
 				l = dependencies.labels(label_args[0], label_args[1], label_args[2])
 				labels = dependencies.annotate_span(l)
-				scoring = Scoring(new[0], new[1], labels)
+				scoring = Scoring(alignment, sentence, labels)
 				#Set arguments for probability function
 				if probability_function == Rule.probability_spanrels:
 					p1, p2 = prob_function_args[0], prob_function_args[1]
@@ -566,8 +570,11 @@ class ProcessDependencies(ProcessFiles):
 				productions = []
 				lexicon = []
 			else:
-				dependencies = Dependencies(new[2], new[1])
-				a = Alignments(new[0],new[1])
+				sentence = new[1]
+				if 'cannot' in sentence:
+					continue
+				dependencies = Dependencies(new[2], sentence)
+				a = Alignments(new[0],sentence)
 				labels = dependencies.label_all()
 				scoring = Scoring(new[0], new[1], labels)
 				productions = a.hat_rules(Rule.uniform_probability, [], labels)
