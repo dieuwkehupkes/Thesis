@@ -578,6 +578,8 @@ class ProcessDependencies(ProcessFiles):
 				labels = dependencies.label_all()
 				if not labels:
 					print 'sentence skipped because of inconsistency with dependency parse'
+					new = self.next()
+					sentence_nr +=1
 					continue
 				scoring = Scoring(new[0], new[1], labels)
 				productions = a.hat_rules(Rule.uniform_probability, [], labels)
