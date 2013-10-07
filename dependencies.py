@@ -397,6 +397,9 @@ class Dependencies():
 		combined labels are generated if no other label is available.
 		If no sentence is attached, words not included in the 
 		dependency parse will not get a label.
+		
+		If the numbering of the dependency parse and the sentence are
+		out of sync due to different tokenization, return None.
 		"""
 		sentence = self.reconstruct_sentence()
 		s_length = len(sentence)
@@ -409,10 +412,11 @@ class Dependencies():
  			if word_span not in labels:
  				labels[word_span] = self.POStag(sentence[word_pos])
  		for word_span in labels:
- 			if word_span not in unlabelled:
- 				return None
- 			else:
+ 			try:
  				unlabelled.remove(word_span)
+ 			except KeyError:
+ 				"Dependency parse and sentence out of sync due to different tokenization"
+ 				return None
  		# create compound labels with operator +
 		for spans in [(span1,span2) for span1 in labels.keys() for span2 in labels.keys() if span1 != span2]:
 			if spans[0][1] == spans[1][0]:

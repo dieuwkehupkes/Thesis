@@ -54,8 +54,8 @@ if __name__ == "__main__":
 	parser.add_argument("--target", help="File with target sentences")
 	
 	#arguments allowing the user to change the standard settings
-	parser.add_argument("-r", "--rules", default="HATs", choices=["HATs","all"],help="Change the standard rule type")
-	parser.add_argument("-m", "--max_length",default=40,type=int,help="Change the standard maximum sentence length")
+	parser.add_argument("-r", "--rules", default="HATs", choices=["HATs","all"],help="Set the rule type, default = HATs")
+	parser.add_argument("-m", "--max_length",default=40,type=int,help="Set the maximum sentence length, default = 40")
 	parser.add_argument("-p", "--prob_function",default=Rule.probability_spanrels,help="Change the standard method of assigning weights")
 	parser.add_argument("-pa","--prob_args", nargs=2, default=[True,True],help="Set the arguments for the probability function")
 	parser.add_argument("-la","--label_args", nargs = 3, default=[1,1,3],help="Specify how labels should be constructed")
@@ -75,6 +75,9 @@ if __name__ == "__main__":
 
 	if not (args.score or args.em or args.evaluate):
 		parser.error("No running mode is specified, add --em, --evaluate or --score")
+
+	if not (args.dependencies or args.constituencies):
+		parser.error("No parse type is specified, add --dependencies or --constituencies")
 
 	#Run the program
 	if args.score:

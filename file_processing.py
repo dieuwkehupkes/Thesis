@@ -184,7 +184,15 @@ class ProcessFiles():
 			sentence_length = len(sentence.split())
 			if sentence_length < max_length:
 				a = Alignments(new[0],sentence)
-				parse = parser.nbest_parse(sentence.split())[0]
+				try:
+					parse = parser.nbest_parse(sentence.split())[0]
+				except ValueError:
+					scorestr =  "s %i\t\tcould not be parsed\n" %sentence_nr
+					print scorestr
+					self.print_function(scorestr,scoref)
+					new = self.next()
+					sentence_nr +=1
+					continue
 				score = a.agreement(parse)
 				scorestr = 	"s %i\t\tlength: %i\t\tscore: %f\n" % (sentence_nr, sentence_length, score)
 				self.print_function(scorestr,scoref)
@@ -196,7 +204,7 @@ class ProcessFiles():
 		print scorestr
 		self.print_function(scorestr,scoref)		
 		if scoref:
-			scorefc.close()
+			scoref.close()
 
 
 	def em(self, start_grammar, max_iter, n=1, max_length = 40,):
@@ -252,10 +260,14 @@ class ProcessFiles():
 		:param grammar_dict		a dictionary representing the current new grammar that has to be updated	
 		"""
 		#Viterbi parser outputs only one parse
-		print 'update grammatica for sentence: %s' % sentence
 		parser = ViterbiParser(grammar)
 		parser.trace(0)
-		parses = parser.nbest_parse(sentence.split(),n)
+		try:
+			parses = parser.nbest_parse(sentence.split(),n)
+			print 'update grammatica for sentence: %s' % sentence
+		except:
+			print 'sentence %s could not be parsed' % sentence
+			return grammar_dict
 		nr_of_parses = 1
 		for parse in parses:
 #			print 'parse %i' % nr_of_parses
@@ -571,8 +583,6 @@ class ProcessDependencies(ProcessFiles):
 				lexicon = []
 			else:
 				sentence = new[1]
-				if 'cannot' in sentence:
-					continue
 				dependencies = Dependencies(new[2], sentence)
 				a = Alignments(new[0],sentence)
 				labels = dependencies.label_all()
