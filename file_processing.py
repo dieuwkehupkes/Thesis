@@ -222,6 +222,7 @@ class ProcessFiles():
 		i = 0
 		new_grammar = start_grammar
 		while i <= max_iter:
+			print "iteration %i' i
 			new_grammar_dict = self.em_iteration(new_grammar, n, max_length)
 			new_grammar = self.to_WeightedGrammar(new_grammar_dict)
 			i +=1
@@ -239,10 +240,10 @@ class ProcessFiles():
 		new_sentence = self.next_sentence()
 		sentence_nr = 1
 		while new_sentence:
-			print sentence_nr
 			sentence_length = len(new_sentence.split())
 			# tests if input is as desired, skip if not
 			if sentence_length >= max_length:
+				print 'sentence skipped'
 				pass
 			else:
 				new_grammar = self.update_grammar_dict(new_sentence, grammar,new_grammar,n)
@@ -575,7 +576,6 @@ class ProcessDependencies(ProcessFiles):
 		sentence_nr = 1
 		new = self.next()
 		while new:
-			print sentence_nr
 			sentence_length = len(new[1].split())
 			# tests if input is as desired, skip if not
 			if sentence_length >= max_length:
@@ -591,6 +591,7 @@ class ProcessDependencies(ProcessFiles):
 					new = self.next()
 					sentence_nr +=1
 					continue
+				print "creating grammar for", sentence_nr
 				scoring = Scoring(new[0], new[1], labels)
 				productions = a.hat_rules(Rule.uniform_probability, [], labels)
 				lexicon = a.lexrules(labels)
