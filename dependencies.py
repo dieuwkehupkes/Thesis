@@ -409,7 +409,7 @@ class Dependencies():
  			if word_span not in labels:
  				labels[word_span] = self.POStag(sentence[word_pos])
  		for word_span in labels:
- 			if word_span not in labels:
+ 			if word_span not in unlabelled:
  				return None
  			else:
  				unlabelled.remove(word_span)
