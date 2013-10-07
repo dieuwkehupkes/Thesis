@@ -5,7 +5,7 @@ Use to create a dictionary such that a picture of the distribution of the output
 import sys
 
 input_file = open(sys.argv[1], 'r')
-stepsize = 0.1
+stepsize = float(sys.argv[2])
 distr = {}
 
 cur_score= 0
