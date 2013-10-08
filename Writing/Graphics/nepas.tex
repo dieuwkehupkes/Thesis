@@ -1,0 +1,41 @@
+\begin{tikzpicture}
+\draw node (I) at (0,0) {I};
+\draw node (dont) at (0.7,0) {don't};
+\draw node (like) at (1.5,0) {like};
+\draw node (cars) at (2.2,-0.05) {cars};
+
+\draw node (Je) at (5.0,0) {Je};
+\draw node (n) at (5.45,0) {n'};
+\draw node (aime) at (6.0,-0.02) {aime};
+\draw node (pas) at (6.8,-0.07) {pas};
+\draw node (les) at (7.4,0) {les};
+\draw node (voitures) at (8.3,-0.01) {voitures};
+
+\coordinate (Je_) at (5.0,0.4);
+\coordinate (like_) at (1.5,0.3);
+\coordinate (I_) at (0,0.4);
+\coordinate (aime_) at (6.0,0.4);
+\coordinate (naimepas) at (6.0,1);
+\coordinate (dontlike) at (1.2,0.8);
+\coordinate (Idontlike) at (0.6,1.3);
+\coordinate (Jenaimepas) at (5.6,1.4);
+\coordinate (lesvoitures) at (7.8,0.2);
+\coordinate (all) at (1,1.8);
+\coordinate (tout) at (6.6,2.2);
+\coordinate (n_) at (5.45,-0.2);
+
+\foreach \coordinate in {dontlike, like_, I_, Je_, aime_, Idontlike, all, tout, Jenaimepas, naimepas}
+	\filldraw (\coordinate) circle (0.035);
+
+\foreach \from/\to in {naimepas/aime_, naimepas/n, naimepas/pas, dontlike/like_, dontlike/dont, Idontlike/I_, Idontlike/dontlike, all/Idontlike, all/cars, Jenaimepas/Je_, Jenaimepas/naimepas, tout/Jenaimepas, tout/lesvoitures}
+	\draw (\from) -- (\to);
+
+\foreach \from/\to in {cars/voitures, cars/les}
+	\draw[<->, bend left = -35, thick, blue] (\from) to (\to);
+
+\foreach \from/\to in {dont/n_, dont/pas, tout/all, Jenaimepas/Idontlike, aime_/like_, Je_/I_}
+	\draw[<->, bend left = -35, thick, green] (\from) to (\to);
+
+\draw[<->, bend left = -35, thick, red] (I) to (Je);
+
+\end{tikzpicture}

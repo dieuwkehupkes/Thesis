@@ -1,0 +1,31 @@
+\begin{tikzpicture}
+
+\node (a) at (0,0) {a};
+\node (toy) at (0.5,0) {toy};
+\node (car) at (1.1,0) {car};
+\node (een) at (2.4,0) {een};
+\node (auto) at (4.1,0) {speelgoedautootje};
+
+\filldraw (0,0.2) circle (0.035);
+\filldraw (2.45,0.2) circle (0.035);
+\filldraw (4.0,0.2) circle (0.035);
+\filldraw (0.9,0.5) circle (0.035);
+\filldraw (0.6,1) circle (0.035);
+\filldraw (3.2,1) circle (0.035);
+
+\coordinate (toycar) at (0.9,0.5);
+\coordinate (a_) at (0,0.2);
+\coordinate (een_) at (2.45,0.2);
+\coordinate (auto_) at (4.0,0.2);
+\coordinate (all) at (0.6,1);
+\coordinate (allnl) at (3.2,1);
+
+\foreach \from/\to in {toycar/toy, toycar/car,all/toycar, all/a_, allnl/een_, allnl/auto_}
+	\draw (\from) -- (\to);	
+
+\foreach \from/\to in {auto/car,  auto/toy, a_/een_, toycar/auto_, all/allnl}
+	\draw[<->, bend left =35, thick,blue] (\from) to (\to);
+
+\draw[<->, bend left = 35, thick, green] (een) to (a);
+
+\end{tikzpicture}
