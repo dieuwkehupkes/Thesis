@@ -18,17 +18,21 @@ class ProcessFiles():
 	"""
 	def __init__(self, alignmentfile, sentencefile, treefile, targetfile = False):
 		"""
-		During initialization the files are loaded for reading.
+		During initialization the files are loaded for reading. Allows to leaf empty
+		one of more files if they are not needed for functions that will be used
 		"""
-		self.tree_file = open(treefile,'r')
-		self.sentence_file = open(sentencefile,'r')
-		self.alignment_file = open(alignmentfile,'r')
+		self.tree_file, self.alignment_file, self.target_file, self.sentence_file = False,False,False,False
+		if treefile:
+			self.tree_file = open(treefile,'r')
+		if sentencefile:	
+			self.sentence_file = open(sentencefile,'r')
+		if alignmentfile:
+			self.alignment_file = open(alignmentfile,'r')
 		if targetfile:
 			self.target_file = open(targetfile,'r')
-		else:
-			self.target_file = False
 		self.label_dict = {}
-		
+	
+	
 	def next(self):
 		"""
 		Return the next alignment, sentence and tree_list.
@@ -73,10 +77,12 @@ class ProcessFiles():
 		raise NotImplementedError
 
 	def _reset_pointer(self):
-		self.tree_file.seek(0)
-		self.sentence_file.seek(0)
-		self.alignment_file.seek(0)
-	
+		if self.tree_file:
+			self.tree_file.seek(0)
+		if self.sentence_file:
+			self.sentence_file.seek(0)
+		if self.alignment_file:
+			self.alignment_file.seek(0)
 
 	def consistent_labels(self, label_type, max_length = 40):
 		"""
@@ -165,6 +171,26 @@ class ProcessFiles():
 			#not yet implemented, maybe it can be printed
 			return value
 	
+	def create_grammar(self,tree_file):
+		"""
+		Create a grammar from inputted treefile. 
+		"""
+		grammar_dict = {}
+		t = open(tree_file,'r')
+		i = 1
+		for line in t:
+			try:
+				tree = nltk.Tree(line)
+			except ValueError:
+				print 'line %i could not be parsed' % i
+				continue
+			grammar_dict = self.update_grammar_dict_parse(tree, grammar_dict)
+			i +=1
+		#normalise grammar
+		grammar_norm = self.normalise2(grammar_dict)
+		return self.to_WeightedGrammar(grammar_norm)		
+			
+	
 	def evaluate_grammar(self,grammar, max_length, scoref):
 		"""
 		Parse the corpus with inputted grammar and evaluate
@@ -175,6 +201,7 @@ class ProcessFiles():
 		if scoref:
 			scoref = open(scoref,'w')
 		parser = ViterbiParser(grammar)
+		parser.trace(0)
 		sentence_nr,parsed_sentences = 1,0
 		total_score = 0
 		new = self.next()
@@ -186,7 +213,7 @@ class ProcessFiles():
 				a = Alignments(new[0],sentence)
 				try:
 					parse = parser.nbest_parse(sentence.split())[0]
-				except ValueError:
+				except:
 					scorestr =  "s %i\t\tcould not be parsed\n" %sentence_nr
 					print scorestr
 					self.print_function(scorestr,scoref)
@@ -207,7 +234,7 @@ class ProcessFiles():
 			scoref.close()
 
 
-	def em(self, start_grammar, max_iter, n=1, max_length = 40,):
+	def em(self, start_grammar, max_iter, n=1, max_length = 40):
 		"""
 		When passing a Weightedgrammar, iteratively
 		parse corpus and infer a new grammar object, until
@@ -220,7 +247,7 @@ class ProcessFiles():
 		"""
 		#Find new parser to be able to return grammar over multiple rules.
 		print 'run EM with %i iterations' %max_iter
-		i = 0
+		i = 1
 		new_grammar = start_grammar
 		while i <= max_iter:
 			print "iteration %i" % i
@@ -272,16 +299,21 @@ class ProcessFiles():
 			return grammar_dict
 		nr_of_parses = 1
 		for parse in parses:
+			grammar_dict = self.update_grammar_dict_parse(parse, grammar_dict)
 #			print 'parse %i' % nr_of_parses
-			for production in parse.productions():
-				lhs = production.lhs()
-				rhs = production.rhs()
-				if lhs in grammar_dict:
-					grammar_dict[lhs]['COUNTS'] += 1
-					grammar_dict[lhs][rhs] = grammar_dict[lhs].get(rhs,0) +1
-				else:
-					grammar_dict[lhs] = {'COUNTS':1, rhs:1}
 			nr_of_parses += 1
+		return grammar_dict
+	
+	
+	def update_grammar_dict_parse(self, parse, grammar_dict):
+		for production in parse.productions():
+			lhs = production.lhs()
+			rhs = production.rhs()
+			if lhs in grammar_dict:
+				grammar_dict[lhs]['COUNTS'] += 1
+				grammar_dict[lhs][rhs] = grammar_dict[lhs].get(rhs,0) +1
+			else:
+				grammar_dict[lhs] = {'COUNTS':1, rhs:1}
 		return grammar_dict
 		
 	def normalise(self,rule_dict):
@@ -403,8 +435,8 @@ class ProcessDependencies(ProcessFiles):
 			elif 'cannot' in sentence:
 				print_string_t = "No result, dependency parse and sentence out of sync due to tokenization 'cannot'"
 			else:
-				l = dependencies.labels(label_args[0], label_args[1], label_args[2])
-				labels = dependencies.annotate_span(l)
+				labels = dependencies.labels(label_args[0], label_args[1], label_args[2])
+#				labels = dependencies.annotate_span(l)
 				scoring = Scoring(alignment, sentence, labels)
 				#Set arguments for probability function
 				if probability_function == Rule.probability_spanrels:
@@ -533,11 +565,6 @@ class ProcessDependencies(ProcessFiles):
 		else:
 			return False
 
-	def _reset_pointer(self):
-		self.tree_file.seek(0)
-		self.sentence_file.seek(0)
-		self.alignment_file.seek(0)
-	
 	def consistent_labels(self, label_type, max_length = 40):
 		"""
 		Determines the consistency of a set of alignments with a type of labels

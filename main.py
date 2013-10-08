@@ -14,7 +14,6 @@ class Main():
 		files.score_all_sentences(rule_generator, prob_function, prob_function_args, label_args, max_length, tree_file, score_file)
 		files.close_all()
 
-
 	def em(self,files, max_length, grammar_file, iterations, n):
 		"""
 		Generate a grammar using the Expectation Maximazation algorithm.
@@ -25,6 +24,7 @@ class Main():
 		print 'normalise rules'
 		normalised_rules = files.normalise2(rules)
 		print 'transform to nltk grammar object'
+		self.print_grammar_to_file(normalised_rules, 'initial_rules')
 		grammar_init = files.to_WeightedGrammar(normalised_rules)
 		pickle.dump(grammar_init,open('initial_grammar',"wb"))
 		new_grammar = files.em(grammar_init, iterations,n)
@@ -40,8 +40,25 @@ class Main():
 		grammar = pickle.load(open(grammar_file,"rb"))
 		files.evaluate_grammar(grammar, max_length, score_file)
 
+	def create_grammar(self, tree_file, grammar_to):
+		"""
+		Create a normalised grammar from a file with trees and
+		store the grammar in a file.
+		"""
+		files = ProcessFiles(False,False,False)
+		grammar = files.create_grammar(tree_file)
+		pickle.dump(grammar,open(grammar_to,"wb"))
 
-
+	def print_grammar_to_file(self,grammar_dict, grammar_to):
+		f = open(grammar_to,'w')
+		for lhs in grammar_dict:
+			for rhs in grammar_dict[lhs]:
+				if lhs != 'COUNTS':
+					rhs_string = ' '.join([str(n) for n in rhs])
+					string = '%s --> %s \t %i' % (lhs, rhs_string, grammar_dict[lhs][rhs])
+					f.write(string)
+				 
+				 
 
 if __name__ == "__main__":
 		#Parse arguments
@@ -55,6 +72,7 @@ if __name__ == "__main__":
 	parser.add_argument("--score", action= "store_true",help="Assign the corpus a consistency score")
 	parser.add_argument("--evaluate",action="store_true",help="Evaluate a grammar, grammar input required")
 	parser.add_argument("--em", action="store_true",help="create a grammar of the corpus using EM")
+	parser.add_argument("--create", action="store_true",help="create a normalised grammar from input treefile")
 	
 	parser.add_argument("--target", help="File with target sentences")
 	
@@ -78,7 +96,7 @@ if __name__ == "__main__":
 	
 	args = parser.parse_args()
 
-	if not (args.score or args.em or args.evaluate):
+	if not (args.score or args.em or args.evaluate or args.create):
 		parser.error("No running mode is specified, add --em, --evaluate or --score")
 
 	if not (args.dependencies or args.constituencies):
@@ -94,10 +112,19 @@ if __name__ == "__main__":
 		main = Main()
 		if args.dependencies:
 			files = ProcessDependencies(args.alignments,args.source,args.trees)
+			print args.alignments
 			main.score(files, rule_generator, args.prob_function, args.prob_args, args.label_args, args.max_length, args.scores_to, args.trees_to)
 		else:
 			raise NotImplementedError
-	
+
+	elif args.create:
+		if not args.trees:
+			parser.error("Please provide a tree file to create grammar")
+		if not args.grammar_to:
+			parser.error("Please provide a file name to write the grammar to")
+		main = Main()
+		main.create_grammar(args.trees, args.grammar_to)
+
 	
 	elif args.em and args.evaluate:
 		main = Main()
