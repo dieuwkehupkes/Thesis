@@ -20,12 +20,16 @@ class Main():
 		Generate a grammar using the Expectation Maximazation algorithm.
 		Return a grammar
 		"""
+		print 'create initial all-rule grammar.'
 		rules = files.all_rules(max_length)
+		print 'normalise rules'
 		normalised_rules = files.normalise2(rules)
+		print 'transform to nltk grammar object and run EM with %i iterations' %iterations
 		grammar_init = files.to_WeightedGrammar(normalised_rules)
 		new_grammar = files.em(grammar_init, iterations,n)
 		#store grammar in file
 		pickle.dump(new_grammar,open(grammar_file,"wb"))
+		print 'Grammar written to: %s' %grammar_file
 			
 	def evaluate_grammar(self, files, grammar_file, score_file, max_length):
 		"""
@@ -104,6 +108,9 @@ if __name__ == "__main__":
 		main.evaluate_grammar(files, args.grammar_to, args.scores_to, args.max_length)
 	
 	elif args.em:
+		print "Run EM with %i iterations to produce an output grammar\nSentences: %s\nAlignments: %s\nParses: %s\n\nMonolingual trees: Dependency Parses" % (args.EM_iterations, args.source, args.alignments, args.trees)
+		if args.grammar_to:
+			print "Grammar will be written to: %s\n" % args.grammar_to
 		main = Main()
 		if args.dependencies:
 			files = ProcessDependencies(args.alignments, args.source, args.trees)
