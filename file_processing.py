@@ -218,7 +218,8 @@ class ProcessFiles():
 		:param max_length		Maximum sentence length considered
 		:param n				Parse trees to be considered to construct new grammar
 		"""
-		#Figure out why not more parses are returned!!
+		#Find new parser to be able to return grammar over multiple rules.
+		print 'run EM with %i iterations' %iterations
 		i = 0
 		new_grammar = start_grammar
 		while i <= max_iter:

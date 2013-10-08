@@ -24,8 +24,10 @@ class Main():
 		rules = files.all_rules(max_length)
 		print 'normalise rules'
 		normalised_rules = files.normalise2(rules)
-		print 'transform to nltk grammar object and run EM with %i iterations' %iterations
+		print 'transform to nltk grammar object'
 		grammar_init = files.to_WeightedGrammar(normalised_rules)
+		pickle.dum(grammar_init,open('initial_grammar',"wb")
+		print 'run EM with %i iterations' %iterations
 		new_grammar = files.em(grammar_init, iterations,n)
 		#store grammar in file
 		pickle.dump(new_grammar,open(grammar_file,"wb"))
