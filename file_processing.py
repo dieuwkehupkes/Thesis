@@ -222,7 +222,7 @@ class ProcessFiles():
 		i = 0
 		new_grammar = start_grammar
 		while i <= max_iter:
-			print "iteration %i' i
+			print "iteration %i" % i
 			new_grammar_dict = self.em_iteration(new_grammar, n, max_length)
 			new_grammar = self.to_WeightedGrammar(new_grammar_dict)
 			i +=1
