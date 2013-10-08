@@ -219,7 +219,7 @@ class ProcessFiles():
 		:param n				Parse trees to be considered to construct new grammar
 		"""
 		#Find new parser to be able to return grammar over multiple rules.
-		print 'run EM with %i iterations' %iterations
+		print 'run EM with %i iterations' %max_iter
 		i = 0
 		new_grammar = start_grammar
 		while i <= max_iter:
