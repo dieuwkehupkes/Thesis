@@ -1,48 +1,38 @@
-\documentclass{report}
-
-\input{commands.tex}
-
-
-\begin{document}
-%\tableofcontents
-
 \chapter{Empirical Research on Transfer Models}
+\label{ch:empirical}
 
-In the previous chapter we saw that rule-based MT models that incorporate information about the structure of to model translation constitute an important branch of MT. Most of these models make use of SCFG's, which means they search  for bijective mappings between the non-terminal nodes of the syntactic structures of both languages, and hence treat translation in a compositional fashion. Such models are not (yet) very successful, as finding an appropriate SCFGs that simultaneously models models two different languages is not easy. The search space of such grammars is enormous, and there are formally often no good reasons to prefer one rule over another. Using monolingual syntax to improve such models seems an obvious next step, but it has proved to be hard to adequately incorporate such information. Considering compositional translation, there are many gaps in our knowledge. We do not know whether the translation of natural language can be treated compositionally at all, how we should find the compositional system according to which it is translated, and to what extent monolingual syntax is helpful in this situation. To improve current structure based translation models, an investigation of such questions is essential. In this chapter, we will lay the basis for such an investigation. 
+In the previous chapter we saw that rule-based MT models that incorporate information about the structure of to model translation constitute an important branch of MT. Most of these models make use of SCFG's, which means they search  for bijective mappings between the non-terminal nodes of the syntactic structures of both languages, and hence treat translation in a compositional fashion. Such models are not (yet) very successful, as finding an appropriate SCFGs that simultaneously models models two different languages is not easy. The search space of such grammars is enormous, and there are formally often no good reasons to prefer one rule over another. Using monolingual syntax to improve such models seems an obvious next step, but it has proved to be hard to adequately incorporate such information. Considering the compositional translation strategy, there are many gaps in our knowledge. We do not know whether the translation of natural language can be treated compositionally at all, how we should find the compositional system according to which it is translated, and to what extent monolingual syntax is helpful in this situation (a graphical picture of this situation is depicted in Figure \ref{fig:comptrans2}). To improve current structure based translation models, an investigation of such questions is essential. In this chapter, we will lay the basis for such an investigation. 
 
 \begin{figure}[!ht]
 %Picture of the match of two types of compositionality
 \begin{framed}
 \centering
-\input{double_compositionality.tex}
+\input{Graphics/double_compositionality.tex}
 \end{framed}
-\caption{Compositional translation}\label{fig:comptrans2}
+\caption{A graphical representation of the questions that can be asked regarding compositinal translation.}\label{fig:comptrans2}
 \end{figure}
 
-The chapter is structured as follows. In Section \ref{sec:comp_trans}, we will link SCFGs to compositional translation, and discuss compositional translation and its difficulties on a rather abstract level, quite distant from actual language and data. In Section \ref{sec:invest}, we will discuss on an intuitive level how compositionality can be represented, and therefore identified, by providing some examples of compositional translation structures. In Section \ref{sec:trans_eq} and \ref{sec:comp_trans}, we will discuss the main ingredients to find compositional translation trees, and how they can be used, hereby laying the groundwork for an empirical investigation of translation data. In Section
-Maak af!
+The chapter is structured as follows. In Section \ref{sec:comp_trans}, we will link SCFGs to compositional translation, and discuss compositional translation and its difficulties on a rather abstract level, quite distant from actual language and data. In Section \ref{sec:invest}, we will discuss on an intuitive level how compositionality can be represented, and therefore identified, by providing some examples of compositional translation structures. In Section \ref{sec:trans_eq} and \ref{sec:comp_structures}, we will discuss the main ingredients to find compositional translation trees, and how they can be used, hereby laying the groundwork for an empirical investigation of translation data. In Section \ref{sec:empirical_studies}, we will discuss what questions can be addressed by empirical research, and discuss studies that were conducted by others. In Section \ref{sec:dep_parses}, we will discuss very briefly what gap is still to fill in this branch of research, and provide the last bit of background information needed for the research conducted in this thesis, discussing dependency parses. The chapter ends with a short summary in Section \ref{sec:summary}
 
 \section{Compositionality of Translation}
 \label{sec:comp_trans}
 
-SCFGs assume that the translation of a sentence can be recursively constructed from the meaning of its parts. This property of translation is described in a well known principle, called 'The Principle of Compositionality of Translation':
+SCFGs assume that the translation of a sentence can be recursively constructed by combining the meanings of smaller units. This property of translation is described in a well known principle, called `The Principle of Compositionality of Translation':
 
 \begin{quote}
 \textbf{The Principle of Compositionality of Translation}\\
 Two expressions are each others translation if they are built up from parts which are each other's translation, by means of translation-equivalent rules. \citep[e.g.,][]{janssen1998algebraic} \end{quote}
 
-Compositional translation is a very common method in translation between artificial languages \citep{janssen1996compositionality,janssen1998algebraic}. The translation from one logical language into another, or the translation a compiler performs when interpreting a programming language are all defined in a compositional fashion. Natural languages are very different from artificial languages, and it transferring the methods from the artificial domain to the natural language domain is not straight forward. In this section, we will discuss the various complications arising when one tries to construct a compositional translation system for language. These complications can be divided into two different groups. In the first group, there are the monolingual problems, that arise when trying to model a language with a compositional grammar, these issues are discussed in \ref{subsec:monolingual_problems}. The second group consists of issues that occur when trying to find a mapping between two monolingual grammars, and that are thus of a more bilingual nature. We will discuss these issues in \ref{subsec:bilingual_problems}.
+Compositional translation is a very common method in translation between artificial languages \citep{janssen1996compositionality,janssen1998algebraic}. The translation from one logical language into another, or the translation a compiler performs when interpreting a programming language are all defined in a compositional fashion. In some aspects, natural languages are very different from artificial languages, and transferring the methods from the artificial domain to the natural language domain is not straight forward. In this section, we will discuss the various complications arising when one tries to construct a compositional translation system for language. These complications can be divided into two different groups. In the first group, there are the monolingual problems, that arise when trying to model a language with a compositional grammar, these issues are discussed in \ref{subsec:monolingual_problems}. The second group consists of issues that occur when trying to find a mapping between two monolingual grammars, and that are thus of a more bilingual nature. We will discuss these issues in \ref{subsec:bilingual_problems}.
 
 \subsection{Monolingual Compositionality}
 \label{subsec:monolingual_problems}
 
-The existence of a \textit{linked} compositional grammar, prescribes the existence of monolingual compositional grammars. In other words, compositional translation requires two grammars adequately describing the source and target language. Many people would render language intuitively compositional, at least to some extent. We do not store the meaning of all possible sentences in our head, and yet we have no trouble understanding them (even sentences we have never heard before), presumably because we have some understanding of the system: we know the words, and we know methods for combining them. Besides, we can all perceive a certain systematicity and recursion in the way sentences are constructed (often referred to with the term `syntax').
+The existence of a \textit{linked} compositional grammar, prescribes the existence of monolingual compositional grammars. In other words, compositional translation requires two grammars adequately describing the source and target language. Many people would render language intuitively compositional, at least to some extent. We can all perceive a systematicity in the way sentences are constructed (often referred to with the term `syntax'), and as we do not store the meaning of all possible sentences in our head, it seems reasonable to presume that we rely on this systematicity to derive the meaning of sentences we hear, using the meaning of the words and the methods we know for combining them (invoking our internal grammar). As to the cognitive existence of such grammars, there is no consensus among linguists. On the one hand, there is the Chomskian group of researchers, that advocate the existence of an underlying compositional grammar universal to all human beings \citep[as first claimed in][]{chomsky1956three}, while others believe no such system exists, and language users rely on some sense of familiarity with what they have heard before in a much less complex fashion \citep[quite recently, e.g.,][]{frank2012hierarchical}. In this thesis we will not scrutinize cognitive debate, but focus on whether it is possible to create a compositional grammar at all, and the problems that arise when doing so.
 
-As to the cognitive existence of such grammars, there is no consensus among linguists. On the one hand, there is the Chomskian group of researchers, that advocate the existence of an underlying compositional grammar universal to all human beings \citep[as first claimed in][]{chomsky1956three}, while others believe no such system exists, and language users rely on some sense of familiarity with what they have heard before in a much less complex fashion \citep[quite recently, e.g.,][]{frank2012hierarchical}.
+In practice, it has shown to be very hard to create a grammar that covers \textit{all} grammatical utterances of a natural language, without generating too many ungrammatical ones.  Even for a finite (but reasonably sized) corpus, it is surprisingly difficult to construct a compositional grammar that adequately describes the corpus \citep{scha1990taaltheorie}. The bigger the grammar grows, the more phenomena need to be taken into account, as well as how they interact with each other. As an example, idiomatic expressions tend to be problematic, as they behave differently than other expressions. Their meaning cannot be derived from its parts, which suggests they should be included as basic units in the system. However, idiomatic expressions can have an internal structure, on which syntactic rules can be applied. A verb in an idomatic expression, for instance, can often be conjugated. Solutions for many specific problems have been provided \citep[in e.g.,][]{janssen1996compositionality}, but it remains hard to fully understand the effect of including more rules in the grammar, and to quantify how much of natural language it can successfully model.
 
-Apart from such cognitive considerations, it has shown to be very hard to create a grammar that covers \textit{all} grammatical utterances of a natural language, without generating too many ungrammatical ones.  Even for a finite (but reasonably sized) corpus, it is surprisingly difficult to construct a compositional grammar adequately describing the corpus \citep{scha1990taaltheorie}. The bigger the grammar grows, the more phenomena need to be taken into account, as well as how they interact with each other. As an example, idiomatic expressions tend to be problematic, as they behave differently than other expressions. Their meaning cannot be derived from its parts, which suggests they should be included as basic units in the system. However, idiomatic expressions can have an internal structure, on which syntactic rules can be applied. A verb in an idomatic expression, for instance, can often be conjugated. Solutions for many specific problems have been provided \citep[In e.g.,][]{janssen1996compositionality}, but it remains hard to fully understand the effect of including more rules in the grammar, and to quantify how much of natural language it can successfully model.
-
-A second major issue concerning the monolingual part of compositional translation, is ambiguity. In programming languages and logical languages, utterances typically have only one analysis, and their meaning is thus unambiguous.\footnote{Precedence relations or `left-to-right rules' usually determine the order in which the syntactic rules need to be applied in case of uncertainty. In programming languages, expressions that are are multi-interpretable are often considered ungrammatical.} Under all current existing grammar formalisms assigning structures to natural language, all sentences (of some length) have many different structural analyses, of which usually only one or two are perceived by humans \citep{scha1990taaltheorie}. Even sentences that are considered unambiguous by humans thus need to be disambiguated, for which an appropriate model is needed to make the grammar applicable.\footnote{Note that this problem differs from one of the standard counter arguments of compositionality, that concerns sentences like `two men carry two chairs', that \textit{are} considered ambiguous by humans, but cannot be assigned two distinct syntactic analyses capturing this difference \citep{pelletier1994principle}. Not particularly relevant, but certainly nice to notice, is that this type of ambiguity is not necessarily problematic for translation, as it might be preserved. For instance, the Dutch translation `twee mannen dragen twee stoelen' of aforementioned sentence has the same two meanings as the English one.} To solve this problem, the rules of compositional grammars are often given weights, such that probabilities can be assigned to different analyses of the sentence. Humans are assumed to do a comparable thing when interpreting a sentence, which explains why they do not perceive more analyses for sentences: they are disregarded due to their relative implausibility with respect to another analysis.
+A second major issue concerning the monolingual part of compositional translation, is ambiguity. In programming languages and logical languages, utterances typically have only one analysis, and their meaning is thus unambiguous.\footnote{Precedence relations or `left-to-right'-rules usually determine the order in which the syntactic rules need to be applied in case of uncertainty. In programming languages, expressions that are are multi-interpretable are often considered ungrammatical.} Under all current existing grammar formalisms assigning structures to natural language, all sentences (of some length) have many different structural analyses, of which usually only one or two are perceived by humans \citep{scha1990taaltheorie}. Even sentences that are considered unambiguous by humans thus need to be disambiguated, for which an appropriate model is needed to make the grammar applicable.\footnote{Note that this problem differs from one of the standard counter arguments of compositionality, that concerns sentences like `two men carry two chairs', that \textit{are} considered ambiguous by humans, but cannot be assigned two distinct syntactic analyses capturing this difference \citep{pelletier1994principle}. Not particularly relevant, but certainly nice to notice, is that this type of ambiguity is not necessarily problematic for translation, as it might be preserved. For instance, the Dutch translation `twee mannen dragen twee stoelen' of aforementioned sentence has the same two meanings as the English one.}  In practice, the rules of compositional grammars are often given weights, such that probabilities can be assigned to different analyses of the sentence. Humans are assumed to do a comparable thing when interpreting a sentence, which provides an explanation for why they do not perceive more analyses for sentences: they are disregarded due to their relative implausibility with respect to another analysis.
 
 \subsection{Bilingual Compositionality, issues}
 \label{subsec:bilingual_problems}
@@ -51,19 +41,23 @@ Besides the issues going on on a monolingual level, there are several issues tha
 
 First of all, an assumption prevalent in the principle, is that in translation not only meaning, but also form should be preserved (as much as possible). In other words, it is assumed that translation is literal. For artificial languages this property is straight-forward and useful, mostly because there are no a priori reasons to prefer a non-literal translation over a literal translation. In natural language, this assumption is rather questionable. Although there are many occasions in natural language in which the assumption seems fairly applicable - it captures, for instance, the fact that `all ravens are black' is an adequate translation of `alle raven zijn zwart', while the logically equivalent `if something is not black, it is not a raven' is not \citep{landsbergen1989power} - but in practice a translator can have many reasons to prefer a free translation, even if a more literal alternative is also available. 
 
-As MT models are not (yet) focussing on literary translations, but merely aim for (preferably grammatical) translations with the correct meaning, it seems reasonable to ignore the fact that the most literal translation is not always the translation stylistically preferred by a human translator. However, even with this additional assumption, there are many occasions in which a literal translation is simply not available. These situations fall into the category of  syntactic and lexical translation divergences. Languages do not always express the same set of meanings, or express meanings in the same way. Even in languages of cultures that are quite similar, one can find a number of words that do not have an adequate translation in the other language (e.g., in translation between English and Dutch the words `gezellig' and `evidence' do not seem to have a clear equivalent in the other language), and even if the same meaning is expressed there are many syntactic phenomena in natural language that seem to be problematic for a compositional translation. For example: different ways of role expression (e.g., `I like obj' and `\textcyr{mne nravitsa} subj') or syntactic mismatches (e.g., `woonachtig zijn' and its translation `reside' \citep{landsbergen1989power}). The grammar rules and basic units can thus not simply be taken from a monolingual grammar, as there is no guarantee that the rules and basic units will have a translation equivalent rule or basic unit in the other grammar. The grammars must be constructed for translation, such that they are `attuned' \citep{rosetta1994compositional}. \cite{rosetta1994compositional} showed that previous mentioned examples do not necessarily stand in the way of compositional translation, by manually constructing a grammar for translation from English to Dutch, covering many non-trivial translation phenomena.\footnote{Although it must be said that their grammar is more complicated than the case we are considering now, as it consists of separate semantic and syntactic modules.}
+As MT models are not (yet) focussing on literary translations, but merely aim for (preferably grammatical) translations with the correct meaning, it seems reasonable to ignore the fact that the most literal translation is not always the translation stylistically preferred by a human translator. However, even with this additional assumption, there are many occasions in which a literal translation is simply not available. These situations fall into the category of  syntactic and lexical translation divergences. Languages do not always express the same set of meanings, or express meanings in the same way. Even in languages of cultures that are quite similar, one can find a number of words that do not have an adequate translation in the other language (e.g., in translation between English and Dutch the words `gezellig' and `evidence' do not seem to have a clear equivalent in the other language), and even if the same meaning is expressed there are many syntactic phenomena in natural language that seem to be problematic for a compositional translation. For example: different ways of role expression (e.g., `I like obj' and `\textcyr{mne nravitsa} subj') or syntactic mismatches \citep[e.g., `woonachtig zijn' and its translation `reside',][]{landsbergen1989power}. The grammar rules and basic units can thus not simply be taken from a monolingual grammar, as there is no guarantee that the rules and basic units will have a translation equivalent rule or basic unit in the other grammar. The grammars must be constructed for translation, such that they are `attuned' \citep{rosetta1994compositional}. \cite{rosetta1994compositional} showed that previous mentioned examples do not necessarily stand in the way of compositional translation, by manually constructing a grammar for translation from English to Dutch, covering many non-trivial translation phenomena,\footnote{Although it must be said that their grammar is more complicated than the case we are considering now, as it consists of separate semantic and syntactic modules.} but it is once again unclear if this can be done to cover translation for larger parts of language.
  
  
 \section{Investigating Compositionality of Translation}
 \label{sec:invest}
 
-The determine the overall level of compositionality of language or translation, it does not suffice to present solutions for specific phenomena known to be problematic for compositionality, not does developing another (unsuccessfully yet slightly better than another) model carrying out compositional translation. In this thesis, we will do neither of these things. Rather, we will look at real evidence in the form of translation data, and try to establish its level of compositionality through an empirical analysis. with the huge parallel corpora with translation data available, it seems that empirical analysis to test how compositional translation is in practice is a more powerful method than continue to evaluate the suitability of compositional translation as a strategy by developing more models and testing their performance. 
+The determine the overall level of compositionality of language or translation, it does not suffice to present solutions for specific phenomena known to be problematic for compositionality, nor does developing another (unsuccessfully yet slightly better than another) model carrying out compositional translation. In this thesis, we will do neither of these things, but resort to a third option: empirical analysis. We will look at real evidence in the form of translation data, and try to establish its level of compositionality through an empirical analysis. With the huge parallel corpora with translation data available, it seems that empirical analysis to test how compositional translation is in practice is a more powerful method than continue to evaluate the suitability of compositional translation as a strategy by developing more models and testing their performance. 
 
-To conduct an empirical analysis of the compositionality of a huge translation corpus, means of identifying compositionality are necessary. That is, we need to be able to identify possible translation parts, as well as device descriptions of the compositional translation of a sentence, efficient and on a large scale. In this section, we will give an intuitive description of such trees, and what they say, by providing some examples. In the remainder of this chapter, we will present tools to replace intuition efficiently and on a large scale, and discuss current empirical research.
+To conduct an empirical analysis of the compositionality of a huge translation corpus, means of identifying compositionality are necessary. That is, we need to be able to identify possible translation parts, as well as device descriptions of the compositional translation of a sentence, efficient and on a large scale. In this section, we will give an intuitive description of such trees, and what information they contain, by providing some examples. In the remainder of this chapter, we will present tools to replace intuition efficiently and on a large scale, and discuss current empirical research.
 
-\subsection{A simple Compositional Translation Tree}
+\subsection{Skeletons of Compositional Translation trees}
 
-A compositional translation of a sentence can be described in a tree structure, that specify how the translation was built up from its parts. Consider the simple example sentence `I give my little brother a ball' and its translation `Ik geef mijn kleine broertje een bal'. A possible compositional translation of this sentence is:\begin{enumerate}
+The structure of a compositional translation can be described in a tree, which we will elucidate in this subsection through tree examples.
+
+\subsubsection{A simple Compositional Translation Tree}
+
+Consider the simple example sentence `I give my little brother a ball' and its translation `Ik geef mijn kleine broertje een bal'. A possible compositional translation of this sentence is:\begin{enumerate}
 \item Combine the translation of `a' and `ball' to get the translation of `a ball': `een bal'.
 \item Combine the translations of `little' and `brother' to get the translation of `little brother': kleine broertje.
 \item Combine the translations of `my' and `little brother' to get the translation of `my little brother': `mijn kleine broertje'.
@@ -73,42 +67,51 @@ A compositional translation of a sentence can be described in a tree structure, 
 This compositional translation can be described in a tree structure, as depicted in Figure \ref{fig:transtrees}, where translation equivalence is made explicit through linking the `parts' that were used in translation.
 
 \begin{figure}[!ht]
-\input{linked_structures.tex}
-\caption{linked structures}\label{fig:transtrees}
+\input{Graphics/linked_structures.tex}
+\caption{A tree description of the compositional translation of `I give my little brother a ball' into `Ik geef mijn kleine broertje een bal'}\label{fig:transtrees}
 \end{figure}
 
-\subsection{A compositional translation Tree with lexical Divergence}
+\subsubsection{Lexical Divergence}
 
-The complexity of this example if far below average. The target sentence is a word-for-word translation of the source sentence, and the source sentence could thus have been translated according to every possible hierarchical structure. In cases of translational divergence, more complex structures are required. For instance, if I had given my brother a toy car, instead of a ball, this could not have been captured in the same tree, as `toy car' is phrasally translated into `speelgoedautootje'. Figure \ref{fig:phrasal} shows how trees can account for phrasal translations.
+The complexity of the previous example was far below average. The target sentence is a word-for-word translation of the source sentence, and the source sentence could thus have been translated according to every possible tree structure (as every contiguous subsequence has a translation equivalent contiguous subsequence in the other sentence). In cases of translational divergence, more complex structures are required. For instance, if I had given my brother a toy car, instead of a ball, this could not have been captured in the same tree, as `toy car' is phrasally translated into `speelgoedautootje'. Figure \ref{fig:phrasal} shows how trees can account for phrasal translations.
 
 \begin{figure}[!ht]
 \centering
-\input{phrasal_linked_structures.tex}
-\caption{Phrasal translation equivalence}\label{fig:phrasal}
+\input{Graphics/phrasal_linked_structures.tex}
+\caption{A compositional translation tree for a phrasally translated subsequence}\label{fig:phrasal}
 \end{figure}
 
-\subsection{A compositional translation Tree with syntactic Divergence}
+\subsubsection{Syntactic Divergence}
 
-Also syntactic divergence can be captured in translation trees, as is shown in Figure \ref{fig:russian}. The tree describes the translation of `the girl has a car' into `\textcyr{u} \textcyr{devuxka} \textcyr{est\char126}  \textcyr{avtomobil}'.
+Also syntactic divergence can be captured in translation trees, as is shown in Figure \ref{fig:russian}. The tree describes the translation of `the girl has a car' into `\textcyr{u} \textcyr{devuxki} \textcyr{est\char126}  \textcyr{avtomobil\char126}'.
 
 \begin{figure}[!ht]
 \centering
-\input{syntactic_linked_structures.tex}
+\input{Graphics/syntactic_linked_structures.tex}
 \caption{Translation of possession, Russian-English}\label{fig:russian}
 \end{figure}
 
 \subsection{Labelled Trees}
 
-All the shown examples of compositional translation trees were skeletons of descriptions, rather than full descriptions, as we did not label the syntactic node, and a translator using the tree would thus not know which rule to use to obtain a translation, nor whether its children needed to be reordered. Throughout this thesis we will often only consider skeletons of translation trees, is knowledge of the rules is unknown or unimportant.
+All the shown examples of compositional translation trees were skeletons of descriptions, rather than full descriptions, as it was not specified \textit{which} rules were used to compose the sentences and the translation. The skeleton of a compositional translation tree merely specifies which parts were combined at which stage of translation, but does not give a complete description of the translation. The description can be completed by naming the rules that were used, for instance by labelling the nodes of the tree with their name, and specifying if the parts that were combined stay in the same order or are permuted. Throughout this thesis we will often only consider skeletons of translation trees if knowledge of the rules is unknown or unimportant for what we are investigating.
 
 
 \section{Establishing Translational Equivalence}
 \label{sec:trans_eq}
 
-The first step in determining the level of compositionality of a parallel corpus, is to establish for every sentence which subsequences could have been a unit in a compositional translation. That is, we need to know which subsequences have a translation equivalent in the other sentence. In this thesis, as is common practice in MT, the notion of translation equivalence is based on word-alignments: mappings from source to target words that describe which target words were involved in the translation of which source words. Let us start by giving a formal definition of a word-alignment:
+To construct compositional translation trees for a parallel corpus, knowledge of translation equivalence is required. The first step in determining the level of compositionality of a parallel corpus, is thus to establish for every sentence which subsequences have a translation equivalent in the other sentence, and thus could have been a part in a compositional translation. In this thesis, as is common practice in MT, the notion of translation equivalence is based on word-alignments: mappings from source to target words that describe which target words were involved in the translation of which source words. We will discuss word-alignments, and how they can be derived, in this section. Let us start by giving a definition:
+
+\begin{figure}
+\begin{framed}
+\centering
+\includegraphics[scale=0.6]{Graphics/alignment.png}
+\caption{A visualisation of a word alignment for the sentence pair (`Auf regen folgt sonneschein', `Na regen komt zonneschijn'). An arrow from source word $w_s$ to target word $w_t$ implies that $w_t$ was involved in the translation of $w_s$. This picture was created using the Alignment Visualiser developed by \cite{maillette2010visualizing}}
+\label{fig:alignment}
+\end{framed}
+\end{figure}
 
 \begin{definition}[Word-alignment]\label{def:alignment}
-Given a source sentence $s = s_0 \cdots s_n$ and its translation $t = t_0 cldots t_m$, an alignment is a set $a \subseteq \{0,1,\ldots,n\} \times \{0,1,\ldots,m\}$ such that $(x,y)\in a$ iff $s_x$ is translated into $t_y$..\footnote{In some definitions unaligned words are explicitly included in the alignment by adding an extra $NULL$ token to both source and target sets and including $(x,NULL)$ (or ($(NULL,y)$) in $a$ whenever word $x$ (or $y$) is unaligned. In our definition, unaligned words are not explicitly included: when a word $x$ is unaligned, this will be indicated by the absence of a word $y$ such that, respectively, $(x,y)$ or $(y,x)$, depending on whether $x$ was a source or target word.}
+Given a source sentence $s = s_0 \cdots s_n$ and its translation $t = t_0 \cdots t_m$, an alignment is a set $a \subseteq \{0,1,\ldots,n\} \times \{0,1,\ldots,m\}$ such that $(x,y)\in a$ iff $s_x$ is translated into $t_y$.\footnote{In some definitions unaligned words are explicitly included in the alignment by adding an extra $NULL$ token to both source and target sets and including $(x,NULL)$ (or ($(NULL,y)$) in $a$ whenever word $x$ (or $y$) is unaligned. In our definition, unaligned words are not explicitly included: when a word $x$ is unaligned, this will be indicated by the absence of a word $y$ such that, respectively, $(x,y)$ or $(y,x)$, depending on whether $x$ was a source or target word.}
 \end{definition}
 
 Word alignments give rise to a straight-forward notion of translation equivalence: two sequences are each are translation equivalent if the words in the one sequence are translated only into words in the other sequence, and vice versa (both sequences are then called `translation admissible'). 
@@ -116,7 +119,7 @@ Word alignments give rise to a straight-forward notion of translation equivalenc
 \subsection{Types of Word-alignments}
 \label{subsec:types_alignments}
 
-There are several types of word-alignments, that describe different types of phenomena in translation. A summary of the restrictions corresponding to different kinds of alignments can be found in table \ref{table:alignments}. The alignment as depicted in Figure \ref{fig:alignment} is a really simple one. The alignment is one-to-one, - every word in both sentences is aligned to exactly one other word, and monotone, - the order of source and target words is identical. A monotone one-to-one alignment indicates that no lexical nor syntactical divergence complicated the translation.
+There are several types of word-alignments, that describe different types of phenomena in translation. A summary of the restrictions corresponding to different kinds of alignments can be found in table \ref{table:alignments}. The example alignment depicted in Figure \ref{fig:alignment} is a really simple one. The alignment is one-to-one, - every word in both sentences is aligned to exactly one other word, and monotone, - the order of source and target words is identical. A monotone one-to-one alignment indicates that no lexical nor syntactical divergence complicated the translation.
 
 \begin{table}
 \footnotesize{
@@ -140,16 +143,7 @@ monotone & $\forall w \forall x\forall y \forall z \big ( \left ( (x,y)\in a \la
 
 In case of idiomatic translations, a one-to-one alignment does not suffice, as multiple source words are translated into multiple target words all at once. When aligning the English version of the saying in Figure \ref{fig:alignment} - `Every cloud has a silver lining' - to the Dutch sentence, it is not clear what should be aligned to what, if every word can have only one counter part. Arguably, `has' should be aligned with `komt', as they are the only verbs in the sentence pair. However, when asking a bilingual Dutch and English speaker if `has' is a proper translation of `komt', the odds of obtaining an affirmative answer would be very slim. In this case, a more plausible alignment would align every Dutch word to every English word, indicating that the expression is translated as a whole. Such an alignment is called a phrasal alignment.
 
-\begin{figure}
-\begin{framed}
-\centering
-\includegraphics[scale=0.6]{alignment.png}
-\caption{A visualisation of a word alignment for the sentence pair (`Auf regen folgt sonneschein', `Na regen komt zonneschijn'). An arrow from source word $w_s$ to target word $w_t$ implies that $w_t$ was involved in the translation of $w_s$. This picture was created using the Alignment Visualiser developed by \cite{maillette2010visualizing}}
-\label{fig:alignment}
-\end{framed}
-\end{figure}
-
-A similar adaptation is necessary when syntactic divergence occurs, although in such cases it is often unclear what the best alignment is. Consider, for instance, the word `does' in the sentence pair (`John does not live here, John wohnt hier nicht'). As `does' has no clear translation in German, one might argue that it should be unaligned. However, the word seems to be connected with `live', so it could also be aligned with `wohnt'. A third option is to align `does' to `nicht', as it appeared with `not' when the sentence was negated.\citep[Example from][p.114]{koehn2008statistical}.
+A similar adaptation is necessary when syntactic divergence occurs, although in such cases it is often unclear what the best alignment is. Consider, for instance, the word `does' in the sentence pair (`John does not live here', `John wohnt hier nicht'). As `does' has no clear translation in German, one might argue that it should be unaligned. However, the word seems to be connected with `live', so it could also be aligned with `wohnt'. A third option is to align `does' to `nicht', as it appeared with `not' when the sentence was negated \citep[example from][p.114]{koehn2008statistical}.
 
 
 
@@ -160,8 +154,8 @@ There are a few manually aligned corpora, but given the labour intensiveness of 
 \subsubsection{Automatic Word-alignments}
 
 %FIND REFS ALIGNMENT IMPROVERS!! Maybe look in koehn
-The reader may recall, that word-alignments are established as a by-product of the word-based IBM models. Despite multiple efforts to improve on these techniques \citep[see][p.119-122 for some examples]{koehn2008statistical}, it is still common practice to use the alignments produced by the IBM tool GIZA++ \citep{koehn2007moses}, which we will also do in this thesis. In the following 
-paragraphs we will briefly explain how the IBM models are derived, and how many-to-many alignments can be constructed from them.
+The reader may recall that word-alignments are established as a by-product of the word-based IBM models. Despite multiple efforts to improve on these techniques \citep[see][p.119-122 for some examples]{koehn2008statistical}, it is still common practice to use the alignments produced by the IBM tool GIZA++ \citep{koehn2007moses}. In the following 
+paragraphs we will briefly explain how the IBM word-alignments are derived, and how many-to-many alignments can be constructed from them.
 
 \paragraph{Expectation Maximization}
 One step in the IBM models, is to learn a lexical translation model from a parallel corpus. If a word-alignment was directly visible from the data, this would be an easy task, as one could just count for each word how often it occurred in the text and how it was translated, and estimate a probability from these counts using relative frequency estimation. Conversely, given the lexical probability model, the most probable word-alignment could be estimated. Learning word-alignments and lexical probabilities from a parallel corpus can thus be seen as a problem of incomplete data, that can be addressed with the expectation maximization (EM) algorithm \citep{dempster1977maximum}, which works as follows:\begin{enumerate}
@@ -173,10 +167,10 @@ One step in the IBM models, is to learn a lexical translation model from a paral
 
 \noindent Note that the use of such an algorithm means that the larger the corpus, the better the resulting alignments. It is thus not possible to align just one sentence.
 
-In IBM model 1 and 2, the models that describe how the alignments depend on the lexical probabilities are sufficiently simple to exhaustively run the EM algorithm, and a (global) optimum is thus guaranteed to be found. To find the most probable alignments in the higher IBM models, stochastic hill climbing is used. Excellent examples of how the algorithm works on the IBM models can be found in \cite[p88-113]{koehn2008statistical}.
+In IBM model 1 and 2, the models that describe how the alignments depend on the lexical probabilities are sufficiently simple to exhaustively run the EM algorithm, and a (global) optimum is thus guaranteed to be found. To find the most probable alignments in the higher IBM models, stochastic hill climbing is used. Excellent examples of complete executions of the algorithm for the different IBM models on very small toy corpora can be found in \cite[p88-113]{koehn2008statistical}.
 
 \paragraph{Obtaining many-to-many alignments}
-The IBM models consider the sequence of target words as being generated by the source words one by one. Therefore, although source words can be aligned to more target words, every target word is aligned to at most one source word and the resulting alignments are thus many-to-one. However, many-to-many alignments are often desired, as they are very common in practice. Alignments used to train SMT models on are often created by running the IBM models in both directions, and combining the resulting alignments. The three most common methods of merging two alignments $A_1$ and $A_2$ are:\begin{enumerate}
+The IBM models consider the sequence of target words as being generated by the source words one by one. Therefore, although source words can be aligned to more target words, every target word is aligned to at most one source word and the resulting alignments are thus many-to-one. However, many-to-many alignments are often desired, as they match phenomena very common in practice. Alignments used to train SMT models on are often created by running the IBM models in both directions, and combining the resulting alignments. The three most common methods of merging two alignments $A_1$ and $A_2$ are:\begin{enumerate}
 \item Union: $A_1\cup A_2$, containing all links from both alignments. The recall of the union will be high (as it contains many links), but as it contains all faulty alignment links from both alignments too, the precision is often quite low.\footnote{Given a set of desired alignment points $A_{gold}$, recall and precision of an alignment $A$ are defined as follows:\\
 $$\text{Recall = }\frac{|A \cap A_{gold}|}{|A_{gold}|} \text{\hspace{10mm}Precision = }\frac{|A \cap A_{gold}|}{|A|}$$
 Given the nature of $A_{gold}$, precision and recall are not the common metrics used to evaluate word alignments.}
@@ -185,7 +179,7 @@ Given the nature of $A_{gold}$, precision and recall are not the common metrics 
 \end{enumerate}
 
 %DIT MOET JE NOG INVULLEN!!!
-Most current MT models making use of alignments use the grow-diag-final method to obtain their alignments. The resulting alignments have a relatively high precision and recall \citep{och2000improved}, although they still contain several faulty alignment links. As mentioned before, several different alignment models that claim to have better alignment models have been reported (anders). Such methods are often based on .... list some things + references if you come across them. However, none of these methods has really found its way in the MT community. Besides the fact that it is hard to compare alignment methods across domains, it has been shown that improving alignment models does not necessarily result in better MT models... (anders, vind ref, kijk in wu alignment \cite{indurkhya2010handbook}).
+Most current MT models making use of alignments use the grow-diag-final method to obtain their alignments. The resulting alignments have a relatively high precision and recall \citep{och2000improved}, although they still contain several faulty alignment links. As mentioned before, several attempts to develop improved alignment models have been reported, where very different approaches have been explored. None of these methods has really found its way in the MT community. Besides the fact that it is hard to compare alignment methods across domains, it has been shown that improving alignment models does not necessarily result in better MT models \citep{indurkhya2010handbook}).
 
 \subsubsection{Manual Word-alignments}\label{subsubsec:man_alignments}
 
@@ -209,21 +203,21 @@ Translation equivalence can be defined in terms of word-alignments, as is descri
 If $(s,t)$ is a pair of source and target sentences, and $A$ an alignment between $s$ and $t$. two sets of source and target words $w_s$ and $w_t$ are translation equivalent if and only if $$\forall x,y ( x\in w_s~(x,y)\in A \rightarrow y\in w_t \land x,y \in w_t~(y,x)\in A \rightarrow x\in A))$$
 \end{definition}
 
-The definition expresses the intuition that two sequences of words are translation equivalent, if the words in the first sequence are translated only into words in the second sequence, and vice versa. This definition does not includes a clause that states that such sequences need to be contiguous, a requirement that is often imposed when the translation parts are represented by nonterminal nodes in an SCFG.
+The definition expresses the intuition that two sequences of words are translation equivalent if the words in the first sequence are translated only into words in the second sequence, and vice versa. This definition does not includes a clause that states that such sequences need to be contiguous, a requirement that is often imposed when the translation parts are represented by nonterminal nodes in an SCFG.
 
 \section{Compositional Translation Structures}
 \label{sec:comp_structures}
 
-Knowledge about its translation equivalent parts restricts the set of structures according to which could have been compositionally translated, as sequences that do not have a translation equivalent could not have been a part during the translation. In this section, we will define the set of structures according to which a sentence could have been compositionally translated, given its translation equivalent parts. As such trees are thus solely based on the alignment of the sentence, we will refer to such structures with the term  `alignment trees'.
-
+Knowledge about translation equivalence of a translation pair restricts the set of structures according to which the one could have been compositionally translated into the other, as sequences that do not have a translation equivalent could not have been a part during the translation. In this section, we will define the set of structures according to which a sentence could have been compositionally translated, given its translation equivalent parts. As such trees are thus solely based on the alignment of the sentence, we will refer to such structures with the term  `alignment trees'.\footnote{This term is not new in this thesis, but is used by many authors in MT when referring to the hierarchical structures alignments give rise to.}
 
 \subsection{Alignment Trees}
+\label{subsec:alignment_trees}
 
 For the purpose of devising alignment trees, the current definition of alignment is not particularly transparent. We will introduce, as far as this thesis goes, a change in notation for word-alignments, that is more suitable and clear for this purpose. The following two paragraphs will thus be a short recap of alignments and translation equivalence, but with a new notation. Figure \ref{fig:alignment2} is referred to as example to clarify our new definitions.
 
 \begin{figure}
 \centering
-\includegraphics[scale=0.6]{alignment1.png}
+\includegraphics[scale=0.6]{Graphics/alignment1.png}
 \caption{A one-to-many alignment of the English sentence `My dog also likes eating sausages.' and its translation `Mijn hond houdt ook van worstjes eten'.%schrijf welke tool is gebruikt
 \cite{maillette2010visualizing}
 }\label{fig:alignment2}
@@ -253,7 +247,7 @@ Let $\pi = \pi_1 \ldots \pi_n$ be a set-permutation describing a sentence pair $
 Let $\pi = \pi_1 \ldots \pi_n$ be a set-permutation describing a sentence pair $(s,t)$, a subset $\{\pi_i,\ldots,\pi_j\}$ is translation admissible if and only if $(\pi_i\cup \ldots \cup \pi_j)$ constitutes a contiguous range of integers (contiguousness on the target side), is a contiguous sequence in $\pi$ (contiguousness on the source side) and is translation admissible according to Definition \ref{def:transadd}.
 \end{definition}
 
-The alignment depicted in Figure \ref{fig:alignment2} thus has 6 non-terminal translation parts of length 1, 3 of length 2, 1 of length 3, 2 of length 4, 1 of length 5 and 1 of length 6 (see Figure \ref{fig:transequi}).
+\noindent The alignment depicted in Figure \ref{fig:alignment2} thus has 5 non-terminal translation parts of length 1, 3 of length 2, 1 of length 3, 2 of length 4, 1 of length 5 and 1 of length 6 (see Figure \ref{fig:transequi}).
 
 The number of translation parts in an alignment depends on the type of the alignment and is largest in case of a monotone alignment, that does not restrict the set of possible translation units at all. A completely monotone alignment of a sentence of $n$ words has $\frac{n\times n+1}{2}$ translation units. Note that unaligned words can cause exponential growth in the number of translation units.
 
@@ -275,7 +269,7 @@ The number of translation parts in an alignment depends on the type of the align
 
 \subsubsection{Set-permutation Trees}
 
-The set of alignment trees follows relatively straight-forwardly from the notion of parts: an alignment tree is a tree whose root span covers the entire sentence, and all of whose nodes correspond with translation equivalent units. To account for non-contiguous parts, nodes are allowed to expand in a combination of terminal and non-terminal nodes as well, provided that the terminals together constitute a translation admissible subset of the total sentence. An alignment tree will be defined in terms of allowed node expansions. If the top node of a tree covers the entire sentence, and all nodes are expanded as described in Definition \ref{def:exp1}, it recursively follows that all non-terminal nodes are translation parts and all leaf nodes together constitute a translation admissible subset, and the tree is thus a compositional translation tree for the corresponding sentence.
+The set of alignment trees follows relatively straight-forwardly from the notion of parts: an alignment tree is a tree whose root dominates the entire sentence, and all of whose nodes correspond with translation equivalent units. To account for non-contiguous parts, nodes are allowed to expand in a combination of terminal and non-terminal nodes as well, provided that the terminals together constitute a translation admissible subset of the total sentence. An alignment tree will be defined in terms of allowed node expansions. If the top node of a tree covers the entire sentence, and all nodes are expanded as described in Definition \ref{def:exp1}, it recursively follows that all non-terminal nodes are translation parts and all leaf nodes together constitute a translation admissible subset, and the tree is thus a compositional translation tree for the corresponding sentence.
 
 \begin{definition}[Expansion of a translation part]\label{def:exp1}
 Let $\pi = \langle \pi_0, \ldots,\pi_n\rangle$ be a set-permutation that constitutes a part of a translation. A allowed expansion of $\pi$ into parts is described by a segmentation of $\pi$ as an ordered set of indices $B = \{j_0\negthinspace=\negthinspace 0, j_1, \ldots ,j_{m-1},j_m\negthinspace=\negthinspace n+1\}$ that segments $\pi$ into $m$ adjacent, non-overlapping and contiguous segments such that for all $~0\leq i < m$ holds that the subsequence $\pi_{j_i}\ldots\pi_{j_{i+1}-1}$ is a new non-terminal node that is a translation part, or $\pi_{j_i}\ldots\pi_{j_{i+1}-1}$ consists of a single word constituting a translation admissible unit with one or more other segments of $\pi$.
@@ -293,10 +287,11 @@ Note that the trees we have described are describing a compositional translation
 
 
 \section{Empirically Studying Compositionality}
+\label{sec:empirical_studies}
 
-Constructing a set of compositional translation trees for a sentence and its translation, which we showed in the previous section is always possible if a word-alignment is given, is not yet evidence for compositionality of translation. We do not know if the sentence was fact as described by one of these structures, and whether there is a grammar that could have predicted this. Investigating the set of alignment structures of sentences can be used to answer questions about the hypothetical underlying grammar that generated the system. Previously addressed questions can be roughly divided into two categories:\begin{enumerate}%herformuleer dit nog een beetje
+We have showed that, given a word-alignment, it is always possible to construct a set of structures according to which a sentence could have been compositionally translated. Construct such a set of structures, however, is not yet evidence for compositionality of translation. We do not know if the sentence was fact translated as described by one of these structures, and whether this could have been predicted by a grammar. Investigating the set of alignment structures of sentences can be used to answer questions about the hypothetical underlying grammar that generated the data. Previously addressed questions can be roughly divided into two categories (we will later propose another perspective to these two categories):\begin{enumerate}%herformuleer dit nog een beetje
 \item \textbf{Formal questions}. Several studies focus on the formal properties of the underlying grammar, asking questions as: `what is the minimal rank of the underlying grammar', or `how much of the corpus can be covered by a pure permutation'.
-\item \textbf{Linguistic questions}. Other studies follow a different direction, starting out from monolingual syntax. In these studies, the focus lies on the explanatory power of monolingual syntax, addresses questions as: `how many of the nodes of monolingual parse trees are translation equivalent according to an alignment', `if we stay true to monolingual parses, how far from bijective is the mapping between the non-terminal nodes'.
+\item \textbf{Linguistic questions}. Other studies follow a different direction, starting out from monolingual syntax. In these studies, the focus lies on the explanatory power of monolingual syntax, and questions addressed include: `how many of the nodes of monolingual parse trees are translation equivalent according to an alignment', `if we stay true to monolingual parses, how far from bijective is the mapping between the non-terminal nodes'.
 \end{enumerate}
 
 In this section, we will discuss some previously conducted studies, and the answers they have found to these questions.
@@ -312,7 +307,7 @@ There are different ways of quantifying the suitability of monolingual linguisti
 
 \begin{figure}[!ht]
 \centering
-\includegraphics[scale=0.4]{crossing.png}
+\includegraphics[scale=0.4]{Graphics/crossing.png}
 \caption{An example of a crossing according to \cite{fox2002phrasal}.}\label{fig:fox}
 \end{figure}
 
@@ -337,9 +332,9 @@ A second line of empirical research does not restrict source (or target) side tr
 
 
 \section{Dependency Parses}
+\label{sec:dep_parses}
 
-The studies described in the previous section are conducted from two different perspectives, that we earlier described as linguistically oriented studies and formally oriented. The formally oriented studies take a bilingual perspective, starting from the data and and trying to gain information about the system that generated it. The linguistically oriented studies start out from monolingual information about language, and try to assess its suitability as underlying system. Surprisingly enough, a study that combines the two perspectives, by trying to construct a bilingual grammar initially motivated by the data, but using monolingual information, does not really exist. In this thesis, we will perform such a study, in which we will combine bilingual information from a corpus, and monolingual information from dependency parses. In this section, we will provide information about the background of dependency parses, and describe them formally. This section stands apart from the rest of this chapter, but presents the last piece of background of the investigation conducted in this thesis.
-
+The studies described in the previous section are conducted from two different perspectives, that we earlier described as linguistically oriented and formally oriented. The formally oriented studies take a bilingual perspective, starting from the data and and trying to gain information about the system that generated it. The linguistically oriented studies start out from monolingual information about language, and try to assess its suitability as underlying system. Surprisingly enough, a study that combines the two perspectives, by trying to construct a bilingual grammar initially motivated by the data, but using monolingual information, does not really exist. In this thesis, we will try to narrow the gap between the two perspectives, by performing a study in which we combine bilingual information from a corpus and monolingual information from dependency parses. In this section, we will provide information about the background of dependency parses, and describe them formally. This section stands apart from the rest of this chapter, as it is not directly related to translation, but presents the last piece of background of the investigation conducted in this thesis.
 
 \subsection{Background}
 
@@ -431,16 +426,6 @@ Ik \& weet \& dat \& hij \& me \& liet \& winnen\\
 \end{figure}
 
 \section{Summary}
+\label{sec:summary}
 
-We did:
-- discussed the difficulties of compositional grammar\\
-- argued for empirical analysis\\
-- laid the framework for empirical analysis (alignments, translation trees)\\
-- discussed how this can be used for empirical investigation\\
-- discussed previous analyses\\
-- argued why it is not sufficient\\
-- presented dependency parses
-
-
-\bibliography{thesisDH}
-\end{document}
+In this chapter, we have discussed the difficulties of designing a system to compositionally translate natural languages. We have showed that there are several issues, and that it is hard to investigate their influence on the suitability of compositional translation as a strategy for translating natural language. We have argued that finding compositional solutions for specific parts of natural language for which a compositional treatment seems problematic will not provide us with a better understanding of the overall compositionality of translation, and neither will developing more translation models. We proposed to investigate the compositionality of translation through empirical analysis of real translation data, and laid the groundwork for such an analysis, by discussing how the compositionality of a corpus can be identified and investigated. We have discussed empirical studies related to the one conducted in this thesis, and we have pointed out that there seems to be a gap between the two perspectives they are taking. In the last section of the chapter we discussed dependency parses, that will be important for our own empirical analysis.
