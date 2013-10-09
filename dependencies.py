@@ -352,8 +352,15 @@ class Dependencies():
  		be used. E.g, ldepth = 1 means that Y/X is allowed, while Y+Z/X is not,
  		if max_var is 2, Y/X and X\Y. X+Y is only constructed if there is a Z such that
  		X+Y/Z or Z\X+Y. 'Normal' labels are prefered over compound labels.
+ 		
+ 		If ldepth = rdepth = max, labels for all spans are produced, using the function label_all()
  		"""
  		#first create standard labels:
+ 		if ldepth == rdepth == max_var == 'max':
+ 			return self.label_all()
+ 		else:
+ 			ldepth, rdepth, max_var = int(ldepth), int(rdepth), int(max_var)
+ 		
  		labels = self.dependency_labels()
  		if max_var == 1 or (ldepth == 0 and rdepth ==0):
  			return labels

@@ -21,10 +21,12 @@ class Main():
 		"""
 		print 'create initial all-rule grammar.'
 		rules = files.all_rules(max_length)
+		print 'print rule dict to file'
+		pickle.dump(rules,open('rules','wb')
+		#print dictionary to file
 		print 'normalise rules'
 		normalised_rules = files.normalise2(rules)
 		print 'transform to nltk grammar object'
-		self.print_grammar_to_file(normalised_rules, 'initial_rules')
 		grammar_init = files.to_WeightedGrammar(normalised_rules)
 		pickle.dump(grammar_init,open('initial_grammar',"wb"))
 		new_grammar = files.em(grammar_init, iterations,n)
@@ -54,9 +56,10 @@ class Main():
 		for lhs in grammar_dict:
 			for rhs in grammar_dict[lhs]:
 				if lhs != 'COUNTS':
-					rhs_string = ' '.join([str(n) for n in rhs])
-					string = '%s --> %s \t %i' % (lhs, rhs_string, grammar_dict[lhs][rhs])
-					f.write(string)
+					if rhs != 'COUNTS':
+						rhs_string = ' '.join([str(n) for n in rhs])
+						string = '%s --> %s \t %i\n' % (lhs, rhs_string, grammar_dict[lhs][rhs])
+						f.write(string)
 				 
 				 
 
