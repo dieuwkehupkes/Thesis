@@ -62,4 +62,30 @@ class ConstituencyTree():
 				nr_consistent += self.phrases_consistent(child, cur_startpos, phrase_list)
 				cur_startpos = self.root_span(child,cur_startpos)[1]
 		return nr_consistent
-
+	
+	def branching_factor(self,branching_dict = {}):
+		"""
+		Return a dictionary that summaries the different 
+		branching factors of the trees. If initialised with
+		a dictionary, update this dictionary with the
+		valeus of the current tree.
+		"""
+		b_factor = len(self.tree)
+		if b_factor == 1 or b_factor ==0:
+			if isinstance(self.tree,str) or len(self.tree) ==0 or isinstance(self.tree[0],str):
+				#instance is a terminal or a pre terminal
+				return branching_dict
+			else:
+				#instance is a higher node in the tree that expands unary
+				branching_dict[1] = branching_dict.get(1,0)+1
+				return ConstituencyTree(self.tree[0]).branching_factor(branching_dict)
+		else:
+			#update dict with branching factor
+			branching_dict[b_factor] = branching_dict.get(b_factor, 0) +1
+			#update dictionary with branching factor of all the children
+			for child in self.tree:
+				if isinstance(child,str):
+					return branching_dict
+				else:
+					branching_dict = ConstituencyTree(child).branching_factor(branching_dict)
+		return branching_dict

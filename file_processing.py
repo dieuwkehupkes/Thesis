@@ -31,8 +31,7 @@ class ProcessFiles():
 		if targetfile:
 			self.target_file = open(targetfile,'r')
 		self.label_dict = {}
-	
-	
+		
 	def next(self):
 		"""
 		Return the next alignment, sentence and tree_list.
@@ -485,6 +484,34 @@ class ProcessDependencies(ProcessFiles):
 			results_string += '%s %20s %20s\n' % (triple[0], triple[1], triple[2])
 		return results_table, results_string
 
+	def branching_factor(self, max_length):
+		"""
+		Compute the average branching factor of all head nodes
+		of the dependency parses or the corpus.
+		Can be restricted to a sentence length.
+		"""
+		self._reset_pointer()
+		sentence_nr = 1
+		branching_dict = {}
+		new = self.next()
+		while new:
+			print sentence_nr
+			#consistency check
+			dependencies = Dependencies(new[2])
+			#check if dependency tree is a tree
+			if not dependencies.checkroot():
+				new = self.next()
+				sentence_nr+=1
+				continue
+			
+			if len(new[1].split()) < max_length:
+				branching_dict = dependencies.branching_factor(branching_dict)
+			
+			sentence_nr+= 1
+			new = self.next()
+		return branching_dict
+
+
 	def sample(self, samplesize, maxlength = False, display = False):
 		"""
 		Create a sample of sentence from the inputted files.
@@ -722,12 +749,10 @@ class ProcessDependencies(ProcessFiles):
 		return texstring
 
 
-class ProcessConstituencies():
+class ProcessConstituencies(ProcessFiles):
 	"""
 	Subclass adapted for constituencies
 	"""
-
-
 	def score_all_sentences(self, rule_function, probability_function, prob_function_args, label_args, max_length = 40, scorefile = '', treefile = ''):
 		raise NotImplementedError
 	
@@ -755,6 +780,36 @@ class ProcessConstituencies():
 	def all_rules(self,max_length=40):
 		raise NotImplementedError
 
+
+	def branching_factor(self, max_length=40):
+		"""
+		Compute the average branching factor of all head nodes
+		of the dependency parses or the corpus.
+		Can be restricted to a sentence length.
+		"""
+		self._reset_pointer()
+		sentence_nr = 1
+		branching_dict = {}
+		new = self.next()
+		while new:
+			print sentence_nr
+			#consistency check
+			try:
+				constituencies = ConstituencyTree(new[2][0])
+			except ValueError:
+				print "parse %i is not a tree, skipped" % sentence_nr
+				sentence_nr +=1
+				new = self.next()
+				continue
+		
+			if len(new[1].split()) < max_length and constituencies:
+				branching_dict = constituencies.branching_factor(branching_dict)
+			
+			sentence_nr+= 1
+			new = self.next()
+		return branching_dict
+
+		
 	
 	def relation_count(self, max_length):
 		"""

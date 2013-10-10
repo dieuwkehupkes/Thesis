@@ -228,42 +228,6 @@ class Dependencies():
 		else:
 			return deep_spanrels
 				
-	def _alternative_deplist(self, deplist):
-		"""
-		Check for gaps in deplist created by
-		interpunction not taken into account
-		by dependency parser. Start with
-		first gap and recursively go through list.
-		Assumes a gap is not larger than 1.
-		"""
-#		deplists = []
-		gap = False
-		for i in xrange(1,len(deplist)):
-			if deplist[i-1][1] != deplist[i][0]:
-				gap = i
-				break
-		if not gap:
-			deplists = [deplist]
-			#check for gaps at end and start
-			if deplist[0][0]-1 != -1 and deplist[0][0]-1 not in self.wordspans:
-				new_deplist = copy.copy(deplist)
-				new_deplist[0] = (deplist[0][0]-1, deplist[0][1])
-				deplists.append(new_deplist)
-			if deplist[-1][1]+1 not in self.wordspans and deplist[-1][1]+2 in self.wordspans:
-				new_deplist = copy.copy(deplist)
-				new_deplist[-1] = (deplist[-1][0], deplist[-1][1]+1)
-				deplists.append(new_deplist)
-			return deplists
-		else:
-			#fill from left
-			new_deplist1 = copy.copy(deplist)
-			new_deplist1[i] = (deplist[i][0]-1, deplist[i][1])
-			#fill from right
-			new_deplist2 = copy.copy(deplist)
-			new_deplist2[i-1] = (deplist[i-1][0],deplist[i-1][1]+1)
-			return self._alternative_deplist(new_deplist1) + self._alternative_deplist(new_deplist2)
-	
-	
 	def _gap_account(self, spanrels):
 		"""
 		Return a new dictionary that accounts for
@@ -480,6 +444,18 @@ class Dependencies():
  		else:
  			return None
  	
+ 	def branching_factor(self,b_dict):
+		"""
+		Update a dictionary with counts for different
+		branching factors with the branching factors
+		of the nodes in the current dependency tree.
+		"""
+ 		for head in self.deps:
+ 			b_factor = len(self.deps[head])
+ 			b_dict[b_factor] = b_dict.get(b_factor,0)+1
+ 		return b_dict
+ 			
+ 	
  	def POStag(self, word):
  		if word in ("'",",",".",':',';','.'):
  			tag = 'PUNCT'
@@ -556,15 +532,12 @@ def test():
 	"""
 	dependencies = ['nsubj(give-2, I-1)','root(ROOT-0, give-2)','det(boy-4, the-3)','iobj(give-2, boy-4)','det(flowers-6, some-5)','dobj(give-2, flowers-6)']
 	d = Dependencies(dependencies)
-	relations = d.relations(True,True)
+	print d.branching_factor({1:4,2:3,3:2})
 	man_relations = {(1, 2): [(0, 1), (2, 4), (4, 6)], (5, 6): [(4, 5)], (3, 4): [(2, 3)], (1,6): [(0,1)], (1,4): [(4,6)], (0,4): [(4,6)], (0,2): [(2,4)]}
-	return relations == man_relations
-
 
 def test1():
 	dependencies = ['nn(President-2, Mr-1)','nsubj(welcome-6, President-2)','nsubj(welcome-6, I-4)','aux(welcome-6, would-5)','root(ROOT-0, welcome-6)','det(action-8, some-7)','dobj(welcome-6, action-8)','prep(action-8, in-9)','det(area-11, this-10)','pobj(in-9, area-11)']
 	d = Dependencies(dependencies)
-	print d.deps
 	print d.reconstruct_sentence()
 	return
 
