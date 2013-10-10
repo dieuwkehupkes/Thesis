@@ -22,7 +22,7 @@ class Main():
 		print 'create initial all-rule grammar.'
 		rules = files.all_rules(max_length)
 		print 'print rule dict to file'
-		pickle.dump(rules,open('rules','wb')
+		pickle.dump(rules,open('rules','wb'))
 		#print dictionary to file
 		print 'normalise rules'
 		normalised_rules = files.normalise2(rules)
@@ -50,6 +50,18 @@ class Main():
 		files = ProcessFiles(False,False,False)
 		grammar = files.create_grammar(tree_file)
 		pickle.dump(grammar,open(grammar_to,"wb"))
+	
+	def compute_branching_factor(self,files,max_length):
+		b= files.branching_factor(max_length)
+		print b
+		total = 0
+		total_nodes = 0
+		for key in b:
+			total += key*b[key]
+			total_nodes += b[key]
+		average = float(total)/total_nodes
+		print 'average branching factor: %f' % average
+			 
 
 	def print_grammar_to_file(self,grammar_dict, grammar_to):
 		f = open(grammar_to,'w')
@@ -76,6 +88,7 @@ if __name__ == "__main__":
 	parser.add_argument("--evaluate",action="store_true",help="Evaluate a grammar, grammar input required")
 	parser.add_argument("--em", action="store_true",help="create a grammar of the corpus using EM")
 	parser.add_argument("--create", action="store_true",help="create a normalised grammar from input treefile")
+	parser.add_argument("--branching", action="store_true", help="compute the branching factor of the nodes in the provided treefile")
 	
 	parser.add_argument("--target", help="File with target sentences")
 	
@@ -99,7 +112,7 @@ if __name__ == "__main__":
 	
 	args = parser.parse_args()
 
-	if not (args.score or args.em or args.evaluate or args.create):
+	if not (args.score or args.em or args.evaluate or args.create or args.branching):
 		parser.error("No running mode is specified, add --em, --evaluate or --score")
 
 	if not (args.dependencies or args.constituencies):
@@ -155,5 +168,12 @@ if __name__ == "__main__":
 		main.evaluate_grammar(files, args.grammar, args.scores_to, args.max_length)
 
 
+	elif args.branching:
+		main = Main()
+		if args.constituencies:
+			files = ProcessConstituencies(args.alignments,args.source,args.trees)
+		elif args.dependencies:
+			files = ProcessDependencies(args.alignments,args.source,args.trees)
+		main.compute_branching_factor(files,args.max_length)
 		
 
