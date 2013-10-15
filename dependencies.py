@@ -25,11 +25,11 @@ class Dependencies():
 			pos_head: [pos_dependent, reltype]
 		"""
 		self.dep_list = dependency_list
-		self.sentence = sentence
 		self.nr_of_deps = -1
 		self.head_pos = None
 		self.deps = self.set_dependencies(dependency_list)
 		self.set_wordspans()
+		self.sentence = self.reconstruct_sentence(sentence)
 
 	def set_dependencies(self,dependency_list):
 		"""
@@ -88,18 +88,18 @@ class Dependencies():
 	def find_relationtype(self, relation):
 		return re.match('[a-z\_]*(?=\()',relation).group(0)
 		
-	def reconstruct_sentence(self):
+	def reconstruct_sentence(self, sentence):
 		"""
 		Reconstruct the sentence corresponding to the 
 		dependency parse. Output as list.
 		"""
-		if self.sentence:
+		if sentence:
 			# If sentence was input or already computed
 			# return sentence
-			if isinstance(self.sentence,list):
-				sentence = self.sentence
+			if isinstance(sentence,list):
+				pass
 			else:
-				sentence = self.sentence.split()
+				sentence = sentence.split()
 		else:
 			# create sentence from dependency parse
 			sentence = [''] * (self.wordspans[self.head_pos][1])
@@ -107,8 +107,7 @@ class Dependencies():
 				pos_word = self.find_dependent_pos(relation)
 				word = self.find_dependent(relation)
 				sentence[pos_word-1] = word
-		self.sentence = sentence
-		return self.sentence
+		return sentence
 	
 	def textree(self):
 		"""
@@ -279,6 +278,15 @@ class Dependencies():
 		return comp_spanrels
 	
 	def dependency_labels(self):
+		"""
+ 		Produces standard labels for spans according to the following scheme:
+ 		
+ 		* label[(i,i+1)] = HEAD 	iff word i+1 is the head of the sentence
+ 		
+ 		* label[(i,j+1)] = rel		iff there is a dependency relation rel(x, y) and wordspan(y) = (i,j+1)
+ 		
+ 		* label[(i,i+1)] = rel-head iff there is a dependency relation rel(x,i+1) and word i+1 was not labelled by one of the previous conditions
+ 		"""
 		labels = {}
 		#Check if dependencies are nonempty and form a tree
  		if self.deps == {} or not self.checkroot():
@@ -296,8 +304,84 @@ class Dependencies():
 	 				labels[dep_span] = dep[1]
 	 				dep_word_span = (dep[0]-1, dep[0])
 	 				labels[dep_word_span] = labels.get(dep_word_span, dep[1]+'-h')
+	 	#If a sentence is inputted, label unlabelled spans
+ 		for word_pos in xrange(len(self.sentence)):
+ 			word_span = (word_pos,word_pos+1)
+ 			if word_span not in labels:
+ 				labels[word_span] = self.POStag(self.sentence[word_pos])
  		return labels
- 			
+ 	
+ 	def SAMT_labels(self):
+ 		"""
+ 		Create SAMT-style labels based on the basic dependency labels
+ 		created in dependency_labels. The order if precedence is as follows:
+ 		
+ 		* Basic labels
+ 		
+ 		* labels A + B, where A and B are basic labels
+ 		
+ 		* labels A/B or A\B where A and B are basic labels
+ 		
+ 		* labels A + B + C where A,B and C are basic labels
+ 		"""
+ 		#find basic labels
+ 		labels_basic = self.dependency_labels()
+# 		#find 2 concatenated labels
+		labels = copy.deepcopy(labels_basic)
+		labels = self.update_concatenated_labels2(labels_basic,labels)
+#		#find 'minus'-labels
+		labels = self.update_minus_labels(labels_basic,labels)
+#		#find 3 concatenated labels
+		labels = self.update_concatenated_labels3(labels_basic,labels)
+  		return labels		
+  			
+ 	def update_concatenated_labels2(self,labels_i,labels_o):
+ 		"""
+ 		Update a dictionary labels_o with all labels
+ 		that are a concatenation of two labels
+ 		in the inputted set of input labels labels_i.
+ 		"""
+ 		concat_list = [(span1,span2) for span1 in labels_i for span2 in labels_i if span1[1] == span2[0]]
+   		for span in concat_list:
+   			
+  			new_label = '%s+%s' % (labels_i[span[0]], labels_i[span[1]])
+  			new_span = (span[0][0],span[1][1])
+  			labels_o[new_span] = labels_o.get(new_span,new_label)
+  		return labels_o
+ 	
+ 	def update_concatenated_labels3(self,labels_i,labels_o):
+ 		"""
+ 		Update a dictionary labels_o with labels that are a
+ 		concatenation of three labels of the inputted set of
+ 		labels, labels_i.
+ 		"""
+ 		concat_list = [(span1,span2,span3) for span1 in labels_i for span2 in labels_i for span3 in labels_i if span1[1]==span2[0] and span2[1] == span3[0]]
+ 		for span in concat_list:
+ 			new_label = '%s+%s+%s' % (labels_i[span[0]],labels_i[span[1]],labels_i[span[2]])
+ 			new_span = (span[0][0],span[2][1])
+ 			labels_o[new_span] = labels_o.get(new_span,new_label)
+ 		return labels_o
+ 	
+ 	def update_minus_labels(self,labels_i,labels_o):
+ 		"""
+ 		update a dictionary labels_o with labels that are
+ 		of the form A\B, or B/A, that refer to a sequence labelled
+ 		B missing A on the left of right, respectively, 
+ 		where A and B in the inputted set labels_i. 
+ 		"""
+ 		minus_list = [(span1,span2) for span1 in labels_i for span2 in labels_i if (span1[0] == span2[0] or span1[1] == span2[1]) and span1 != span2]
+ 		for span in minus_list:
+ 			L0,L1 = labels_i[span[0]], labels_i[span[1]]
+ 			s00,s01,s10,s11 = span[0][0], span[0][1],span[1][0],span[1][1]
+			if s01 == s11 and s00 < s10:
+				new_span, new_label = (s00,s10), '%s/%s' % (L0, L1)
+				labels_o[new_span] = labels_o.get(new_span,new_label)
+			elif s00 == s10 and s01 < s11:
+				new_span, new_label = (s01,s11), '%s\%s' % (L0, L1)
+				labels_o[new_span] = labels_o.get(new_span,new_label)
+		return labels_o
+ 
+ 	
  	def labels(self, ldepth = 0, rdepth = 0, max_var = 1):
  		"""
  		When ran without any variables, produces standard labels for spans
@@ -361,6 +445,16 @@ class Dependencies():
 					labels[labelled_span] = labels.get(labelled_span, new_label)
  		return labels
 
+	def percentage_SAMT(self):
+		"""
+		Return how many spans were labelled with an SAMT label
+		and how many spans there were in total.
+		"""
+		s_length = len(self.sentence)
+		all_spans = [(i,j+1) for i in xrange(s_length) for j in xrange(s_length) if j>=i]
+		labelled_spans = self.SAMT_labels()
+		return len(all_spans), len(labelled_spans)
+
 	def label_all(self):
 		"""
 		Labels are generated for all spans, as described in Zollman (2011).
@@ -372,16 +466,10 @@ class Dependencies():
 		If the numbering of the dependency parse and the sentence are
 		out of sync due to different tokenization, return None.
 		"""
-		sentence = self.reconstruct_sentence()
-		s_length = len(sentence)
+		s_length = len(self.sentence)
 		# Create a set with all spans, and initialise labels
 		unlabelled = set([(i,j+1) for i in xrange(s_length) for j in xrange(s_length) if j>=i])
  		labels = self.dependency_labels()
- 		# assign pos-tags to words unlabelled by dependency parse
- 		for word_pos in xrange(s_length):
- 			word_span = (word_pos,word_pos+1)
- 			if word_span not in labels:
- 				labels[word_span] = self.POStag(sentence[word_pos])
  		for word_span in labels:
  			try:
  				unlabelled.remove(word_span)
@@ -400,9 +488,9 @@ class Dependencies():
 			L0, L1 = labels[spans[0]],labels[spans[1]]
 			s00,s01,s10,s11 = spans[0][0],spans[0][1],spans[1][0],spans[1][1]
 			if '+' in L0:
-				L0 = '(%s)' % L0
+				L0 = '[%s]' % L0
 			if '+' in L1:
-				L1 = '(%s)' % L1
+				L1 = '[%s]' % L1
 			if s01 == s11:
 				new_span, new_label = (s10,s00), '%s\%s' % (L1, L0)
 			elif s00 == s10:

@@ -64,9 +64,11 @@ class ProcessFiles():
 		else:
 			return new_sentence
 
+
 	def print_function(self, to_print, filename):
 		if filename:
 			filename.write(to_print)
+
 
 	def score_all_sentences(self, rule_function, probability_function, prob_function_args, label_args, max_length = 40, scorefile = '', treefile = ''):
 		"""
@@ -188,8 +190,8 @@ class ProcessFiles():
 		#normalise grammar
 		grammar_norm = self.normalise2(grammar_dict)
 		return self.to_WeightedGrammar(grammar_norm)		
-			
 	
+		
 	def evaluate_grammar(self,grammar, max_length, scoref):
 		"""
 		Parse the corpus with inputted grammar and evaluate
@@ -213,9 +215,9 @@ class ProcessFiles():
 				try:
 					parse = parser.nbest_parse(sentence.split())[0]
 				except:
-					scorestr =  "s %i\t\tcould not be parsed\n" %sentence_nr
+					scorestr =  "sentence %i could not be parsed" %sentence_nr
 					print scorestr
-					self.print_function(scorestr,scoref)
+					self.print_function(scorestr+'\n',scoref)
 					new = self.next()
 					sentence_nr +=1
 					continue
@@ -303,16 +305,19 @@ class ProcessFiles():
 			nr_of_parses += 1
 		return grammar_dict
 	
-	
-	def update_grammar_dict_parse(self, parse, grammar_dict):
+	def update_grammar_dict_parse(self,parse,grammar_dict):
 		for production in parse.productions():
-			lhs = production.lhs()
-			rhs = production.rhs()
-			if lhs in grammar_dict:
-				grammar_dict[lhs]['COUNTS'] += 1
-				grammar_dict[lhs][rhs] = grammar_dict[lhs].get(rhs,0) +1
-			else:
-				grammar_dict[lhs] = {'COUNTS':1, rhs:1}
+			grammar_dict = self.update_grammar_dict_production(production,grammar_dict)
+		return grammar_dict
+	
+	def update_grammar_dict_production(self, production, grammar_dict):
+		lhs = production.lhs()
+		rhs = production.rhs()
+		if lhs in grammar_dict:
+			grammar_dict[lhs]['COUNTS'] += 1
+			grammar_dict[lhs][rhs] = grammar_dict[lhs].get(rhs,0) +1
+		else:
+			grammar_dict[lhs] = {'COUNTS':1, rhs:1}
 		return grammar_dict
 		
 	def normalise(self,rule_dict):
@@ -495,11 +500,11 @@ class ProcessDependencies(ProcessFiles):
 		branching_dict = {}
 		new = self.next()
 		while new:
-			print sentence_nr
 			#consistency check
 			dependencies = Dependencies(new[2])
 			#check if dependency tree is a tree
 			if not dependencies.checkroot():
+				print "dependencies form no tree, skipped"
 				new = self.next()
 				sentence_nr+=1
 				continue
@@ -511,6 +516,27 @@ class ProcessDependencies(ProcessFiles):
 			new = self.next()
 		return branching_dict
 
+	def labelled_SAMT(self,max_length):
+		"""
+		Compute the percentage of the spans in the dictionary
+		that is labelled by
+		"""
+		self._reset_pointer()
+		sentence_nr = 1
+		total = 0
+		total_labelled = 0
+		new = self.next()
+		while new:
+#			print sentence_nr
+			if len(new[1].split()) < max_length:
+				dependencies = Dependencies(new[2])
+				percentage = dependencies.percentage_SAMT()
+				total += percentage[0]
+				total_labelled += percentage[1]
+			sentence_nr += 1
+			new = self.next()
+		return total, total_labelled
+				
 
 	def sample(self, samplesize, maxlength = False, display = False):
 		"""
@@ -619,6 +645,86 @@ class ProcessDependencies(ProcessFiles):
 			sentence_nr+= 1
 		return label_dict
 
+	def nbest_rules(self,max_length = 40):
+		"""
+		Go to through the file, and for every phrase in
+		every alignment, select the n best rules according
+		to the dependency parses.
+		"""
+		raise NotImplementedError
+		rules = {nltk.Nonterminal('TOP'):{'COUNTS':0}}
+		self._reset_pointer()
+		sentences = 0
+		sentence_nr = 1
+		new = self.next()
+		while new:
+			sentence= new[1]
+			sentence_length = len(sentence.split())
+			# tests if input is as desired, skip if not
+			if sentence_length >= max_length:
+				productions = []
+				lexicon = []
+			else:
+				dependencies = Dependencies(new[2],sentence)
+				a = Alignments(new[0],sentence)
+				labels = dependencies.label_all()
+				if not labels:
+					print 'sentence skipped because of inconsistency with dependency parse'
+					new = self.next()
+					sentence_nr+=1
+					continue
+				print "finding best rules for", sentence_nr
+				#create arguments for probability
+				productions = a.hat_rules(Rule.probability_spanrels, [True,True], labels)
+				lexicons = a.lexrules(labels)
+				self.update_with_best_rules(productions,n, rules)
+				#MAKE GRAMMAR
+				#USE ._categories to get the categories
+				#FIND the best n rules for every category using grammar.productions(lhs)
+				#Put these in a dictionary
+			
+	def select_best_rules(self,productions,n, rules):
+		"""
+		Create a dictionary with the best scores for current productions.
+		"""
+		best_productions = {}
+		for production in productions:
+			lhs = production.lhs()
+			prob = production.probability()
+			#check if current lhs already has a production
+			if lhs in best_productions:
+				#if more productions are needed, add production and sort list
+				#according to probability
+				if len(best_productions[lhs]) < n:
+					best_productions[lhs].append((prob,production))
+					best_productions[lhs].sort()
+				#check if current production has a higher probability than
+				#least probable production in dictionary
+				elif best_productions[lhs][-1][0] < prob:
+					best_productions[lhs][-1] = (prob,production)
+					best_productions[lhs].sort()
+			#no productions with current lhs are yet selected, create entry
+			else:
+				best_productions[lhs] = [(prob,production)]
+		#create a generator with selected produtions
+		for key in best_productions:
+			for production in best_productions[key]:
+				yield 
+			
+		raise NotImplementedError
+
+#	def update_grammar_dict_production(self, production, grammar_dict):
+#		lhs = production.lhs()
+#		rhs = tuple(production.rhs())
+#		if lhs in grammar_dict:
+#			grammar_dict[lhs]['COUNTS'] += 1
+#			grammar_dict[lhs][rhs] = grammar_dict[lhs].get(rhs,0) +1
+#		else:
+#			grammar_dict[lhs] = {'COUNTS':1, rhs:1}
+#		return grammar_dict
+
+	
+				
 	def all_rules(self,max_length = 40):
 		"""
 		Creates a dictionary with all the grammar rules
@@ -647,34 +753,27 @@ class ProcessDependencies(ProcessFiles):
 					sentence_nr +=1
 					continue
 				print "creating grammar for", sentence_nr
-				scoring = Scoring(new[0], new[1], labels)
 				productions = a.hat_rules(Rule.uniform_probability, [], labels)
 				lexicon = a.lexrules(labels)
 
 			for production in productions:
-				lhs = production.lhs
-				rhs = tuple(production.rhs)
+				lhs = production.lhs()
+				rhs = tuple(production.rhs())
 				if 'root' in lhs.symbol() or 'ROOT' in lhs.symbol():
 					all_rules[nltk.Nonterminal('TOP')]['COUNTS']+= 1
 					all_rules[nltk.Nonterminal('TOP')][(lhs,)] = all_rules[nltk.Nonterminal('TOP')].get((lhs,),0) + 1
-				if lhs in all_rules:
-					all_rules[lhs]['COUNTS'] += 1
-					all_rules[lhs][rhs] = all_rules[lhs].get(rhs,0) +1
-				else:
-					all_rules[lhs] = {'COUNTS':1, rhs:1}
+				all_rules = self.update_grammar_dict_production(production,all_rules)
 			for lexical_rule in lexicon:
-				lhs = lexical_rule.lhs()
-				rhs = lexical_rule.rhs()
-				if lhs in all_rules:
-					all_rules[lhs]['COUNTS'] += 1
-					all_rules[lhs][rhs] = all_rules[lhs].get(rhs,0) +1
-				else:
-					all_rules[lhs] = {'COUNTS':1, rhs:1}
+				all_rules = self.update_grammar_dict_production(lexical_rule,all_rules)
 			new = self.next()
 			sentence_nr +=1
 		return all_rules
-		
-			
+
+
+
+
+
+
 	def relation_count(self, max_length):
 		"""
 		Counts occurences of all relations in dependency
@@ -792,11 +891,15 @@ class ProcessConstituencies(ProcessFiles):
 		branching_dict = {}
 		new = self.next()
 		while new:
-			print sentence_nr
 			#consistency check
 			try:
 				constituencies = ConstituencyTree(new[2][0])
 			except ValueError:
+				print "parse %i is not a tree, skipped" % sentence_nr
+				sentence_nr +=1
+				new = self.next()
+				continue
+			except IndexError:
 				print "parse %i is not a tree, skipped" % sentence_nr
 				sentence_nr +=1
 				new = self.next()
