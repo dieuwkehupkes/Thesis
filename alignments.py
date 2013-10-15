@@ -265,6 +265,19 @@ class Alignments:
 				probability = 1.0
 				yield nltk.WeightedProduction(lhs, rhs, prob=probability)
 	
+	def percentage_labelled(self,labels):
+		"""
+		Output which percentage of the spans in the alignment
+		are labelled by the set of inputted labels.
+		"""
+		phrases = self.compute_phrases()
+		total = len(phrases)
+		labelled = 0
+		for phrase in phrases:
+			if phrase in labels:
+				labelled += 1
+		return total, labelled
+	
 	def consistent_labels(self,labels,label_dict):
 		"""
 		Measures the consistency of the alignment with a dictionary
