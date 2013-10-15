@@ -77,6 +77,7 @@ class ConstituencyTree():
 				return branching_dict
 			else:
 				#instance is a higher node in the tree that expands unary
+				print self.tree
 				branching_dict[1] = branching_dict.get(1,0)+1
 				return ConstituencyTree(self.tree[0]).branching_factor(branching_dict)
 		else:

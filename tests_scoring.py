@@ -161,8 +161,22 @@ class ScoreTests():
 		nr_of_deps = deps.nr_of_deps
 		tree, score, rank = scoring.score(Alignments.hat_rules, Rule.probability_spanrels, [relations, nr_of_deps])
 		return score == 1.0
+	
+	def score_test9(self):
+		sentence = "( parliament adopted the text )"
+		alignment = "0-0 1-1 1-2 2-3 3-4 4-5 5-6 5-7"
+		dependencies = ["nsubj(adopted-3, parliament-2)","root(ROOT-0, adopted-3)","det(text-5, the-4)", "dobj(adopted-3, text-5)"]
+		deps = Dependencies(dependencies)
+		scoring = Scoring(alignment,sentence)
+		relations = deps.spanrelations(True,True)
+		nr_of_deps = deps.nr_of_deps
+		tree, score, rank = scoring.score(Alignments.hat_rules, Rule.probability_spanrels, [relations, nr_of_deps])
+		print tree
+
+
 
 if __name__ == "__main__":
 	x = ScoreTests()
-	print x.score_test_all()
+	x.score_test9()
+#	print x.score_test_all()
 

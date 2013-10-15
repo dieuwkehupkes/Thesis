@@ -123,6 +123,30 @@ class DependencyTests():
 				print 'man', man_relations[key], 'auto', relations[key]
 		return relations == man_relations
 
+	def test_samt_labels(self):
+		"""
+		Test SAMT labels
+		"""
+		sentence = 'I give the boy some flowers .'
+		dependencies = ['nsubj(give-2, I-1)','root(ROOT-0, give-2)','det(boy-4, the-3)','iobj(give-2, boy-4)','det(flowers-6, some-5)','dobj(give-2, flowers-6)']
+		d = Dependencies(dependencies, sentence)
+		l = d.SAMT_labels()
+		man_labels = dict(zip([(i,i+1) for i in xrange(7)],['nsubj', 'root','det','iobj-h','det','dobj-h','PUNCT']))
+		m2 = dict(zip([(2,4),(4,6),(0,6)],['iobj','dobj','ROOT']))
+		man_labels.update(m2)
+		concat2 = dict(zip([(0,2),(1,3),(3,5),(5,7), (1,4),(2,6),(4,7),(0,7),(2,5)],['nsubj+root', 'root+det','iobj-h+det','dobj-h+PUNCT','root+iobj', 'iobj+dobj', 'dobj+PUNCT','ROOT+PUNCT','iobj+det']))
+		man_labels.update(concat2)
+		minus = dict(zip([(1,6),(0,5),(0,4)],['nsubj\ROOT','ROOT/dobj-h','ROOT/dobj']))
+		man_labels.update(minus)
+		concat3 = dict(zip([(0,3),(2,7),(3,7),(3,6),(1,5)],['nsubj+root+det','iobj+dobj+PUNCT','iobj-h+dobj+PUNCT','iobj-h+dobj','root+iobj+det']))
+		man_labels.update(concat3)
+#		print set(l.keys()) -set(man_labels.keys())
+#		for key in l:
+#			if man_labels[key] != l[key]:
+#				print key, man_labels[key], l[key]
+		return man_labels == l
+		
+
 	def test_all_labels(self):
 		"""
 		Test for label all function
@@ -137,23 +161,22 @@ class DependencyTests():
 		man_labels.update(deplabels)
 		compound1 = dict(zip([(0,7),(2,6),(1,4),(0,2),(4,7),(1,3),(3,5),(2,5),(5,7),(0,5),(3,6)],['ROOT+PUNCT','iobj+dobj', 'root+iobj','nsubj+root','dobj+PUNCT','root+det','iobj-h+det','iobj+det','dobj-h+PUNCT','ROOT\dobj-h','iobj-h+dobj']))
 		man_labels.update(compound1)
-		compound2 = dict(zip([(0,4),(1,6),(1,7)],['ROOT\dobj','nsubj/ROOT','nsubj/(ROOT+PUNCT)']))
-		rest = dict(zip([(2,7),(3,7),(0,3),(1,5)],['(nsubj+root)/(ROOT+PUNCT)','iobj-h+dobj+PUNCT','ROOT\(iobj-h+dobj)','root+iobj+det']))
+		compound2 = dict(zip([(0,4),(1,6),(1,7)],['ROOT\dobj','nsubj/ROOT','nsubj/[ROOT+PUNCT]']))
+		rest = dict(zip([(2,7),(3,7),(0,3),(1,5)],['[nsubj+root]/[ROOT+PUNCT]','iobj-h+dobj+PUNCT','ROOT\[iobj-h+dobj]','root+iobj+det']))
 		man_labels.update(rest)
 		labels = d.label_all()
 		man_labels.update(compound2)
-#		for key in man_labels.keys():
-#			if man_labels[key] != labels[key]:
-#				print 'key', key, 'man_label', man_labels[key], 'auto', labels[key]
-		return labels == man_labels
+		assert set(man_labels.keys()) == set(labels.keys()), 'The labels for which spans are found are not identical'
+		for key in man_labels.keys():
+			assert man_labels[key] == labels[key], 'Different labels found for span %s\n Manual label: %s\n Automatic label: %s' % (key, man_labels[key], labels[key])
+		return True
 
 	def dependencies_test_all(self):
 		"""
 		Run all dependency tests.
 		"""
-		return self.spanrelations_test() and self.labels_test1() and self.labels_test2() and self.labels_annotation_test() and self.labels_test3() and self.rr_test() and self.lr_test() and self.allr_test1() and self.allr_test2() and self.test_all_labels()
+		return self.spanrelations_test() and self.labels_test1() and self.labels_test2() and self.labels_annotation_test() and self.labels_test3() and self.rr_test() and self.lr_test() and self.allr_test1() and self.allr_test2() and self.test_all_labels() and self.test_samt_labels()
 	
 if __name__ == "__main__":
 	x = DependencyTests()
-#	print x.test_all_labels()
 	print x.dependencies_test_all()

@@ -169,7 +169,7 @@ class Alignments:
 		for i in xrange(len(rule.spans)):
 			span = rule.spans[i]
 			if span not in self.compute_phrases():
-				rule.rhs[i] = lex_dict[span]
+				rule._rhs[i] = lex_dict[span]
 		return rule
 				
 			
@@ -558,8 +558,8 @@ class Rule:
 			waypoint = waypoint.link
 
 		self.spans = spans
-		self.rhs = self._rhs(labels)
-		self.lhs = self._lhs(labels)
+		self._rhs = self._rhs(labels)
+		self._lhs = self._lhs(labels)
 	
 	def rank(self):
 		"""
@@ -571,6 +571,8 @@ class Rule:
 		"""
 		Compute the probability of a rule according to
 		how many span_relations it makes true.
+		span_relations is a dictionary that describes
+		which nodes should be siblings.
 		"""
 		probability = 1
 		span_relations = span_relations[0]
@@ -604,14 +606,20 @@ class Rule:
 		"""
 		self.probability = 1
 	
+	def lhs(self):
+		return self._lhs
+	
 	def _lhs(self, labels):
 		"""
 		Create the left hand sides of the rule
 		and set as an attribute.
 		"""
 		lhs = labels.get((self.root[0],self.root[1]), "%s-%s" % (self.root[0],self.root[1]))
-		return nltk.Nonterminal(lhs)
-		
+		return Nonterminal(lhs)
+	
+	def rhs(self):
+		return self._rhs
+	
 	def _rhs(self,labels):
 		"""
 		Create the right hand sight of the rule
@@ -648,5 +656,5 @@ class Rule:
 			lhs --> rhs1 rhs2 rhs3
 		"""
 		return ("%s -> %s" % 
-			(self.lhs.symbol(), " ".join([self._str(rhs) for rhs in self.rhs])))
+			(self.lhs().symbol(), " ".join([self._str(rhs) for rhs in self.rhs()])))
 

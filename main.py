@@ -62,7 +62,6 @@ class Main():
 		average = float(total)/total_nodes
 		print 'average branching factor: %f' % average
 			 
-
 	def print_grammar_to_file(self,grammar_dict, grammar_to):
 		f = open(grammar_to,'w')
 		for lhs in grammar_dict:

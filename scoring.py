@@ -34,7 +34,7 @@ class Scoring():
 		Transform Rule object to WeightedProduction object (NLTK-style)
 		"""
 		#create list to transform rhs to Nonterminals
-		return WeightedProduction(rule.lhs, rule.rhs, prob = rule.probability)
+		return WeightedProduction(rule.lhs(), rule.rhs(), prob = rule.probability)
 	
 	def transform_to_Production(self, rule):
 		"""
