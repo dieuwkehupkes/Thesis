@@ -102,7 +102,10 @@ class Dependencies():
 				sentence = sentence.split()
 		else:
 			# create sentence from dependency parse
-			sentence = [''] * (self.wordspans[self.head_pos][1])
+			try:
+				sentence = [''] * (self.wordspans[self.head_pos][1])
+			except KeyError:
+				return ''
 			for relation in self.dep_list:
 				pos_word = self.find_dependent_pos(relation)
 				word = self.find_dependent(relation)

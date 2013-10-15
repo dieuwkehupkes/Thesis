@@ -529,8 +529,10 @@ class ProcessDependencies(ProcessFiles):
 		while new:
 #			print sentence_nr
 			if len(new[1].split()) < max_length:
-				dependencies = Dependencies(new[2])
-				percentage = dependencies.percentage_SAMT()
+				dependencies = Dependencies(new[2], new[1])
+				alignment = Alignments(new[0], new[1])
+				labels = dependencies.SAMT_labels()
+				percentage = alignment.percentage_labelled(labels)
 				total += percentage[0]
 				total_labelled += percentage[1]
 			sentence_nr += 1
