@@ -1,105 +1,126 @@
-\documentclass{report}
-\input{commands.tex}
-
-
-\begin{document}
+%\documentclass[hidelinks]{report}
+%\input{commands.tex}
+%
+%
+%\begin{document}
 
 \chapter{A new empirical Investigation of Compositionality}
 
-In the previous chapter we have motivated the need for an empirical analysis of compositional translation that combines bilingual information from translation data with monolingual syntactic information produced by a parser. We have introduced alignments and alignment trees, the main ingredients for such a datadriven analysis of compositionality, as well a dependency parses, the monolingual grammar formalism we will use. In this chapter, we will describe the research conducted in this paper, and motivate the explain the procedures that we used. 
+In the previous chapters, we have sketched the background for this thesis, introduced the translation strategy we are investigating, and argued that further research to this strategy is necessary. In the rest of this thesis, we will discuss the contribution of this thesis. We will present the research that was conducted, and a package that allows for further research in the same direction.
 
-We will start this chapter by stating explicitly what the goals of our investigation are, and how we hope to achieve them (Section \ref{sec:goals}). In Section \ref{sec:assumptions}, we will explicate the assumptions that are made in our research (and in empirical research based on real life datasets in general). In Sections \ref{sec:trans_structures} and \ref{sec:deps}, we will revisit the two main ingredients for our empirical analysis, alignment trees and dependency parses, respectively. We will discuss, in case of the former, which subset we are considering, and to how to generate this subset, and how to both alignment trees and dependency parses can be represented. In .... MAAK AF!!
-
-
+We will start this chapter by clearly stating what the main goals of this thesis are. This will include a recap of the motivation for this research. We will formulate the research questions that will be addressed, and of what nature the answers will be (Section \ref{sec:goals}). In the subsequent section (Section \ref{sec:setup}), we will present the general set-up, and inform the reader about the proceedings of the rest of the chapter, in which the different ingredients of our research are discussed in more detail (Section \ref{sec:assumptions} - \ref{sec:implementation}).
 
 
-\section{Goals}
+\section{Summary and Objectives}
 \label{sec:goals}
 
-The goals of this thesis are two fold. Firstly, we want evaluate dependencies from a bilingual perspective. That is, we will investigate how well the structure prescribed by a dependency parse coheres with bilingual intuitions, and what the main bottlenecks are. Such an analysis blablabla
+This thesis addresses the suitability of compositional translation as a strategy for translation between two natural languages. Compositional translation is a well examined topic in MT, where it is explored in the form of SCFGs, and its suitability is not likely to be confirmed or refuted in one thesis. Therefore, this thesis focusses on a subquestion, that relates to the role that monolingual syntax can play in creating a compositional grammar. It seems reasonable to assume that incorporating monolingual syntactic information about the source and/or target language could improve SCFGs models, as the two sides of an SCFG describe the structures of the source and target side languages, but in practice it proved to be very hard to actually exploit this information. In this thesis, we will examine this problem on an empirical level.
 
-Secondly, we want to see if dependency parses can be useful in creating a compositional translation system. This question is related to the former question, as .... and the complexity of determining its answer depends on the answer of the first question. If dependency structures cohere with 
+We are not the first to empirically assess the usefulness of monolingual information for MT models. Previous empirical studies have mainly focussed on the consistency between constituency grammars and translation data, and it was generally concluded that the bilingual coherence of phrases prescribed by such grammars was too low to be directly exploitable. Although unfortunate, this is not extraordinarily surprising, as constituency grammars are a purely syntactical system of language, while in translation it is but the semantics that should be preserved. We therefore propose that dependency grammars are a more suitable formalism to use for MT, as they are merely semantically motivated.
 
-In this thesis, we hope to address the 
-With which we address two questions: is compositional translation a reasonable strategy for translation of natural languages, and can we use monolingual syntax to support 
+There are studies that have explored the usefulness of dependency grammars for MT, but there are very few. \cite{hwa2002evaluating} investigated whether dependency grammars can be projected from English to Chinese through word alignments, but the quality of directly projected parses was very poor. The study did not account for phrasal translations or unaligned words, which made it relatively limited. A second study considering dependency parses was presented by \cite{fox2002phrasal}. In a study of which constituency grammars were the main focus, she also investigated how well the phrases suggested by dependency grammars stay preserved during translation. She concluded that dependency parses have better cohesive properties than constituency grammars, but did not investigate the causes for deviation from dependency structures. She used a heuristic to detect contiguous phrasal translations, but did not account for phrasal translations on a general level.
+ 
+In this thesis, we will present a more thorough investigation of dependency parses from a bilingual perspective. We will focus on the following three questions:
 
-It seems, that a compositional system of meaning for. blabla, should look like a monolingual compositional system.. 
-
-- how well do dependency parses represent monolinguistic structure from a bilingual perspective
-- can we use this information to design a compositional grammar
-
-\begin{enumerate}
-\item Can translation of natural language be treated compositionally?
-\item in particular: can monolingual syntax be helpful
-\item $\Rightarrow$ find evidence in real data
-\item more
-\end{enumerate}
-
-
-For such a study, an idiomatic expression or a strange phenomenon sitting in a corner of language is no evidence against compositionality, rather, we want to know how many phenomena and expressions are sitting in this corner, and if we can add all these phenomena and expressions to a compositional grammar without loosing the feeling that overall translations were compositional.
+\myparagraph{1. Are dependency structures universal for languages?}
+Contrary to earlier studies, we will not just focus on the coherence of phrases prescribed by dependency parses during translation. Rather, we will consider whether the compositional structures dependency parses give rise to are preserved over language, by checking for consistency of individual dependency relations with compositional translation structures of the sentence. Whether dependency relations are preserved over language is not only interesting for MT models, but also from a linguistic point of view, as studying dependency grammars through translation data offers perspective to its universality as a grammar formalism.\\
 
 \begin{figure}[!ht]
+
 \centering
 \input{Graphics/deps+trees.tex}
-\caption{New situations: finding consistency between dependency parses and compositional translation structures}\label{fig:depshats}
+\caption{Is ther consistency between dependency parses and alignment trees?}\label{fig:depshats}
 \end{figure}
+
+\myparagraph{2. What are the reasons dependency parses are not entirely preserved during translation?}
+Given previous studies, it is to be expected that dependency parses will not be entirely preserved during translation, resulting in the follow up question: `what are the main bottlenecks'. We will investigate what the phenomena are that cause dependency structures to change during translation.
+
+\myparagraph{3. Can dependency grammars be used to construct a bilingual compositional grammar?}
+When the direct preservation of dependency relations is assessed and the main bottlenecks are identified, a third question can be addressed, that touches on the bigger question regarding compositionality: can we use this information to construct a bilingual grammar matching translation data. As we do not develop an MT model, the answer to this last question will be rather speculative, because even if a compositional grammar could be constructed, we will not test it in practice. However, we can investigate whether the answers to the previous questions can be used to create a bilingual grammar that can generalise over different sentences and alignments, has good coverage over a corpus of sentences, and is able to assign structures to sentences that are in line with their alignment.\\
+
+In the next section, it will be discussed how this thesis intents to answer these questions. Before we, get there, we want to make a last remark about compositionality of translation, how the issue should be approached in an empirical study and how answers should be interpreted.
+
+\myparagraph{A remark about compositionality}
+It is often argued that translation cannot be treated compositionally because there are certain phenomena for which it is hard to find a compositional treatment.\footnote{A famous example that is often given is the translation of 'he swam across the river' into Spanish, where this is translated as `he crossed the river swimming', which is hard to give a compositional treatment \citep{landsbergen1989power}} In this paragraph, we want to anticipate these kind of arguments, by arguing that these phenomena are not necessarily problematic for compositional translation.
+
+As pointed out earlier, compositionality  of translation is highly underspecified as a principle. It requires that translation of phrases should be able to be derived from the meaning of smaller parts by means of translation equivalent rules, but it is not defined how complex these rules or parts are allowed to be. When constructing a compositional grammar, phrases that cannot be translated compositionally can be included in the grammar, without that grammar formally loosing the property of being compositional. We therefore want to argue that the non-compositional phenomena sitting in the corners of natural language are by themselves not arguments for the compositionality of language, and are thus not that interesting for the matter in practice. Rather, it is interesting \textit{how many} phenomena are located in this corner, and whether we can practically account for them without specifying directly for (almost) every sentence in the language what its translation is. The question `can every part of every sentence of natural language be translated compositionally' is thus not a sensible question, as the answer is: of course not. It is always possible to find odd constructions or idiomatic expressions that are hard to systematically map to another language. The important questions are: can we identify these non compositional parts in a corpus and include them in a grammar without losing the overall feeling that the grammar is compositional, and can such a grammar cover a reasonable part of natural language. Exactly these questions will be addressed in this thesis.
+
+\section{Set-up}
+\label{sec:setup}
+
+We have described the questions that will be addressed in this thesis, and the perspective we will take when investigating these questions. In this section, we will describe the proceedings of the rest of this chapter, and the general set-up of our experiments.
+
+We will address the first question by studying alignment trees, which can be interpreted as compositional translation structures, for all sentences in a parallel corpus. We will consider only the subset of these structures that is maximally compositional, and score these trees based on how many dependency relations are respected in them. The overall score of the corpus will give an indication of the consistency of the corpus with dependency parses.
+
+The second question will be addressed by a manual analysis of a subset of the results, in which the causes for non-consistency are further investigated.
+
+We will address the third question by...
+
+In the subsequent sections we will discuss the ingredients of our study. In section \ref{sec:assumptions}, we will discuss the basis of empirical studies of translation data, and the assumptions that they make. In Section \ref{sec:comp_structures2}, we will revisit compositional translation structures, motivate the subset we are considering, and discuss how we can generate and represent these structures. In Section \ref{sec:depparses}, we will briefly discuss how dependency parses are generated and represented. Section \ref{sec:depHATs}, one of the core sections of this chapter, discusses how consistency between alignment trees and dependency parses can be defined. In Section \ref{sec:em}, we will discuss... We end the chapter with some short comments on the implementation that was used to conduct this research.
 
 \section{Foundations of Empirical Studies}
 \label{sec:assumptions}
 
-The analysis of compositionality presented in this thesis is based on real data, that are not always perfect. When training MT models, infrequent mistakes in the data are generally not problematic, as they will receive a low probability. The same cannot be said for empirical analysis, were mistakes in the data will almost always harm the outcome. It therefore seems sensible to see empirical analysis as providing an upper- or lower bound (depending on the context) rather than an exact number. To appreciate empirical research, it is important to to know about the factors that influence the results, and the simplifying assumptions that are made to make it possible. In this section, we will discus these factors and assumptions, some of which may sound obvious, to provide a complete picture of the foundations of empirical studies.
+The analysis of compositionality presented in this thesis is based on real data, that are not always perfect. When training MT models, infrequent mistakes in the data are generally not problematic, as they will receive a low probability. The same cannot be said for empirical analysis, where mistakes in the data will almost always harm the outcome. It therefore seems sensible to see empirical analysis as providing an upper- or lower bound (depending on the context) rather than an exact number. 
+
+To appreciate empirical research, it is important to to know about the factors that influence the results, and the necessary simplifying assumptions. In this section, we will discus these factors and assumptions, some of which may sound obvious, to provide a complete picture of the foundations of empirical studies.
 
 \subsection{Correctness of the Translation Data}
 
-Empirical analyses based on parallel corpora with text that are each others translation, rely heavily on the correctness of the data in these these corpora. As these parallel texts were not designed as data for translation models, they might not be perfectly suitable for this purpose. There are three bottlenecks:
+Empirical analyses based on parallel corpora with text that are each others translation rely heavily on the correctness of the data in these these corpora. As these parallel texts were not designed as data for translation models, they might not be perfectly suitable for this purpose. There are three bottlenecks.
 
-\subsubsection{Sentence level alignment.}
-Aligning corpora on the sentence level is not as simple as it might seem. Texts are not always translated sentence by sentence. Short sentences may be merged or long ones broken up, and in some languages sentence delimiters do not really exist \citep[p.55]{koehn2008statistical}. However, the techniques for sentence alignment are very good, and as the languages we are considering \textit{do} have clear sentence delimiters it seems very reasonable to assume that the sentences in the corpora are correctly aligned.
+\subsubsection{Sentence level alignment}
+Aligning corpora on a sentence level is not as simple as it might seem. Texts are not always translated sentence by sentence. Short sentences may be merged or long ones broken up, and in some languages sentence delimiters do not really exist \citep[p.55]{koehn2008statistical}. However, the techniques for sentence alignment are very good, and as the languages we are considering \textit{do} have clear sentence delimiters it seems very reasonable to assume that the sentences in the corpora are correctly aligned.
 
-\subsubsection{Correctness of translation.}
+\subsubsection{Correctness of translation}
 The translations of the sentences are produced by humans, who sometimes make mistakes. To use the corpora, we have to assume that the aligned sentences are good translations of each other.
 
-\subsubsection{Translation is literal.}
-One English sentence often has many translations in another language, as similar meanings can be expressed in multiple ways.\footnote{In fact, considering only one target translation can also be seen as a simplification made in empirical research, and in MT in general.} For instance `jeg giver dig blomster' is a good Danish translation of `I give you flowers', but so is `jeg giver blomster til dig' (and the amount of rephrasing in this example is even rather minimal). Especially when one text is not a direct translation of the other text, but the two are, for instance, just separate reports of the same event, it might happen that sentences do have the same meaning, but are not very similar in form. In our analysis, we will assume that at least the vast majority of the translations in the corpora are rather literal.
+\subsubsection{Translation is literal}
+One English sentence often has many translations in another language, as similar meanings can be expressed in multiple ways.\footnote{In fact, considering only one target translation can also be seen as a simplification made in empirical research, and in MT in general.} For instance `jeg giver dig blomster' is a good Danish translation of `I give you flowers', but so is `jeg giver blomster til dig' (and this is not even an example in which many things are rephrased). Especially when one text is not a direct translation of the other text, but the two are, for instance, just separate reports of the same event, it might happen that sentences do have the same meaning, but differ in form. In our analysis, we will assume that at least the vast majority of the translations in the corpora are rather literal.
  
 \subsection{Correctness Word Alignments}
 
-In empirical analyses, as well as MT-models, word-alignments are used to establish translational correspondences, and are thus of crucial importance. Unfortunately, automatic alignments are not always as good as we want them to be \citep{och2000improved}. MT-models generally do not suffer much from this fact, because the number of untrue alignment links is dwarfed by the number that is correct. For empirical research, false alignment links are quite problematic, as even one wrong link can have a huge effect on the space of possible translation trees. An option is to use one of the few manually aligned corpora, but given their small size they are not suitable to draw conclusions about larger parts of language.
+In empirical analyses, as well as MT-models, word-alignments are of crucial importance, as they are used to establish translational correspondences. Unfortunately, automatic alignments are not always as good as we want them to be \citep[see][for concrete numbers]{och2000improved}. MT-models generally do not suffer much from this fact, because the number of untrue alignment links is dwarfed by the number that is correct. For empirical research, false alignment links are quite problematic, as even one wrong link can have a huge effect on the space of possible translation trees. An option is to use one of the few manually aligned corpora, but given their small size they are not suitable to draw conclusions about larger parts of language.
 
 \subsection{Correctness Dependency Parses}
 
-To determine the dependency structures of the sentences in the corpus, an efficient fully automated dependency parser is needed.  For English, high quality dependency parses are available \citep{cer2010parsing}, but the parses they produce are not perfect, which can be problematic for an empirical analysis.
+To determine the dependency structures of the sentences in the corpus, an efficient fully-automated dependency parser is needed.  For English, high quality dependency parses are available \citep{cer2010parsing}, but the parses they produce are not perfect, which can be problematic for an empirical analysis.
 
 
 
 \section{Translation Structures}
+\label{sec:comp_structures2}
 
-The bilingual part of our analysis is constituted by a subset of all alignment trees as described in \ref{subsec:alignment_trees}. We will consider all alignment trees that are \textit{maximally compositional} (they describe a translation with a maximal number of rules). This subset was previously defined in \cite{simaan2013hats}, we will follow their notation and call them Hierarchical Alignment Trees (HATs). In \cite{simaan2013hats}, the nodes of the HATs are augmented with operators that describe how its children should be permuted to obtain the corresponding target side tree. We will not consider these operators in this thesis, and the term `HAT' will thus refer to a skeleton of a HAT, rather than its full version. In this section, we will give an intuitive description of a HAT skeleton, that will help us to motivate our choice for this subset, and we will ..  MAAK AF!
+As mentioned before, our analysis consists of two ingredients: bilingual alignment trees and monolingual dependency parses. In this section we will revisit alignment trees, we will motivate the subset we are considering, and we will present how to represent them in a flexible and efficient fashion.
+
+\subsection{HATs}
+
+In this thesis, we will consider the subset of alignment trees that are \textit{maximally compositional} (they describe a translation with a maximal number of rules). This subset was previously defined in \cite{simaan2013hats}, who call these trees Hierarchical Alignment Trees (HATs). In their paper, the nodes of the HATs are augmented with operators that describe how their children should be permuted to obtain the corresponding target side tree. We will not consider these operators in this thesis, but use use the term HAT to refer to a HAT skeleton, rather than its full version. In the following subsections, we will motivate our choice for HATs, and discuss how they can be accessibly represented.
 
 \subsection{Motivation}
 
-A HAT describes a maximally compositional translation of a sentence, given its alignment, and is characterised by the following properties:\begin{enumerate}
+Before we motivate our choice for HATs, consider the following set of properties, by which a HAT is characterised:\begin{enumerate}
 \item A HAT is a projective tree whose leaf nodes form a sentence.
 \item A HAT describes a compositional translation of the sentence constituted by its leaf nodes.
-\item All non-terminal nodes dominate a translation admissible sequences, while sibling non-terminal nodes together constitute a translation admissible sequence.
+\item All non-terminal nodes of a HAT dominate a sequence that is translation admissible according to the alignment of the sentence, while sibling non-terminal nodes together constitute a translation admissible sequence.
 \item A node in a HAT can have both non-terminal and terminal child nodes at the same time.
 \item All nodes in a HAT expand into a minimal number of children.
 \end{enumerate}
 
-\noindent Maximum compositionality gives HATs several attractive properties, which we will discuss in this subsection.
+\noindent A HAT is thus an alignment tree that describes a maximally compositional translation of a sentence. The property of being maximally compositional gives HATs several attractive properties, which we will discuss in this subsection.
 
 \subsubsection{Computational}
-There is a clear computational advantage to considering only minimally branching trees. Not only does it significantly reduces the space of trees to be considered - the example sentence previously used in Section \label{sec:comp_structures} for explaining alignment trees\footnote{Sentence pair: (`My dog also likes eating sausages', `Mijn hond houdt ook van worstjes eten')\\Set-permutation: $\langle \{0\}, \{1\}, \{3\}, \{2,4\}, \{6\}, \{5\}\rangle$. } has 44 alignment trees, but only 5 of them are minimally branching - it also simplifies parsing, as the lower-rank rules that can be extracted from minimally branching trees can be more efficiently treated by parsing algorithms.
+There is a clear computational advantage to considering only minimally branching trees. Not only does it significantly reduces the space of trees to be considered - the example sentence previously used in Section \ref{sec:comp_structures} for explaining alignment trees\footnote{Sentence pair: (`My dog also likes eating sausages', `Mijn hond houdt ook van worstjes eten')\\Set-permutation: $\langle \{0\}, \{1\}, \{3\}, \{2,4\}, \{6\}, \{5\}\rangle$. } has 44 alignment trees, but only 5 of them are minimally branching - it also simplifies parsing, as the lower-rank rules that can be extracted from minimally branching trees can be more efficiently treated by parsing algorithms.
 
 \subsubsection{Theoretical}
 
-Of course, such computational considerations are less important for an empirical analysis (although even for empirical analysis computational requirements should match the reality). However, also theoretically HAT skeletons are very attractive, which we will explicate in the following paragraphs.
+Of course, such computational considerations are less important for an empirical analysis (although even for empirical analysis computational requirements should match the reality). However, maximal compositionality also has some attractive properties besides the compositional ones, which we will explicate in the following paragraphs.
 
-\paragraph{Compositionality} Considering only minimally branching trees secures that the system we are studying is in fact compositional. The set of all alignment trees contains many flat trees, that can strictly speaking be seen as compositional (as compositionality is highly underspecified in this respect), but do not capture the recursive and systematic nature of language. A compostional system containing a separate rule for almost every sentence that specifies how its meaning can be derived from \textit{all of its words} does certainly not correspond with human intuitions about compositionality, not to mention the fact that such a system should have an infinite number of rules to cover the entire language, considering only minimally branching trees sovles this problem.
+\paragraph{Compositionality} Considering only minimally branching trees secures that the system we are studying is in fact compositional. The set of all alignment trees contains many flat trees, that can strictly speaking be seen as compositional (as compositionality is highly underspecified in this respect), but do not capture the recursive and systematic nature of language. A compostional system containing a separate rule for almost every sentence that specifies how its meaning can be derived from \textit{all of its words} does certainly not correspond with human intuitions about compositionality, not to mention the fact that such a system should have an infinite number of rules to cover the entire language. Considering only minimally branching trees solves this problem.
 
 \paragraph{Generalisation} Considering only expansions that are maximally compositional maximises the chance that generalisation to new data is possible: a rule that specifies how a type of argument can be combined with a type of predicate is more useful than a rule specifying how the argument `I' can be combined with the predicate `like'. Minimum depth expansions are more probable to be applicable in new situations. 
 
-Figure \ref{fig:nepas} shows how French negation, often mentioned as problematic for structure based systems, is accounted for with a HAT skeleton. The translation tree shows that `I dont like' is the translation of `Je n'aime pas', but also contains the information that `don't' is phrasally translated as `ne ... pas'. Removing the negation in the English sentence results in the grammatical English sentence `I like cars', removing its translation equivalent in the France sentence in its (almost) grammatical `Je aime les voitures'. 
+Figure \ref{fig:nepas} shows how French negation, often mentioned as problematic for structure based systems, is accounted for with a HAT skeleton. The translation tree shows that `I dont like' is the translation of `Je n'aime pas', but also contains the information that `don't' is phrasally translated as `ne ... pas'. Removing the negation in the English sentence results in the grammatical English sentence `I like cars', removing its translation equivalent in the French sentence in its (almost) grammatical `Je aime les voitures'. If `I don't like' was generated in one rule, this generalisation would not have been possible.
 
 \begin{figure}[!ht]
 \centering
@@ -109,27 +130,34 @@ Figure \ref{fig:nepas} shows how French negation, often mentioned as problematic
 
 \paragraph{Preservation of structure of phrasal translations}
 
-An advantage that overlaps with the two previously mentioned advantages, but is worth noting nevertheless, is the fact that structure of phrasally translated sequences is preserved, if possible. As the rest of the tree, sequences of words will be translated directly only if they do not have a deeper structure according to the translation data. In many phrase-based translation systems, including the successful hierarchical phrase based system proposed by \cite{chiang2007hierarchical}, the underlying system of sequences that are translated phrasally gets lost in the process, whereby the system misses an opportunity to detect a pattern. HAT skeletons fully exploit recursiveness, also in idiomatic and phrasal translations. We will revisit an example containing syntactic translation to illustrate how a structural treatment of phrasal translation is helpful.
+An advantage that overlaps with the two previously mentioned advantages, but is worth noting nevertheless, is the fact that structure of phrasally translated sequences is preserved, if possible. As the rest of the tree, sequences of words will be translated as a phrase only if they do not have a deeper structure according to the translation data. In many phrase-based translation systems, including the successful hierarchical phrase based system proposed by \cite{chiang2007hierarchical}, the underlying structure of sequences that are translated phrasally gets lost in the process, whereby the system misses an opportunity to detect a pattern. HATs fully exploit recursiveness, also in idiomatic and phrasal translations. We will revisit an example containing syntactic divergence to illustrate how a structural treatment of phrasal translation is helpful.
 
-In Russian, `X has Y` is (communistically) translated as `with X is Y', the object in English is thus the subject in Russian. Figure \ref{fig:russian} shows how this is dealt with in a translation structure. Due to the structural treatment of the phrasal translation, this translation tree is easily extendible to longer sentences with the same construction. By expanding the non-terminal nodes it can also capture sentences like `the girl with the long blond hair has a very old car with broken windows'.
+In Russian, `X has Y' is (somewhat communistically) translated as `with X is Y', the object in English is thus the subject in Russian. Figure \ref{fig:russian1} shows how this is dealt with in a translation structure. Due to the structural treatment of the phrasal translation, this translation tree is easily extendible to longer sentences with the same construction. By expanding the non-terminal nodes it can also capture sentences like `the girl with the long blond hair has a very old car with broken windows'.
 
 \begin{figure}[!ht]
 \centering
 \input{Graphics/syntactic_linked_structures.tex}
-\caption{Translation of possession, Russian-English}\label{fig:russian}
+\caption{Translation of possession, Russian-English}\label{fig:russian1}
 \end{figure}
 
 
 \subsubsection{Critical Note}
 
-Intuitively, \textit{maximal} compositionality is sometimes a bit strict. When constructing a sentence that has an predicate with two arguments, it is linguistically not always plausible to assume that the predicate is combined with the arguments one by one. In translation, this issue issue is enhanced by the fact that arguments of a predicate may not be in the same order for different languages. A HAT describing a translation in which this happens is forced to combine the arguments with each other before combining them with the predicate. Although these issues do not influence the generative capacity of the system, their treatment may sometimes seem counter intuitive.
+Intuitively, maximal compositionality sometimes seems somewhat strict. When constructing a sentence that has an predicate with two arguments, it is linguistically not always plausible to assume that the predicate is combined with the arguments one by one. In translation, this issue issue is enhanced by the fact that arguments of a predicate may not be in the same order for different languages. A HAT describing a translation in which this happens is forced to combine the arguments with each other before combining them with the predicate. Although these issues do not influence the generative capacity of the system, their treatment may sometimes seem counter intuitive.
 
 
 \subsection{Representation}
 
-To study HATs, we need to be able to generate the HAT skeletons for every sentence. Generating and storing all trees separately would be both time and space consuming, and would impede a flexible search through them. Hence, a suitable representation of the set of HATs is required. In this thesis, we will represent the set of HATs for a sentence implicitly by a context-free grammar, that describes for every (translation admissible) span of the sentence how it is allowed to split in parts. The nodes are labelled with the spans they dominate. Figure \ref{fig:grammar} provides an example. %Explain the advantages of representing HATs with contextfree grammars?
+To study HATs, we need to be able to generate the HAT skeletons for every sentence. Generating and storing all trees separately would be both time and space consuming, and would impede a flexible search through them. Hence, a suitable representation of the set of HATs is required. We want a representation that is easy to search, but is also flexible to abstract other kinds of information from and to combine and compare with other HATs.
 
-\begin{figure}[!ht]\begin{framed}
+
+The original HAT paper \citep{simaan2013hats} already provided an implementation to generate all HATs of a sentence, represented as a compact chart. Unfortunately, this implementation could not easily be used for the purpose of this paper. The chart representation was not easily accessible and completely ignored unaligned words, which might be a reasonable simplification in some cases but is not desirable for empirical analysis.
+
+For this thesis, we aimed to represent the set of HATs in a flexible way, that could be easily extended to use for other purposes. We chose to represent the set implicitly by a context-free grammar, that describes for every (translation admissible) span of the sentence how it is allowed to split in parts. The nodes are labelled with the spans they dominate. Figure \ref{fig:grammar} provides an example.
+
+HATS represented as context free grammars are easy to wield. HATs with certain properties can be searched through parsing, compared with other HATs by comparing productions, and when its nodes are associated with labels, the grammars representing two HATs can be easily summed up to a new one. 
+
+\begin{figure}\begin{framed}
 \small{
 \begin{tabular}{llllll}
 (0-6] $\rightarrow$ (0-1]  (1-6] && (4-6] $\rightarrow$ (4-5]  (5-6] && (0-1] $\rightarrow$ My\\
@@ -145,9 +173,10 @@ To study HATs, we need to be able to generate the HAT skeletons for every senten
 \end{framed}
 \end{figure}
 
-The allowed expansions were found with an algorithm similar to \citepos{dijkstra1959note} shortest path algorithm (Algorithm \ref{alg:shortest paths}), that was adapted to be more efficient given the extra knowledge of the alignment graph.
+\subsection{Generation}
+To generate the HAT forest for an alignment, it suffices to find the minimal segmentations for all contiguous translation admissible subsequences of the alignment. We generated the set of contiguous translation admissible subsequences (i.e., the source side of a phrase pair) with the shift-reduce algorithm presented in \cite{zhang2008extracting}. Some small adaptations were necessary to generate the full set of phrase pairs, rather than only the `tight' subset, in which unaligned words at the boundaries were not included. To find the minimal segmentations of all phrases we used \citepos{dijkstra1959note} shortest path algorithm (Algorithm \ref{alg:shortest paths}), that we adapted to search for \textit{all} shortest paths rather than just one, and to incorporate the information that, given the direction of the edges, only searching in nodes with a larger value could actually lead to a shortest path, which made the search more efficient. Details are provided in Algorithm \ref{alg:shortest paths}. For memory efficiency, all paths were stored in a linked list with path points that were shared among different paths.
 
-\begin{algorithm}[!ht]
+\begin{algorithm}
 \caption{Shortest Paths}\label{alg:shortest paths}
 \begin{algorithmic}
 \STATE \textbf{Input:} A graph $G = (V,E)$ describing an alignment and two vertices $i$ and $j$ for which $(i,j)\in E$ is true.
@@ -181,23 +210,20 @@ The allowed expansions were found with an algorithm similar to \citepos{dijkstra
 
 
 \section{Dependency parses}
+\label{sec:depparses}
 
-The monolinugal part in our analysis consists of information about the dependency structure of a sentence. Following common practice, in this thesis it is assumed that this dependency structure satisfies the following two conditions:\begin{enumerate}
+The monolingual part in our analysis consists of information about the dependency structure of a sentence. Following common practice, in this thesis it is assumed that this dependency structure satisfies the following two conditions:\begin{enumerate}
 \item When seen as a relation, $D$ constitutes a single-headed a-cyclic graph in which the words in $s$ are the nodes. (tree-constraint)
 \item When the words are placed in the original order, the branches of the dependency tree do not cross. (projectivity)
 \end{enumerate}
 
-As we have already defined dependency parses in Section \ref{sec:dep_parse}, we will not do this again. We will, however, explicate how we represent and generate dependency parses.
+As we have already defined dependency parses in Section \ref{sec:dep_parses}, we will not do this again. We will, however, explicate how we represent and generate dependency parses.
 
 \subsection{Representation}
 
-We will represent a dependency parse as a set of relations, as is expressed in the following definition:\footnote{Note that this definition is different from the definition given in \ref{sec:dep_parse}, but expresses the same type of object.}
+We will represent a dependency parse of a sentence $s = w_0\cdots w_n$ as a set of relations $D = \{(i,j)|$ there is a dependency arrow from word $w_i$ to word $w_j \}$. 
 
-\begin{definition}[Dependency structure]
-A dependency structure of a sentence $s = w_0\cdots w_n$ is a set of dependencies $D = \{ (i,j) |$ there is a dependency arrow from word $w_i$ to word $w_j \}$. 
-\end{definition}
-
-Formally, dependency grammars are not interpreted as compositional grammars, as they do not postulate the existence of non-terminal syntactic categories and therefore do not explicitly specify how a sentence was built up from its parts. However, dependency graphs do give rise to an hierarchical structure, that specifies from which smaller parts the sentence was composed. For instance, the dependency graph depicted in Figure \ref{fig:deptree1} tells us that `likes' is the head word of the sentence, and that the sentence is composed of 4 parts: the head `likes', its modifier `also', its noun subject whose head is `dog' and the open clausal complement whose head is `eating'. The complement and subject are further divisible in `My' and `dog', and `eating' and `sausage', respectively. As the tree is projective, all parts are continuous. Also the graph in Figure \ref{fig:depgraph} we saw earlier prescribes an hierarchical structure: it is composed of the subject `I', the headword `know', and the phrase headed by `liet', that is in its turn built up from its head `liet', `dat', `hij' and the discontinous phrase `me winnen'. Such an hierarchical structure can not be captured by a phrase structure grammar.
+Formally, dependency grammars are not interpreted as compositional grammars, as they do not postulate the existence of non-terminal syntactic categories and therefore do not explicitly specify how a sentence was built up from its parts. However, dependency graphs do give rise to a hierarchical structure, that specifies from which smaller parts the sentence was composed. For instance, the dependency graph depicted in Figure \ref{fig:deptree} tells us that `likes' is the head word of the sentence, and that the sentence is composed of 4 parts: the head `likes', its modifier `also', its noun subject whose head is `dog' and the open clausal complement whose head is `eating'. The complement and subject are further divisible in `My' and `dog', and `eating' and `sausage', respectively. As the tree is projective, all parts are continuous. Also the graph in Figure \ref{fig:depgraph} we saw earlier prescribes an hierarchical structure: it is composed of the subject `I', the headword `know', and the phrase headed by `liet', that is in its turn built up from its head `liet', `dat', `hij' and the discontinous phrase `me winnen'. Such an hierarchical structure can not be captured by a phrase structure grammar.
 
 \begin{figure}[!h]\label{fig:deptree1}
 \centering
@@ -213,23 +239,24 @@ My \& dog \& also \& likes \& eating \& sausage \\
 \depedge{4}{5}{xcomp}
 \depedge{5}{6}{dobj}
 \end{dependency}
-\caption{Stanford Dependency Tree}\ref{fig:deptree}
+\caption{Stanford Dependency Tree}\label{fig:deptree}
 \end{figure}
 
 \subsection{Generation}
 
-To assign dependency structures to sentences, we used the Stanford Dependency Parser, that can be downloaded from their website, as well as used online  \citep{de2006generating}. The parser provides 5 variants of a typed dependency representation, of which the most basic one corresponds to the earlier imposed conditions on dependency structures. A picture of a dependency parse that was generated by the parser is depicted in Figure \ref{fig:deptree}.
+To assign dependency structures to sentences, we used the Stanford Dependency Parser, that can be downloaded from their website, as well as used online  \citep{de2006generating}. The parser provides 5 variants of a typed dependency representation, of which the most basic one corresponds to the earlier imposed conditions on dependency structures \citep{de2008stanford}. A picture of a dependency parse that was generated by the parser is depicted in Figure \ref{fig:deptree}.
 
-Unfortunately, the dependency parser used \citep{de2006generating} does not cover all tokens of the input sentences, as dependency relations between words and punctuation are not present in the Stanford Dependency Representation. The resulting dependency trees do thus not always cover the entire sentence.
+Unfortunately, the Stanford dependency parser used does not cover all tokens of the input sentences, as dependency relations between words and punctuation are not present in the Stanford Dependency Representation. The resulting dependency trees do thus not always cover the entire sentence.
 
 
-\section{Dependency Grammars from a bilingual perspective.}
+\section{Comparing Dependency Parses and HATs}
+\label{sec:depHATs}
 
 In this section, we will discuss how the consistency between dependency grammars and translation data can be measured.
 
 \subsection{Scoring an Alignment Tree}
 
-Quantifying the consistency between a dependency tree and an alignment is not trivial. When a dependency tree prescribes a parts that are all parts according to the alignment, there is no dubiety: such an alignment should get an optimal score. If this is not the case, it is less clear, as there are multiple things that should be taken into account. Not only should the measure of consistency be based on whether the head and its dependent are both phrases according to the alignment, they should also be combined in a reasonable fashion.
+Quantifying the consistency between a dependency tree and an alignment is not a trivial task. When the parts described by a dependency tree are all parts according to the alignment, there is no dubiety: such an alignment should get an optimal score. If this is not the case it is less clear, as there are multiple things that should be taken into account. Not only should the measure of consistency be based on whether the head and its dependent are both phrases according to the alignment, they should also be combined in a reasonable fashion.
 
 To give an abstract example, consider the following dependency parse and alignment trees:
 
@@ -248,9 +275,9 @@ A \& B \& C \& D \\
 \end{tabular}}
 \end{figure}
 
-All the parts that exist in the dependency tree also exist in all alignment trees. The third alignment tree is obviously most similar to the dependency parse, as it prescribes the same compositional structure, and uses the same number of rules. However, the first and second alignment tree are indistinguishable if only the number of correct (and possibly incorrect) nodes is considered, as they both contain two correct, and one incorrect node. However, the second alignment tree seems more in line with the dependency parse than the first one, as it does not only prescribes that A should be combined with B into a new part, but also that C and D are combined in the same stage.
+All the parts that exist in the dependency tree also exist in all alignment trees. The third alignment tree is obviously most similar to the dependency parse, as it prescribes the same compositional structure, and uses the same number of rules. However, the first and second alignment tree are indistinguishable if only the number of correct (and possibly incorrect) nodes is considered, as they both contain two correct, and one incorrect node. However, the second alignment tree seems more in line with the dependency parse than the first one, as it does not only prescribe that A should be combined with B into a new part, but also that C and D are combined with one rule.
 
-The analysis of the example provided a new insight, as it seems, alignment trees and dependency parses are intuitively compatible if the relations in the dependency parse are respected by the alignment tree, and the score of an alignment should be proportional with what percentage of all dependency relations is respected by it. An alignment will then receive of its alignment trees that scores highest.
+The analysis of the example provides a new insight: as it seems, alignment trees and dependency parses are intuitively compatible if the relations in the dependency parse are respected by the alignment tree, and the score of an alignment should be proportional with what percentage of all dependency relations is respected by it. An alignment will then receive the score of its highest scoring HAT.
 
 \subsection{Consistency of Dependency Relations}
 
@@ -268,7 +295,7 @@ Under this definition of consistency, the first alignment tree in the previous e
 
 \subsubsection{Deeper Consistency}
 
-We have previously mentioned, that assuming maximal compositionality is not necessarily in line with linguistic intuitions. Dependency parses are certainly general, but are not constructed to be \textit{maximally} recursive. We will give two examples of sentences that are intuitively compositionally translated, but do not get a maximal score due to this issue.
+We have previously mentioned, that assuming maximal compositionality is not necessarily in line with linguistic intuitions and dependency parses. Dependency parses are certainly general, but are not constructed to be \textit{maximally} recursive. We will give two examples of sentences that are intuitively compositionally translated, but do not get a maximal score due to this issue.
 
 Firstly, consider the sentence `I give you flowers', and its (word-for-word) translation `Ik geef jou bloemen', with dependency parse:
 
@@ -290,7 +317,7 @@ I \& give \& you \& flowers \\
 
 The tree depicted next to the dependency parse is the only tree that respects all dependency relations. The sentence is very short and the dependency parse therefore very flat. In a tree that respects all relations according to Definition \ref{def:depHAT}, `I', `give', `you', and `flowers' are all siblings, which means the tree depicted next to the dependency parse is the only tree obtaining a maximal score. However, as the sentence is word for word translation, all subsequences are translation admissible, and all HATs will be completely binary. Even though the translation seems intuitively compositional, none of the HATs will receive a score higher than 1/4, because the dependency parse is not maximally branching.
 
-A similar situation arises when two arguments are translated into one which happens, e.g., when arguments are translated as pre- or suffixes, when verbs do not require a subject or when spaces are emitted). Consider for instance the sentence 'Can you give me the salt' and its Italian translation 'puoi passarmi il sale':
+A similar situation arises when two arguments are translated into one, which happens, e.g., when arguments are translated as pre- or suffixes, when verbs do not require a subject or when spaces are emitted). Consider for instance the sentence 'Can you give me the salt' and its Italian translation 'puoi passarmi il sale':
 
 \begin{figure}[!ht]
 \centering
@@ -318,7 +345,7 @@ Puoi \& passarmi \& il \& sale \\
 }
 \end{figure}
 
-Once again, the predicate-argument structure of the sentence is well preserved. However, the some of the arguments are merged into single words in the italian sentence. Besides the issue raised in the previous paragraph (the dependency structure is not maximally compositional), an additional problem thus arose: except for `me', none of the arguments can combine directly with `give' in an alignment tree, because `give' and `me' are one word in Italian, and will thus form a unit on their own. `Can' and `you' cannot combine with `give' at all, because they are first combined together. The maximum score a HAT of this translation could receive would thus be 2/5, in which only the relations (give, me) and (salt, the) are respected.
+Once again, the predicate-argument structure of the sentence is well preserved. However, the some of the arguments are merged into single words in the Italian sentence. Besides the issue raised in the previous paragraph (the dependency structure is not maximally compositional), an additional problem thus arose: except for `me', none of the arguments can combine directly with `give' in an alignment tree, because `give' and `me' are one word in Italian, and will thus form a unit on their own. `Can' and `you' cannot combine with `give' at all, because they are first combined together. The maximum score a HAT of this translation could receive would thus be 2/5, in which only the relations (give, me) and (salt, the) are respected.
 
 To solve such issues, predicates should be able to combine with their arguments in stages (e.g., combine `give' with `you', combine `give you' with `flowers', combine `I' with `give you flowers'). Under this perspective, a dependency relation is respected by a HAT if it is siblings with the head itself, or the head plus arguments the head earlier combined with, which is expressed in the following definition:
 
@@ -330,7 +357,10 @@ Let $s = w_1 w_2 \dots w_n$ be a sentence, and $D = \{ (i,j) |$ there is a depen
 \end{enumerate} 
 \end{definition}
 
-This extension of the definition of consistency between HATs and dependency parses solves the discrepancy between the type of compositionality of HATs and dependency parses only partly. The first example receives a maximal score using this definition, but the second does not, as `can' and `you' can still not combine with give one by one. Definition \ref{def:depHAT2} can also not account for severe reordering of the arguments in translation. However, we believe that extending the definition even further (by for instance allowing the arguments to combine all together first and then with the argument, or with part of the argument), would move away too far from what the dependency parse is in fact encoding. %I am not sure if I should put this in at all?
+This extension of the definition of consistency between HATs and dependency parses solves the discrepancy between the type of compositionality of HATs and dependency parses only partly. The first example receives a maximal score using this definition, but the second does not, as `can' and `you' can still not combine with give one by one. 
+
+The more flexible definition \ref{def:depHAT2} thus does not cover all discrepancy between dependency parses and HATs. It can nor account for two arguments that are translated together, and neither for too severe reordering of arguments of dependency parses in translation. However, for several reasons we have chosen to not make an even more flexible version of consistency, the most important of which is that we believe we would move away too far away from what dependency parses are encoding. Although allowing arguments to combine with each other first before combining with the predicate would in some situations lead to a more appropriate score, it will in many situations assign optimal scores to HATs that do not adequately represent the compositional structure prescribed by the dependency parse.
+%I am not sure if I should put this in at all?
 
 
 \paragraph{Remark} As previously mentioned, the Stanford Dependency style does not include punctuation. Where in the first consistency definition this did not really get in the way, it becomes problematic for the second, as tokens that are not involved in any dependency relation can interfere with the definition of consistency. To account for this, we allowed punctuation (or other tokens not processed by the dependency parser) to combine freely with the closest units (of arbitrary size), without them affecting the score.
@@ -354,14 +384,15 @@ The score can be normalised by dividing by $|D|$.
 The score of an alignment can now be determined by parsing the corresponding sentence with the grammar that represents its HAT forest of the alignment to find its best HAT. Details on implementation can be found in Appendix \ref{appendix:implementation}.
 
 \section{Bilingual grammars Using Dependency grammars}
+\label{sec:em}
 
-Something about EM and training a grammar
+Something about training a grammar and statistical analysis (EM? Nr of rules that occur just once?)
 
 
 \section{Implementation}
+\label{sec:implementation}
 
-The program that was developed for these experiments is available on
-\href{https://github.com/dieuwkehupkes/Thesis}{https://github.com/dieuwkehupkes/Thesis}. Appendix \ref{appendix:implementation} provides an extensive documentation for the program, as well as instructions on how to download and use it.
-
-\bibliography{thesisDH}
-\end{document}
+We have aimed to implement our experiments in such a way that it is reusable by others, and can easily be extended to other experiments. The package that was developed is available on  \href{https://github.com/dieuwkehupkes/Thesis}{https://github.com/dieuwkehupkes/Thesis}. Appendix \ref{appendix:implementation} provides an extensive documentation for the program, as well as instructions on how to download and use it.
+%
+%\bibliography{thesisDH}
+%\end{document}
