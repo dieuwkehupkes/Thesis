@@ -516,7 +516,7 @@ class ProcessDependencies(ProcessFiles):
 			new = self.next()
 		return branching_dict
 
-	def labelled_SAMT(self,max_length):
+	def percentage_labelled(self,max_length, label_type):
 		"""
 		Compute the percentage of the spans in the dictionary
 		that is labelled by
@@ -532,7 +532,7 @@ class ProcessDependencies(ProcessFiles):
 				dependencies = Dependencies(new[2], new[1])
 				if dependencies.checkroot():
 					alignment = Alignments(new[0], new[1])
-					labels = dependencies.SAMT_labels()
+					labels = label_type(dependencies)
 					percentage = alignment.percentage_labelled(labels)
 					total += percentage[0]
 					total_labelled += percentage[1]

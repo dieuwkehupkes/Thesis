@@ -4,6 +4,7 @@ Module for dealing with dependencies.....
 
 import re
 import copy
+from labelling import *
 
 class Dependencies():
 	"""
@@ -329,62 +330,15 @@ class Dependencies():
  		"""
  		#find basic labels
  		labels_basic = self.dependency_labels()
-# 		#find 2 concatenated labels
-		labels = copy.deepcopy(labels_basic)
-		labels = self.update_concatenated_labels2(labels_basic,labels)
-#		#find 'minus'-labels
-		labels = self.update_minus_labels(labels_basic,labels)
-#		#find 3 concatenated labels
-		labels = self.update_concatenated_labels3(labels_basic,labels)
-  		return labels		
-  			
- 	def update_concatenated_labels2(self,labels_i,labels_o):
- 		"""
- 		Update a dictionary labels_o with all labels
- 		that are a concatenation of two labels
- 		in the inputted set of input labels labels_i.
- 		"""
- 		concat_list = [(span1,span2) for span1 in labels_i for span2 in labels_i if span1[1] == span2[0]]
-   		for span in concat_list:
-   			
-  			new_label = '%s+%s' % (labels_i[span[0]], labels_i[span[1]])
-  			new_span = (span[0][0],span[1][1])
-  			labels_o[new_span] = labels_o.get(new_span,new_label)
-  		return labels_o
- 	
- 	def update_concatenated_labels3(self,labels_i,labels_o):
- 		"""
- 		Update a dictionary labels_o with labels that are a
- 		concatenation of three labels of the inputted set of
- 		labels, labels_i.
- 		"""
- 		concat_list = [(span1,span2,span3) for span1 in labels_i for span2 in labels_i for span3 in labels_i if span1[1]==span2[0] and span2[1] == span3[0]]
- 		for span in concat_list:
- 			new_label = '%s+%s+%s' % (labels_i[span[0]],labels_i[span[1]],labels_i[span[2]])
- 			new_span = (span[0][0],span[2][1])
- 			labels_o[new_span] = labels_o.get(new_span,new_label)
- 		return labels_o
- 	
- 	def update_minus_labels(self,labels_i,labels_o):
- 		"""
- 		update a dictionary labels_o with labels that are
- 		of the form A\B, or B/A, that refer to a sequence labelled
- 		B missing A on the left of right, respectively, 
- 		where A and B in the inputted set labels_i. 
- 		"""
- 		minus_list = [(span1,span2) for span1 in labels_i for span2 in labels_i if (span1[0] == span2[0] or span1[1] == span2[1]) and span1 != span2]
- 		for span in minus_list:
- 			L0,L1 = labels_i[span[0]], labels_i[span[1]]
- 			s00,s01,s10,s11 = span[0][0], span[0][1],span[1][0],span[1][1]
-			if s01 == s11 and s00 < s10:
-				new_span, new_label = (s00,s10), '%s/%s' % (L0, L1)
-				labels_o[new_span] = labels_o.get(new_span,new_label)
-			elif s00 == s10 and s01 < s11:
-				new_span, new_label = (s01,s11), '%s\%s' % (L0, L1)
-				labels_o[new_span] = labels_o.get(new_span,new_label)
-		return labels_o
+ 		labels = Labels(labels_basic)
+ 		return labels.SAMT_labels()
  
- 	
+	
+	def label_most(self):
+		labels_basic = self.dependency_labels()
+		labels = Labels(labels_basic)
+		return labels.label_most()
+	
  	def labels(self, ldepth = 0, rdepth = 0, max_var = 1):
  		"""
  		When ran without any variables, produces standard labels for spans
