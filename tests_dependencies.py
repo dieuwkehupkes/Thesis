@@ -130,7 +130,6 @@ class DependencyTests():
 		sentence = 'I give the boy some flowers .'
 		dependencies = ['nsubj(give-2, I-1)','root(ROOT-0, give-2)','det(boy-4, the-3)','iobj(give-2, boy-4)','det(flowers-6, some-5)','dobj(give-2, flowers-6)']
 		d = Dependencies(dependencies, sentence)
-		print d.dependency_labels()
 		l = d.SAMT_labels()
 		man_labels = dict(zip([(i,i+1) for i in xrange(7)],['nsubj', 'root','det','iobj-h','det','dobj-h','PUNCT']))
 		m2 = dict(zip([(2,4),(4,6),(0,6)],['iobj','dobj','ROOT']))
@@ -141,7 +140,9 @@ class DependencyTests():
 		man_labels.update(minus)
 		concat3 = dict(zip([(0,3),(2,7),(3,7),(3,6),(1,5)],['nsubj+root+det','iobj+dobj+PUNCT','iobj-h+dobj+PUNCT','iobj-h+dobj','root+iobj+det']))
 		man_labels.update(concat3)
-#		print set(l.keys()) -set(man_labels.keys())
+#		print set(l.keys()) == set(man_labels.keys())
+#		print set(man_labels.keys()) - set(l.keys())
+#		print set(l.keys()) - set(man_labels.keys())
 #		for key in l:
 #			if man_labels[key] != l[key]:
 #				print key, man_labels[key], l[key]
