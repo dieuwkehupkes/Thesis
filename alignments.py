@@ -171,8 +171,7 @@ class Alignments:
 			if span not in self.compute_phrases():
 				rule._rhs[i] = lex_dict[span]
 		return rule
-				
-			
+		
 	def rules(self, prob_function, args, labels = {}):
 		"""
 		Returns a generator with all rules of a PCFG
@@ -207,6 +206,7 @@ class Alignments:
 
 
 	def hat_rules(self, prob_function, args, labels = {}):
+		#maybe change this to variable number of args with *args
 		"""
 		Returns a generator with all rules of a PCFG
 		uniquely generating all *hierarchical* alignment trees. Rule
@@ -219,6 +219,8 @@ class Alignments:
 		sets and using the shortest_path function of the Node class.
 		"""
 		# Create nodes for all positions between words
+		root_span = (0,self.lengthS)
+		self.root_label = labels.get(root_span,None)
 		nodes = [Node(i) for i in xrange(0, self.lengthS + 1)]
 		spans = []
 		
@@ -235,7 +237,6 @@ class Alignments:
 				# set probability
 				prob = prob_function(rule,args)
 				yield self.prune_production(rule, self.lex_dict)
-		
 	
 	def lexrules(self, labels = {}):
 		"""
@@ -253,11 +254,6 @@ class Alignments:
 		for i in xrange(0,len(sent)):
 			if (i, i+1) not in self.compute_phrases():
 				continue
-#				lhs, rhs = Nonterminal(sent[i]), [sent[i]]
-#				yield WeightedProduction(lhs, rhs, prob=1)
-#			if not all_rules:
-#				if (i,i+1) not in self.compute_phrases():
-#					continue
 			else:
 				lhs_string = labels.get((i,i+1),str(i) + "-" + str(i+1))
 				lhs = nltk.Nonterminal(lhs_string)
@@ -265,6 +261,22 @@ class Alignments:
 				probability = 1.0
 				yield nltk.WeightedProduction(lhs, rhs, prob=probability)
 	
+	def HAT_dict(self,labels = {}):
+		"""
+		Returns a dictionary that uniquely generates the HATforest.
+		"""
+		assert len(labels.keys()) == len(set(labels.values())), "Labels are not unique"
+		hat_dict = {}
+		for rule in self.hat_rules(Rule.uniform_probability,[],labels):
+			lhs = rule.lhs().symbol()
+			rhs = tuple([rule._str(rhs) for rhs in rule.rhs()])
+			hat_dict[lhs] = hat_dict.get(lhs, []) + [rhs]
+		for rule in self.lexrules(labels):
+			lhs = rule.lhs().symbol()
+			rhs = tuple(rule.rhs())
+			hat_dict[lhs] = hat_dict.get(lhs, []) + [rhs]
+		return hat_dict
+			
 	def percentage_labelled(self,labels):
 		"""
 		Output which percentage of the spans in the alignment
@@ -308,8 +320,74 @@ class Alignments:
 		nodes_consistent = t.phrases_consistent(t.tree, 0, phrases)
 		nodes_all = t.nr_of_nonterminals()
 		return float(nodes_consistent)/nodes_all
-		
-		
+	
+	def compute_weights(self, root, counts = {}, computed_HATforest = False, pcfg_dict = {}, labels = {}):
+		"""
+		Compute weights of the rules in all HATs of the alignment
+		through relative frequency estimation, assuming the total
+		probability of all HATs is 1.
+		If no external pcfg_dictionary is provided, the probability mass
+		will be uniformly distributed over all HATs. Otherwise, HATs will
+		be assigned probabilities proportional to the probability they
+		receive under the input PCFG.
+		If no HAT_dictionary is provided, it will be computed. However,
+		if it was already computed earlier, it can be passed as a argument to
+		the function to reduce computing times.
+		"""
+		#set the HAT_dictionary
+		if computed_HATforest:
+			HAT_dict = computed_HATforest
+		else:
+			HAT_dict = self.HAT_dict(labels)
+		probs = {}
+		self.probmass(pcfg_dict, HAT_dict, probs, root)
+		self.update(HAT_dict,pcfg_dict, probs, counts, 1, root)
+		return counts
+
+	def probmass(self, pcfg_dict, HAT_dict, probs, head_node, children = ()):
+		"""
+		Compute the probability mass of all subtrees headed by head_node, children
+		given the current pcfg.
+		"""
+		nodes = tuple(head_node)+children
+		assert len(children) == 0 or children in HAT_dict[head_node], 'Head node %s does not have children %s' % (head_node, children)
+		#We already computed the value before
+		if nodes in probs:
+			return probs[nodes]
+		#node is a leaf node
+		elif  head_node not in HAT_dict:
+			return 1
+		#compute prob mass of trees headed by head_node children
+		elif len(nodes) > 1:
+#			print 'compute probability for head_node and children'
+			prob = pcfg_dict.get(head_node,{}).get(children,1)
+			for child in children:
+				prob = prob*self.probmass(pcfg_dict, HAT_dict, probs, child)
+			probs[nodes] = prob
+		#compute prob mass of trees headed by head_node
+		else:
+			assert len(nodes) == 1
+			prob = 0
+			for rhs in HAT_dict[head_node]:
+				prob += self.probmass(pcfg_dict, HAT_dict, probs, head_node, rhs)
+			probs[nodes] = prob
+		return prob
+			
+	def update(self, HAT_dict,pcfg_dict, probs, counts, p_cur, lhs):
+		"""
+		Compute the updated counts for a node, given its parent
+		and how often this parent occurred in the forest.
+		"""
+		if lhs not in HAT_dict:
+			return
+		counts[lhs] = counts.get(lhs,{})
+		for rhs in HAT_dict[lhs]:
+			tup = tuple(lhs) + rhs
+			c_new = p_cur * float(probs[tup])/probs[tuple(lhs)]
+			counts[lhs][rhs] = counts[lhs].get(rhs,0) + c_new
+			for child in rhs:
+				self.update(HAT_dict,pcfg_dict, probs, counts, c_new, child)
+		return
 
 	def lex_dict(self):
 		lex_dict = {}
@@ -633,6 +711,7 @@ class Rule:
 	def rhs(self):
 		return self._rhs
 	
+
 	def _rhs(self,labels):
 		"""
 		Create the right hand sight of the rule

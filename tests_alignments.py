@@ -102,8 +102,60 @@ class AlignmentsTests():
 		score = a.agreement(tree)
 		return score == 1
 	
+	def dict_test(self):
+		"""
+		Test the function Alignments.HAT_dict()
+		"""
+		alignment = '0-0 1-1 2-2 4-3 3-4'
+		sentence = 'a b c d e'
+		labels = dict(zip([(i,i+1) for i in xrange(5)] + [(0,5),(1,5),(0,3),(3,5),(2,5),(0,2),(1,3)],['0','1','2','4','3','A','B','C','D','E','F','G']))
+		a = Alignments(alignment,sentence)
+		hat_dict = a.HAT_dict(labels)
+		assert hat_dict == {'A': [('0', 'B'), ('F', 'E'), ('C', 'D')], 'C': [('0', 'G'), ('F', '2')], 'B': [('1', 'E'), ('G', 'D')], 'E': [('2', 'D')], 'D': [('4', '3')], 'G': [('1', '2')], 'F': [('0', '1')], '1': [('b',)], '0': [('a',)], '3': [('e',)], '2': [('c',)], '4': [('d',)]}, 'HAT dictionary not correctly created'
+		return True
+	
+	def prob_function_test(self):
+		"""
+		Test the function Alignments.probmass()
+		"""
+		alignment = '0-0 1-1 2-2 4-3 3-4'
+		sentence = 'a b c d e'
+		labels = dict(zip([(i,i+1) for i in xrange(5)] + [(0,5),(1,5),(0,3),(3,5),(2,5),(0,2),(1,3)],['0','1','2','4','3','A','B','C','D','E','F','G']))
+		a = Alignments(alignment,sentence)
+		HAT_dict = a.HAT_dict(labels)
+		probs = {}
+		a.probmass({}, HAT_dict, probs, 'A')
+		assert probs == {('B', 'G', 'D'): 1, ('A', 'F', 'E'): 1, ('3', 'e'): 1, ('2', 'c'): 1, ('0',): 1, ('2',): 1, ('A', '0', 'B'): 2, ('4',): 1, ('A',): 5, ('C',): 2, ('1', 'b'): 1, ('E',): 1, ('G',): 1, ('E', '2', 'D'): 1, ('C', 'F', '2'): 1, ('B', '1', 'E'): 1, ('C', '0', 'G'): 1, ('1',): 1, ('G', '1', '2'): 1, ('3',): 1, ('F', '0', '1'): 1, ('D', '4', '3'): 1, ('0', 'a'): 1, ('B',): 2, ('D',): 1, ('4', 'd'): 1, ('A', 'C', 'D'): 2, ('F',): 1}
+		return True
+	
+	def update_test(self):
+		"""
+		Test the function Alignments.update()
+		"""
+		alignment = '0-0 1-1 2-2 4-3 3-4'
+		sentence = 'a b c d e'
+		labels = dict(zip([(i,i+1) for i in xrange(5)] + [(0,5),(1,5),(0,3),(3,5),(2,5),(0,2),(1,3)],['0','1','2','4','3','A','B','C','D','E','F','G']))
+		a = Alignments(alignment,sentence)
+		counts = a.compute_weights('A', labels = labels)
+		assert counts == {'A': {('F', 'E'): 0.2, ('C', 'D'): 0.4, ('0', 'B'): 0.4}, 'C': {('F', '2'): 0.2, ('0', 'G'): 0.2}, 'B': {('G', 'D'): 0.2, ('1', 'E'): 0.2}, 'E': {('2', 'D'): 0.4}, 'D': {('4', '3'): 1.0}, 'G': {('1', '2'): 0.4}, 'F': {('0', '1'): 0.4}, '1': {('b',): 1.0}, '0': {('a',): 1.0}, '3': {('e',): 1.0}, '2': {('c',): 1.0}, '4': {('d',): 1.0}}
+		return True
+	
+	def update_test2(self):
+		"""
+		Test the function Alignments.update() with input PCFG
+		"""
+		alignment = '0-0 1-1 2-2 4-3 3-4'
+		sentence = 'a b c d e'
+		labels = dict(zip([(i,i+1) for i in xrange(5)] + [(0,5),(1,5),(0,3),(3,5),(2,5),(0,2),(1,3)],['0','1','2','4','3','A','B','C','D','E','F','G']))
+		pcfg_dict = {'A': {('0','B'): 0.5, ('C','D'): 0.2, ('F','E'): 0.3}, 'B': {('G','D'):0.8, ('1','E'):0.25}, 'C': {('0','G'):0.4, ('F','2'):0.8}, 'D': {('4','3'):0.1}, 'E': {('2','D'):0.1}, 'F': {('0','1'):0.5}, 'G': {('1','2'):0.75}, '0':{'a':1}, '1': {'b':1}, '2':{'c':1}, '3': {'e':1}, '4': {'d':1}}
+		a = Alignments(alignment,sentence)
+		counts = a.compute_weights('A', pcfg_dict = pcfg_dict, labels = labels)
+		for lhs in counts:
+			for rhs in counts[lhs]:
+				print '%s --> %s\t%f' % (lhs, ' '.join(rhs), counts[lhs][rhs])
+	
 	def alignment_test_all(self):
-		return self.spans_test_all() and self.consistency_test1() and self.consistency_test2() and self.consistency_test3()
+		return self.spans_test_all() and self.consistency_test1() and self.consistency_test2() and self.consistency_test3() and self.dict_test() and self.prob_function_test() and self.update_test() and self.update_test2()
 	
 if __name__ == "__main__":
 	x = AlignmentsTests()
