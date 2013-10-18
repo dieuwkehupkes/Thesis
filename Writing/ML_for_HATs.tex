@@ -150,7 +150,7 @@ The update process starts by calling the update function (Algorithm \ref{alg:upd
 	\RETURN
 \ENDIF
 \FOR{$R = N\rightarrow X_1~\cdots X_n\in\Hg$}
-	\STATE $C_{new} = \frac{\Pp(N_{X_1\cdots X_n})}{\sum_{R} \Pp(N_{X_1\cdots X_n})}$
+	\STATE $C_{new} = p_{total}\cdot\frac{\Pp(N_{X_1\cdots X_n})}{\sum_{R} \Pp(N_{X_1\cdots X_n})}$
 	\STATE $\C(N\rightarrow X_1\cdots X_n) \leftarrow \C(N\rightarrow X_1\cdots X_n) + C_{new}  $
 	\FOR{$X\in \{X_1,\cdots X_n\}$}
 		\STATE $update(X,\Hg,\G,\Pp,\C,C_{new}))$
@@ -232,52 +232,53 @@ prob(E_{2D}) &= \G(E\rightarrow 2~D) \cdot prob(2) \cdot prob(D) &= 0.1\cdot pro
 With this information, we can compute the updates for the counts. Once again, the recursive computation is invoked by calling the function on the topnode $A$. In our example we will again omit input variables $\N$, $\Hg$, $\G$, $\C$ and $\Pp$. The process starts once again by calling the update function on $A$, as $A$ covers all trees, the total probability mass is $1$, we thus start by computing $update(A,1)$:
 
 \begin{align*}
-\C(A\rightarrow 0~B) &\leftarrow 0 + \frac{P(A_{0B})}{P(A_{0B})+P_(A_{CD})+P(A_{FE})} &= \frac{0.03125}{0.04675} &= 0.67\\
-\C(A\rightarrow C~D) &\leftarrow 0 + \frac{P(A_{CD})}{P(A_{0B})+P_(A_{CD})+P(A_{FE})} &= \frac{0.014}{0.04675} &= 0.30\\
-\C(A\rightarrow F~E) &\leftarrow 0 + \frac{P(A_{FE})}{P(A_{0B})+P_(A_{CD})+P(A_{FE})} &= \frac{0.0015}{0.04675} &= 0.032
+\C(A\rightarrow 0~B) &\leftarrow 0 + \frac{P(A_{0B})}{P(A)} &= \frac{0.03125}{0.04675} &= 0.67\\
+\C(A\rightarrow C~D) &\leftarrow 0 + \frac{P(A_{CD})}{P(A)} &= \frac{0.014}{0.04675} &= 0.30\\
+\C(A\rightarrow F~E) &\leftarrow 0 + \frac{P(A_{FE})}{P(A)} &= \frac{0.0015}{0.04675} &= 0.032
 \end{align*}
 The following function calls are made: $update(B,0.67)$, $update(C,0.30)$, $update(D,0.30)$, $update(F,0.032)$, $update(E,0.032)$ (also $update(0,0.67)$ is called, but will return directly, becuase $0$ does not further expand).
 \begin{align*}
 \mathbf{update(B,0.67)}\\
-\C(B\rightarrow G~D) &\leftarrow 0 + 0.67\cdot\frac{P(B_{GD})}{P(B_{GD})+P(B_{1E}} &= 0.67 \cdot\frac{0.06}{0.0625} &= 0.64\\
-\C(B\rightarrow 1~E) &\leftarrow 0 + 0.67\cdot\frac{P(B_{1E})}{P(B_{GD})+P(B_{1E}} &= 0.67\cdot \frac{0.0025}{0.0625} &= 0.027
+\C(B\rightarrow G~D) &\leftarrow 0 + 0.67\cdot\frac{P(B_{GD})}{P(B)} &= 0.67 \cdot\frac{0.06}{0.0625} &= 0.64\\
+\C(B\rightarrow 1~E) &\leftarrow 0 + 0.67\cdot\frac{P(B_{1E})}{P(B)} &= 0.67\cdot \frac{0.0025}{0.0625} &= 0.027
 \end{align*}
 New function calls: $update(G,0.64)$, $update(D,0.64)$, $update(E,0.027)$
 \begin{align*}
 \mathbf{update(C,0.30)}\\
-\C(C\rightarrow 0~G) &\leftarrow 0 + 0.30\cdot\frac{P(C_{0G})}{P(C_{0G})+P(C_{F2})} &= 0.30\cdot\frac{0.3}{0.7}) &= 0.13\\
-\C(C\rightarrow F~2) &\leftarrow 0 + 0.30\cdot\frac{P(C_{F2})}{P(C_{0G})+P(C_{F2})} &= 0.30\cdot\frac{0.4}{0.7} &= 0.17
+\C(C\rightarrow 0~G) &\leftarrow 0 + 0.30\cdot\frac{P(C_{0G})}{P(C)} &= 0.30\cdot\frac{0.3}{0.7}) &= 0.13\\
+\C(C\rightarrow F~2) &\leftarrow 0 + 0.30\cdot\frac{P(C_{F2})}{P(C)} &= 0.30\cdot\frac{0.4}{0.7} &= 0.17
 \end{align*}
 New function calls: $update(G,0.13)$, $update(F,0.17)$
 \begin{align*}
 \mathbf{update(D,0.30)}\\
-\C(D\rightarrow 4~3) &\leftarrow 0 + 0.30\cdot \frac{P(D_{34})}{P(D_{34})} &  &= 0.30\\
+\C(D\rightarrow 4~3) &\leftarrow 0 + 0.30\cdot \frac{P(D_{34})}{P(D)} &  &= 0.30\\
 \mathbf{update(F,0.032)}\\
-\C(F\rightarrow 0~1) &\leftarrow 0 + 0.032\cdot \frac{P(F_{01})}{P(F_{01})} &&= 0.032\\
+\C(F\rightarrow 0~1) &\leftarrow 0 + 0.032\cdot \frac{P(F_{01})}{P(F)} &&= 0.032\\
 \mathbf{update(E,0,032)}\\
-\C(E\rightarrow 2~D) &\leftarrow 0 + 0.032\cdot \frac{P(E_{2D}}{P(E_{2D}} &&= 0.032
+\C(E\rightarrow 2~D) &\leftarrow 0 + 0.032\cdot \frac{P(E_{2D})}{P(E)} &&= 0.032
 \end{align*}
 New function call: $update(D,0.032)$. Function calls waiting are thus: $update(G,0.64)$, $update(D,0.64)$, $update(E,0.027)$, $update(G,0.13)$, $update(F,0.17)$ and $update(D,0.032)$
 \begin{align*}
 \mathbf{update(G,0.64)}\\
-\C(G\rightarrow 1~2) &\leftarrow 0 + 0.64 \cdot \frac{P(G_{12})}{P(G_{12})} &= 0.64\\
+\C(G\rightarrow 1~2) &\leftarrow 0 + 0.64 \cdot \frac{P(G_{12})}{P(G)} &= 0.64\\
 \mathbf{update(D,0.64)}\\
-\C(D\rightarrow 4~3) &\leftarrow 0.30 + 0.64\cdot \frac{P(D_{34})}{P(D_{34})} &= 0.94\\
+\C(D\rightarrow 4~3) &\leftarrow 0.30 + 0.64\cdot \frac{P(D_{34})}{P(D)} &= 0.94\\
 \mathbf{update(E,0.027)}\\
-\C(E\rightarrow 1~D) &\leftarrow 0.032 + 0.027\cdot \frac{P(E_{1D})}{P(E_{1D})} &= 0.059
+\C(E\rightarrow 1~D) &\leftarrow 0.032 + 0.027\cdot \frac{P(E_{1D})}{P(E)} &= 0.059
 \end{align*}
 New function call: $update(D,0.027)$
 \begin{align*}
 \mathbf{update(G,0.13)}\\
-\C(G\rightarrow 1~2) &\leftarrow 0.64 + 0.13 \cdot \frac{P(G_{12})}{P(G_{12})} = 0.77\\
+\C(G\rightarrow 1~2) &\leftarrow 0.64 + 0.13 \cdot \frac{P(G_{12})}{P(G)} &= 0.77\\
 \mathbf{update(F,0.17)}\\
-\C(F\rightarrow 0~1) &\leftarrow 0.17 + 0.032\cdot \frac{P(F_{01})}{P(F_{01})} &= 0.20\\
+\C(F\rightarrow 0~1) &\leftarrow 0.17 + 0.032\cdot \frac{P(F_{01})}{P(F)} &= 0.20\\
 \mathbf{update(D,0.032)}\\
-\C(D\rightarrow 4~3) &\leftarrow 0.64 + 0.032\cdot \frac{P(D_{34})}{P(D_{34})} &= 0.97\\
-\mathbf{update(G,0.13)}
-\C(G\rightarrow 1~2) &\leftarrow  0.64 \cdot 0.13 \frac{P(G_{12})}{P(G_{12})} &= 0.77\\
+\C(D\rightarrow 4~3) &\leftarrow 0.64 + 0.032\cdot \frac{P(D_{34})}{P(D)} &= 0.97\\
+\mathbf{update(G,0.13)}\\
+\C(G\rightarrow 1~2) &\leftarrow  0.64 + 0.13 \cdot \frac{P(G_{12})}{P(G)} &= 0.77\\
 \mathbf{update(D,0.059)}\\
-\C(D\rightarrow 4~3) &\leftarrow 0.97 + 0.027\cdot \frac{P(D_{34})}{P(D_{34})} &= 1\\
+\C(D\rightarrow 4~3) &\leftarrow 0.97 + 0.027\cdot \frac{P(D_{34})}{P(D)} &= 1
 \end{align*}
+
 
 \end{document}
