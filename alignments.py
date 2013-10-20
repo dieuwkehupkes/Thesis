@@ -382,11 +382,13 @@ class Alignments:
 		"""
 		if lhs not in HAT_dict:
 			return
-		counts[lhs] = counts.get(lhs,{})
+		lhs_plain = self._plain_label(lhs)
+		counts[lhs_plain] = counts.get(lhs_plain,{})
 		for rhs in HAT_dict[lhs]:
+			rhs_plain = self._plain_label(rhs)
 			tup = (lhs,) + rhs
 			c_new = p_cur * float(probs[tup])/probs[(lhs,)]
-			counts[lhs][rhs] = counts[lhs].get(rhs,0) + c_new
+			counts[lhs_plain][rhs_plain] = counts[lhs_plain].get(rhs_plain,0) + c_new
 			for child in rhs:
 				self.update(HAT_dict,pcfg_dict, probs, counts, c_new, child)
 		return
@@ -401,7 +403,7 @@ class Alignments:
 		elif isinstance(label,tuple):
 			return tuple([self._plain_label(l) for l in label])
 		else:
-			raise TypeError("unexpected label-type: %s" %type(label))	
+			raise TypeError("unexpected label-type %s: %s" %(label, type(label)))
 
 	def lex_dict(self):
 		lex_dict = {}

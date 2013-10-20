@@ -8,6 +8,7 @@ Explain the different possibilities of the class.
 from scoring import *
 import sys
 from constituencies import *
+import pickle
 
 class ProcessFiles():
 	"""
@@ -235,158 +236,95 @@ class ProcessFiles():
 			scoref.close()
 
 
-	def em(self, start_grammar, max_iter, n=1, max_length = 40):
+	def em(self, max_iter, max_length = 40):
 		"""
-		When passing a Weightedgrammar, iteratively
-		parse corpus and infer a new grammar object, until
-		maximum number of iterations is reached. Return the
-		new grammar
-		:param start_grammar	WeightedGrammar
+		When passing a grammar represented by a dictionary,
+		iteratively assign probabilities to all HATs of the
+		corpus and recompute the counts of the grammar with
+		relative frequency estimation until convergence or
+		until a maximum number iterations is reached.
+		Return the new grammar
+		:param start_grammar	Grammar represented as a nested dictionary
 		:param max_iter			Maximum number of iterations
 		:param max_length		Maximum sentence length considered
-		:param n				Parse trees to be considered to construct new grammar
 		"""
-		#Find new parser to be able to return grammar over multiple rules.
-		print 'run EM with %i iterations' %max_iter
-		i = 1
-		new_grammar = start_grammar
+		#Build in some method for measuring the change of two grammars
+		print 'run EM with a maximum of %i iterations' %max_iter
+		i = 1#
+		self.all_rules(HATfile = 'HATs')
+		new_grammar = copy.deepcopy(start_grammar)
 		while i <= max_iter:
 			print "iteration %i" % i
-			new_grammar_dict = self.em_iteration(new_grammar, n, max_length)
-			new_grammar = self.to_WeightedGrammar(new_grammar_dict)
+			new_grammar_dict = self.em_iteration(new_grammar, max_length)
 			i +=1
 		return new_grammar
 		
 	
-	def em_iteration(self, grammar, n=1, max_length = 40):
+	def em_iteration(self, grammar, pickled_HATs, n=1, max_length = 40):
 		"""
-		Parse the corpus with current grammar, extract a
-		new grammar from n best parses and return this grammar.
-		:param grammar = a WeightedGrammar object
+		Assign probabilities to all HATs in the corpus with the
+		current grammar, recompute probabilities and return the
+		new grammar.
+		It is assumed that the HATs are precomputed and pickled into
+		a file in the correct order. Every sentence under max_length should
+		be represented in the file as: [sentence_nr, HAT_dict, root].
 		"""
 		new_grammar = {}
 		self._reset_pointer()
-		new_sentence = self.next_sentence()
+		f = open(pickled_HATs, 'r')
+		new = self.next()
 		sentence_nr = 1
-		while new_sentence:
-			sentence_length = len(new_sentence.split())
+		while new:
+			sentence_length = len(new[1].split())
 			# tests if input is as desired, skip if not
 			if sentence_length >= max_length:
 				print 'sentence skipped'
 				pass
 			else:
-				new_grammar = self.update_grammar_dict(new_sentence, grammar,new_grammar,n)
+				new_alignment = Alignments(new[0], new[1])
+				s_nr, HATdict, root = pickle.load(f)
+				assert sentence_nr == s_nr
+				a.compute_weights(root, new_grammar, computed_HATforest = False, pcfg_dict = {}, labels = {})
 			new_sentence = self.next_sentence()
 			sentence_nr += 1
 		grammar_norm = self.normalise2(new_grammar)
+		f.close()
 		return grammar_norm
 	
-	def update_grammar_dict(self,sentence, grammar, grammar_dict, n=1):
-		"""
-		Parse the corpus with the inputted grammar,
-		and extract a new grammar from the n best trees.
-		Return the new grammar
-		:param grammar			a Weighted grammar
-		:param grammar_dict		a dictionary representing the current new grammar that has to be updated	
-		"""
-		#Viterbi parser outputs only one parse
-		parser = ViterbiParser(grammar)
-		parser.trace(0)
-		try:
-			parses = parser.nbest_parse(sentence.split(),n)
-			print 'update grammatica for sentence: %s' % sentence
-		except:
-			print 'sentence %s could not be parsed' % sentence
-			return grammar_dict
-		nr_of_parses = 1
-		for parse in parses:
-			grammar_dict = self.update_grammar_dict_parse(parse, grammar_dict)
-#			print 'parse %i' % nr_of_parses
-			nr_of_parses += 1
-		return grammar_dict
-	
-	def update_grammar_dict_parse(self,parse,grammar_dict):
-		for production in parse.productions():
-			grammar_dict = self.update_grammar_dict_production(production,grammar_dict)
-		return grammar_dict
-	
-	def update_grammar_dict_production(self, production, grammar_dict):
-		lhs = production.lhs()
-		rhs = production.rhs()
-		if lhs in grammar_dict:
-			grammar_dict[lhs]['COUNTS'] += 1
-			grammar_dict[lhs][rhs] = grammar_dict[lhs].get(rhs,0) +1
-		else:
-			grammar_dict[lhs] = {'COUNTS':1, rhs:1}
-		return grammar_dict
-		
 	def normalise(self,rule_dict):
 		"""
 		Given a nested dictionary that represent rules as follows:
 		{lhs : {rhs1 : count, rhs2: count ...}, ....}, return a
 		similar nested dictionary with normalised counts
 		"""
-		TOP = nltk.Nonterminal('TOP')
-		normalised_dict = dict({TOP: {}})
+		normalised_dict = dict({})
 		total_lhs = 0
 		for lhs in rule_dict:
-			if not isinstance(lhs, nltk.Nonterminal):
-				if lhs != 'COUNTS':
-					raise TypeError("Instance should be a nltk.Nonterminal")
-				continue
 			normalised_dict[lhs] = {}
 			total = 0
 			#loop twice through dictionary
 			#first to obtain total counts
 			for rhs in rule_dict[lhs]:
-				total += 1
-				# then to adjuct the counts in the
-				# new dictionary
-				for rhs in rule_dict[lhs]:
-					if rhs != 'COUNTS':
-						normalised_dict[lhs][rhs] = rule_dict[lhs][rhs]/float(total)
-				if 'root' in lhs.symbol() or 'ROOT' in lhs.symbol():
-					total_lhs += total
-					normalised_dict[TOP][(lhs,)] = total
-		for lhs in normalised_dict[TOP]:
-			normalised_dict[TOP][lhs] = normalised_dict[TOP][lhs]/float(total_lhs)
+				total += rule_dict[lhs][rhs]
+			# then to adjuct the counts in the
+			# new dictionary
+			for rhs in rule_dict[lhs]:
+				normalised_dict[lhs][rhs] = rule_dict[lhs][rhs]/float(total)
 		return normalised_dict
 
-	def normalise2(self, rule_dict):
-		"""
-		More efficient version of normalise, that assumes that total counts
-		of lhs are already present in dictionary under 'counts'.
-		"""
-		new_dict = {}
-		for lhs in rule_dict:
-			if not isinstance(lhs, nltk.Nonterminal):
-				if lhs != 'COUNTS':
-					raise TypeError("Instance should be a Nonterminal")
-				continue
-			new_dict[lhs] = new_dict.get(lhs,{})
-			for rhs in rule_dict[lhs]:
-				if rule_dict[lhs] == 'COUNTS':
-					continue
-				rule_prob = rule_dict[lhs][rhs]/float(rule_dict[lhs]['COUNTS'])
-				new_dict[lhs][rhs] = rule_prob
-		return new_dict
-				
+	
 	def to_WeightedGrammar(self,rule_dict):
 		"""
 		Transforms a set of rules represented in a
 		nested dictionary into a WeightedGrammar object.
+		It is assumed that the startsymbol of the grammar is 
+		TOP, if this is not the case, parsing with the grammar
+		is not possible.
 		"""
-		#delete counts from dictionary if present
-		for lhs in rule_dict:
-			if 'COUNTS' in rule_dict[lhs]:
-				del rule_dict[lhs]['COUNTS']
 		#create grammar
 		productions = []
 		for lhs in rule_dict:
 			for rhs in rule_dict[lhs]:
-				if isinstance(rhs, str):
-					if rhs != 'COUNTS':
-						raise TypeError("Instance should be a nltk.Nonterminal")
 				probability = rule_dict[lhs][rhs]
 				rhs_list = list(rhs)
 				new_production = nltk.WeightedProduction(lhs,rhs_list,prob=probability)
@@ -648,94 +586,62 @@ class ProcessDependencies(ProcessFiles):
 			sentence_nr+= 1
 		return label_dict
 
-	def nbest_rules(self,max_length = 40):
-		"""
-		Go to through the file, and for every phrase in
-		every alignment, select the n best rules according
-		to the dependency parses.
-		"""
-		raise NotImplementedError
-		rules = {nltk.Nonterminal('TOP'):{'COUNTS':0}}
-		self._reset_pointer()
-		sentences = 0
-		sentence_nr = 1
-		new = self.next()
-		while new:
-			sentence= new[1]
-			sentence_length = len(sentence.split())
-			# tests if input is as desired, skip if not
-			if sentence_length >= max_length:
-				productions = []
-				lexicon = []
-			else:
-				dependencies = Dependencies(new[2],sentence)
-				a = Alignments(new[0],sentence)
-				labels = dependencies.label_all()
-				if not labels:
-					print 'sentence skipped because of inconsistency with dependency parse'
-					new = self.next()
-					sentence_nr+=1
-					continue
-				print "finding best rules for", sentence_nr
-				#create arguments for probability
-				productions = a.hat_rules(Rule.probability_spanrels, [True,True], labels)
-				lexicons = a.lexrules(labels)
-				self.update_with_best_rules(productions,n, rules)
-				#MAKE GRAMMAR
-				#USE ._categories to get the categories
-				#FIND the best n rules for every category using grammar.productions(lhs)
-				#Put these in a dictionary
-			
+		
 	def select_best_rules(self,productions,n, rules):
 		"""
-		Create a dictionary with the best scores for current productions.
+		Create a dictionary with the productions with the best scores.
 		"""
-		best_productions = {}
-		for production in productions:
-			lhs = production.lhs()
-			prob = production.probability()
-			#check if current lhs already has a production
-			if lhs in best_productions:
-				#if more productions are needed, add production and sort list
-				#according to probability
-				if len(best_productions[lhs]) < n:
-					best_productions[lhs].append((prob,production))
-					best_productions[lhs].sort()
-				#check if current production has a higher probability than
-				#least probable production in dictionary
-				elif best_productions[lhs][-1][0] < prob:
-					best_productions[lhs][-1] = (prob,production)
-					best_productions[lhs].sort()
-			#no productions with current lhs are yet selected, create entry
-			else:
-				best_productions[lhs] = [(prob,production)]
-		#create a generator with selected produtions
-		for key in best_productions:
-			for production in best_productions[key]:
-				yield 
-			
 		raise NotImplementedError
 
-#	def update_grammar_dict_production(self, production, grammar_dict):
-#		lhs = production.lhs()
-#		rhs = tuple(production.rhs())
-#		if lhs in grammar_dict:
-#			grammar_dict[lhs]['COUNTS'] += 1
-#			grammar_dict[lhs][rhs] = grammar_dict[lhs].get(rhs,0) +1
-#		else:
-#			grammar_dict[lhs] = {'COUNTS':1, rhs:1}
-#		return grammar_dict
+	def em(self, max_iter, max_length = 40):
+		"""
+		When passing a grammar represented by a dictionary,
+		iteratively assign probabilities to all HATs of the
+		corpus and recompute the counts of the grammar with
+		relative frequency estimation until convergence or
+		until a maximum number iterations is reached.
+		Return the new grammar
+		:param start_grammar	Grammar represented as a nested dictionary
+		:param max_iter			Maximum number of iterations
+		:param max_length		Maximum sentence length considered
+		"""
+		#Build in some method for measuring the change of two grammars
+		print 'run EM with a maximum of %i iterations' %max_iter
+		i = 1#
+		grammar = self.all_rules(HATfile = 'HATs')
+		while i <= max_iter:
+			sentence_nr = 1
+			new_grammar = copy.deepcopy(grammar)
+			print "iteration %i" % i
+			HATs = open('HATs','r')
+			while 1:
+				try:
+					#this is very ugly, see if you can change this
+					a = Alignments('0-0','1')
+					s_nr, root, new_HAT = pickle.load(HATs)
+					print 'iteration %i, sentence %i' %(i, s_nr)
+					a.compute_weights(root, new_grammar, new_HAT, grammar)
+				except (EOFError):
+					HATs.close()
+					break
+			grammar = copy.deepcopy(self.normalise(new_grammar))
+			i +=1
+		return grammar
 
-	
 				
-	def all_rules(self,max_length = 40):
+	def all_rules(self, HATfile=False, max_length = 40):
 		"""
-		Creates a dictionary with all the grammar rules
-		of the entire file. Returns a Weighted grammar object
-		with normalised counts.
+		Creates a dictionary with all the rules of all HATs of
+		the entire corpus.
+		If a HATfile is provided, pickle all HAT grammars for further use,
+		together with their root label and their sentence number.
 		"""
-		all_rules = {nltk.Nonterminal('TOP'):{'COUNTS':0}}
+		#not yet uvaluated on real data
+		all_rules = {}
 		self._reset_pointer()
+		f = HATfile
+		if f:
+			f = open(HATfile,'w')
 		sentences = 0
 		sentence_nr = 1
 		new = self.next()
@@ -743,38 +649,32 @@ class ProcessDependencies(ProcessFiles):
 			sentence_length = len(new[1].split())
 			# tests if input is as desired, skip if not
 			if sentence_length >= max_length:
-				productions = []
-				lexicon = []
+				pass
 			else:
 				sentence = new[1]
 				dependencies = Dependencies(new[2], sentence)
 				a = Alignments(new[0],sentence)
-				labels = dependencies.label_all()
+				l = Labels(dependencies.dependency_labels())
+				labels = l.label_most()
+				labels = l.annotate_span(labels)
 				if not labels:
 					print 'sentence skipped because of inconsistency with dependency parse'
 					new = self.next()
 					sentence_nr +=1
 					continue
-				print "creating grammar for", sentence_nr
-				productions = a.hat_rules(Rule.uniform_probability, [], labels)
-				lexicon = a.lexrules(labels)
-
-			for production in productions:
-				lhs = production.lhs()
-				rhs = tuple(production.rhs())
-				if 'root' in lhs.symbol() or 'ROOT' in lhs.symbol():
-					all_rules[nltk.Nonterminal('TOP')]['COUNTS']+= 1
-					all_rules[nltk.Nonterminal('TOP')][(lhs,)] = all_rules[nltk.Nonterminal('TOP')].get((lhs,),0) + 1
-				all_rules = self.update_grammar_dict_production(production,all_rules)
-			for lexical_rule in lexicon:
-				all_rules = self.update_grammar_dict_production(lexical_rule,all_rules)
+				print "updating grammar for", sentence_nr
+				root = labels[(0,sentence_length)]
+				HAT_dict = a.HAT_dict(labels)
+				#put HAT grammar in a file
+				if f:
+					pickle.dump([sentence_nr,root,HAT_dict],f)
+				#update weights for HATforest
+				a.compute_weights(root, all_rules, computed_HATforest = HAT_dict, labels = labels)
 			new = self.next()
 			sentence_nr +=1
+		if f:
+			f.close()
 		return all_rules
-
-
-
-
 
 
 	def relation_count(self, max_length):
@@ -914,8 +814,6 @@ class ProcessConstituencies(ProcessFiles):
 			sentence_nr+= 1
 			new = self.next()
 		return branching_dict
-
-		
 	
 	def relation_count(self, max_length):
 		"""
@@ -932,4 +830,7 @@ class ProcessConstituencies(ProcessFiles):
 		"""
 		raise NotImplementedError
 
+
+x = ProcessDependencies('Data/en-fr.aligned_manual.100','Data/1-100-final.en','Data/1-100-final.en.dependencies')
+x.em(3)
 
