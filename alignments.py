@@ -349,18 +349,19 @@ class Alignments:
 		Compute the probability mass of all subtrees headed by head_node, children
 		given the current pcfg.
 		"""
-		nodes = tuple(head_node)+children
+		nodes = (head_node,)+children
+		plain_head, plain_children = self._plain_label(head_node), self._plain_label(children)
 		assert len(children) == 0 or children in HAT_dict[head_node], 'Head node %s does not have children %s' % (head_node, children)
 		#We already computed the value before
 		if nodes in probs:
 			return probs[nodes]
 		#node is a leaf node
-		elif  head_node not in HAT_dict:
-			return 1
+		elif head_node not in HAT_dict:
+			prob = 1
 		#compute prob mass of trees headed by head_node children
 		elif len(nodes) > 1:
-#			print 'compute probability for head_node and children'
-			prob = pcfg_dict.get(head_node,{}).get(children,1)
+			prob = pcfg_dict.get(plain_head,{}).get(plain_children,1)
+			assert pcfg_dict == {} or plain_children in pcfg_dict[plain_head], '%s --> %s    not in external pcfg' %(plain_head, ' '.join(plain_children))
 			for child in children:
 				prob = prob*self.probmass(pcfg_dict, HAT_dict, probs, child)
 			probs[nodes] = prob
@@ -370,7 +371,8 @@ class Alignments:
 			prob = 0
 			for rhs in HAT_dict[head_node]:
 				prob += self.probmass(pcfg_dict, HAT_dict, probs, head_node, rhs)
-			probs[nodes] = prob
+				probs[nodes] = prob
+		assert prob > 0, 'probability mass of subtrees headed by %s cannot be 0' %head_node
 		return prob
 			
 	def update(self, HAT_dict,pcfg_dict, probs, counts, p_cur, lhs):
@@ -382,12 +384,24 @@ class Alignments:
 			return
 		counts[lhs] = counts.get(lhs,{})
 		for rhs in HAT_dict[lhs]:
-			tup = tuple(lhs) + rhs
-			c_new = p_cur * float(probs[tup])/probs[tuple(lhs)]
+			tup = (lhs,) + rhs
+			c_new = p_cur * float(probs[tup])/probs[(lhs,)]
 			counts[lhs][rhs] = counts[lhs].get(rhs,0) + c_new
 			for child in rhs:
 				self.update(HAT_dict,pcfg_dict, probs, counts, c_new, child)
 		return
+
+	def _plain_label(self,label):
+		"""
+		strip the label from the part determining
+		its span, to make it uniform
+		"""
+		if isinstance(label, str):
+			return label.split('-[')[0]
+		elif isinstance(label,tuple):
+			return tuple([self._plain_label(l) for l in label])
+		else:
+			raise TypeError("unexpected label-type: %s" %type(label))	
 
 	def lex_dict(self):
 		lex_dict = {}
