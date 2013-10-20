@@ -651,7 +651,10 @@ class ProcessDependencies(ProcessFiles):
 				a = Alignments(new[0],new[1])
 				dependencies = Dependencies(new[2],new[1])
 				l = Labels(dependencies.dependency_labels())
+				t1 = time.time()
 				labels = l.label_most()
+				t2 = time.time()
+				print 'labelling time: ', t2-t1
 				for rule in a.hat_rules(Rule.uniform_probability,[], labels):
 					lhs = rule.lhs().symbol()
 					rhs = tuple([rule._str(rhs) for rhs in rule.rhs()])
@@ -883,6 +886,6 @@ class ProcessConstituencies(ProcessFiles):
 		raise NotImplementedError
 
 
-x = ProcessDependencies('Data/en-fr.aligned_manual.100','Data/1-100-final.en','Data/1-100-final.en.dependencies')
-print x.unique_rules(10)
+#x = ProcessDependencies('Data/en-fr.aligned_manual.100','Data/1-100-final.en','Data/1-100-final.en.dependencies')
+#print x.unique_rules(10)
 
