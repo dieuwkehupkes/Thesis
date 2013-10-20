@@ -334,7 +334,7 @@ class Dependencies():
  		return labels.SAMT_labels()
  
 	
-	def label_most(self):
+	def label_all(self):
 		labels_basic = self.dependency_labels()
 		labels = Labels(labels_basic)
 		return labels.label_most()
@@ -412,84 +412,8 @@ class Dependencies():
 		labelled_spans = self.SAMT_labels()
 		return len(all_spans), len(labelled_spans)
 
-	def label_all(self):
-		"""
-		Labels are generated for all spans, as described in Zollman (2011).
-		Precedence: +, /, \. As we want to have labels for all spans, uglier
-		combined labels are generated if no other label is available.
-		If no sentence is attached, words not included in the 
-		dependency parse will not get a label.
-		
-		If the numbering of the dependency parse and the sentence are
-		out of sync due to different tokenization, return None.
-		"""
-		s_length = len(self.sentence)
-		# Create a set with all spans, and initialise labels
-		unlabelled = set([(i,j+1) for i in xrange(s_length) for j in xrange(s_length) if j>=i])
- 		labels = self.dependency_labels()
- 		for word_span in labels:
- 			try:
- 				unlabelled.remove(word_span)
- 			except KeyError:
- 				"Dependency parse and sentence out of sync due to different tokenization"
- 				return None
- 		# create compound labels with operator +
-		for spans in [(span1,span2) for span1 in labels.keys() for span2 in labels.keys() if span1 != span2]:
-			if spans[0][1] == spans[1][0]:
-				new_span = (spans[0][0],spans[1][1])
-				new_label = '%s+%s' % (labels[spans[0]], labels[spans[1]])
-				labels[new_span] = labels.get(new_span,new_label)
-				unlabelled = unlabelled - set([new_span])				
-		#create compound labels with operators / and \
-		for spans in [(span0,span1) for span1 in labels.keys() for span0 in labels.keys() if (span0 != span1 and span1[0]<=span0[0] and span1[1] >= span0[1])]:
-			L0, L1 = labels[spans[0]],labels[spans[1]]
-			s00,s01,s10,s11 = spans[0][0],spans[0][1],spans[1][0],spans[1][1]
-			if '+' in L0:
-				L0 = '[%s]' % L0
-			if '+' in L1:
-				L1 = '[%s]' % L1
-			if s01 == s11:
-				new_span, new_label = (s10,s00), '%s\%s' % (L1, L0)
-			elif s00 == s10:
-				new_span, new_label = (s01,s11), '%s/%s' % (L0, L1)
-			labels[new_span] = labels.get(new_span,new_label)					
-			unlabelled = unlabelled - set([new_span])
-		i = 0
-		max_iter = len(unlabelled)*len(unlabelled)
-		while unlabelled and i < max_iter:
-			i +=1
-			new_span = unlabelled.pop()
-			new_label = self.find_label(new_span,labels)
-			if new_label:
-				labels[new_span] = new_label
-			else:
-				unlabelled.add(new_span)
-		if unlabelled:
-			print 'not for every span a label was found'
-			for item in unlabelled:
-				labels[item] = 'FAIL'
- 		return labels
- 	
- 	def find_label(self,span,labels):
- 		"""
- 		Find a new label by summing two
- 		already existing labels
- 		"""
- 		#Weet niet zo goed of dit echt is geimplementeerd zoals ik wil
- 		s0,s1 = span[0],span[1]
- 		for splitpoint in xrange(s0+1,s1):
- 			span1, span2 = (s0,splitpoint), (splitpoint,s1)
- 			if span1 in labels and span2 in labels:
- 				s1, s2 = labels[span1], labels[span2]
- 				if '/' in s1 or '\\' in s1:
- 					s1 = '(%s)' %s1
- 				if '/' in s2 or '\\' in s2:
- 					s2 = '(%s)' %s2
-				return '%s+%s' % (s1,s2)
- 		else:
- 			return None
- 	
- 	def branching_factor(self,b_dict):
+
+	def branching_factor(self,b_dict):
 		"""
 		Update a dictionary with counts for different
 		branching factors with the branching factors

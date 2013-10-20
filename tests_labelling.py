@@ -1,6 +1,6 @@
 from labelling import *
 
-class LabelsTest():
+class LabelsTests():
 	"""
 	Class to test functionality of the class Labels
 	"""

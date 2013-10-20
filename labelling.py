@@ -136,7 +136,16 @@ class Labels():
 				o[new_span] = o.get(new_span,new_label)
 		return o
  
-
+  	def annotate_span(self, labels):
+ 		"""
+ 		Annotate labels with their span, to make the
+ 		grammar unique.
+ 		"""
+ 		for key in labels:
+ 			span = "-[%s-%s]" % (key[0], key[1])
+ 			new_label = labels[key] + span
+ 			labels[key] = new_label
+ 		return labels
 		
 		
 	
