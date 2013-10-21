@@ -335,6 +335,9 @@ class Dependencies():
  
 	
 	def label_all(self):
+		"""
+		Label all spans of the sentence.
+		"""
 		labels_basic = self.dependency_labels()
 		labels = Labels(labels_basic)
 		return labels.label_most()
