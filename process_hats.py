@@ -106,6 +106,61 @@ class ProcessHATs():
 #		f.close()
 #		return grammar_norm
 
+	def unique_rules(self, step_size, max_length = 40):
+		"""
+		Go through a file and keep track of growth of 
+		the	number of unique rules and total rules when the
+		corpus grows.
+		"""
+		raise NotImplementedError
+#		#This function should be moved to process HATs
+#		unique_rules = {}
+#		unique_total = 0
+#		all_rules = {}
+#		all_total = 0
+#		self._reset_pointer()
+#		sentences = 0
+#		unique_dict = {}
+#		new = self.next()
+#		while new:
+#			sentence_length = len(new[1].split())
+#			if sentence_length >= max_length:
+#				pass
+#			else:
+#				sentences += 1
+#				a = Alignments(new[0],new[1])
+#				dependencies = Dependencies(new[2],new[1])
+#				l = Labels(dependencies.dependency_labels())
+#				labels = l.label_most()
+#				for rule in a.hat_rules(Rule.uniform_probability,[], labels):
+#					lhs = rule.lhs().symbol()
+#					rhs = tuple([rule._str(rhs) for rhs in rule.rhs()])
+#					if lhs not in all_rules or rhs not in all_rules[lhs]:
+#						# lhs --> rhs is not yet in all_rules
+#						if lhs in unique_rules and rhs in unique_rules[lhs]:
+#							# lhs --> rhs was seen once before, remove from
+#							# unique dictionary, add to all_rules dictionary
+#							unique_rules[lhs].remove(rhs)
+#							unique_total -= 1
+#							all_rules[lhs] = all_rules.get(lhs,{})
+#							all_rules[lhs].update({rhs:2})
+#						else:
+#							# this is the first time we have seen lhs --> rhs
+#							unique_total +=1
+#							all_total += 1
+#							unique_rules[lhs] = unique_rules.get(lhs,set([]))
+#							unique_rules[lhs].add(rhs)
+#					else:
+#						# we have seen lhs --> rhs several times before
+#						all_rules[lhs][rhs] += 1
+#				
+#				# if mode stepsize == 0, add to dict
+#				if sentences % step_size == 0:
+#					unique_dict[sentences] = [all_total, unique_total,float(unique_total)/all_total]
+#					print 'Alignments: %i\tAll rules: %i\tUnique rules: %i\tPercentage unique:%f' %(sentences, all_total, unique_total, float(unique_total)/all_total)
+#			new = self.next()
+#		return unique_dict
+
 
 class HATGrammar():
 	"""
@@ -211,4 +266,4 @@ class HATGrammar():
 				new_production = nltk.WeightedProduction(lhs,rhs_list,prob=probability)
 				productions.append(new_production)
 		start = nltk.Nonterminal('TOP')
-		return nltk.WeightedGrammar(start,productions)	
+		return nltk.WeightedGrammar(start,productions)
