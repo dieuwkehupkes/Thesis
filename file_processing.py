@@ -492,13 +492,13 @@ class ProcessDependencies(ProcessFiles):
 				a = Alignments(new[0],sentence)
 				l = Labels(dependencies.dependency_labels())
 #				print l.labels
-				labels = l.label_most()
-				labels = l.annotate_span(labels)
-				if not labels:
+				if not l.labels:
 					print 'sentence skipped because of inconsistency with dependency parse'
 					new = self.next()
 					sentence_nr +=1
 					continue
+				labels = l.label_most()
+				labels = l.annotate_span(labels)
 				print "Creating HATforest for sentence ", sentence_nr
 				root = labels[(0,len(sentence.split()))]
 				HAT_dict = a.HAT_dict(labels)
