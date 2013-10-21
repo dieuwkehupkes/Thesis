@@ -14,10 +14,13 @@ class Labels():
 		Initialise with a dictionary with basic labels
 		"""
 		self.labels = labels
+		self.concat_computed = {}
 
-	def label_most(self):
+	def label_most(self, max_depth = 40):
 		"""
 		Try to label all spans... explain how
+		Maybe I should add that it does not try to
+		find labels for spans we don't need labels for
 		"""
 		# find the largest spans to determine which spans should be labelled
 		# assume the
@@ -42,7 +45,7 @@ class Labels():
 		return labels		
 
 	def SAMT_labels(self):
-		#change this
+		#change description
 		"""
 		Return SAMT labels based on labels basic
 		"""
@@ -53,8 +56,9 @@ class Labels():
 		self.minus(1,labels)
 		#update with concat3 labels
 		self.concat(3,labels)
+		self.SAMT = labels
 		return labels		
-			
+	
 	def concat(self, depth, o = {}, i = None):
 		"""
 		Compute all concatenated labels up to inputted depth,

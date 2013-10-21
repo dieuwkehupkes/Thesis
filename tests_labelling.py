@@ -107,7 +107,7 @@ class LabelsTests():
 		l = self.base_test()
 		labels = l.label_most()
 		print labels
-
+	
 if __name__ == "__main__":
 	x = LabelsTest()
 	x.label_all_test()
