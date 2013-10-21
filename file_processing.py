@@ -9,6 +9,7 @@ from scoring import *
 import sys
 from constituencies import *
 import pickle
+import time
 
 class ProcessFiles():
 	"""
@@ -173,26 +174,7 @@ class ProcessFiles():
 			#not yet implemented, maybe it can be printed
 			return value
 	
-	def create_grammar(self,tree_file):
-		"""
-		Create a grammar from inputted treefile. 
-		"""
-		grammar_dict = {}
-		t = open(tree_file,'r')
-		i = 1
-		for line in t:
-			try:
-				tree = nltk.Tree(line)
-			except ValueError:
-				print 'line %i could not be parsed' % i
-				continue
-			grammar_dict = self.update_grammar_dict_parse(tree, grammar_dict)
-			i +=1
-		#normalise grammar
-		grammar_norm = self.normalise2(grammar_dict)
-		return self.to_WeightedGrammar(grammar_norm)		
-	
-		
+
 	def evaluate_grammar(self,grammar, max_length, scoref):
 		"""
 		Parse the corpus with inputted grammar and evaluate
@@ -236,103 +218,6 @@ class ProcessFiles():
 			scoref.close()
 
 
-	def em(self, max_iter, max_length = 40):
-		"""
-		When passing a grammar represented by a dictionary,
-		iteratively assign probabilities to all HATs of the
-		corpus and recompute the counts of the grammar with
-		relative frequency estimation until convergence or
-		until a maximum number iterations is reached.
-		Return the new grammar
-		:param start_grammar	Grammar represented as a nested dictionary
-		:param max_iter			Maximum number of iterations
-		:param max_length		Maximum sentence length considered
-		"""
-		#Build in some method for measuring the change of two grammars
-		print 'run EM with a maximum of %i iterations' %max_iter
-		i = 1#
-		self.all_rules(HATfile = 'HATs')
-		new_grammar = copy.deepcopy(start_grammar)
-		while i <= max_iter:
-			print "iteration %i" % i
-			new_grammar_dict = self.em_iteration(new_grammar, max_length)
-			i +=1
-		return new_grammar
-		
-	
-	def em_iteration(self, grammar, pickled_HATs, n=1, max_length = 40):
-		"""
-		Assign probabilities to all HATs in the corpus with the
-		current grammar, recompute probabilities and return the
-		new grammar.
-		It is assumed that the HATs are precomputed and pickled into
-		a file in the correct order. Every sentence under max_length should
-		be represented in the file as: [sentence_nr, HAT_dict, root].
-		"""
-		new_grammar = {}
-		self._reset_pointer()
-		f = open(pickled_HATs, 'r')
-		new = self.next()
-		sentence_nr = 1
-		while new:
-			sentence_length = len(new[1].split())
-			# tests if input is as desired, skip if not
-			if sentence_length >= max_length:
-				print 'sentence skipped'
-				pass
-			else:
-				new_alignment = Alignments(new[0], new[1])
-				s_nr, HATdict, root = pickle.load(f)
-				assert sentence_nr == s_nr
-				a.compute_weights(root, new_grammar, computed_HATforest = False, pcfg_dict = {}, labels = {})
-			new_sentence = self.next_sentence()
-			sentence_nr += 1
-		grammar_norm = self.normalise2(new_grammar)
-		f.close()
-		return grammar_norm
-	
-	def normalise(self,rule_dict):
-		"""
-		Given a nested dictionary that represent rules as follows:
-		{lhs : {rhs1 : count, rhs2: count ...}, ....}, return a
-		similar nested dictionary with normalised counts
-		"""
-		normalised_dict = dict({})
-		total_lhs = 0
-		for lhs in rule_dict:
-			normalised_dict[lhs] = {}
-			total = 0
-			#loop twice through dictionary
-			#first to obtain total counts
-			for rhs in rule_dict[lhs]:
-				total += rule_dict[lhs][rhs]
-			# then to adjuct the counts in the
-			# new dictionary
-			for rhs in rule_dict[lhs]:
-				normalised_dict[lhs][rhs] = rule_dict[lhs][rhs]/float(total)
-		return normalised_dict
-
-	
-	def to_WeightedGrammar(self,rule_dict):
-		"""
-		Transforms a set of rules represented in a
-		nested dictionary into a WeightedGrammar object.
-		It is assumed that the startsymbol of the grammar is 
-		TOP, if this is not the case, parsing with the grammar
-		is not possible.
-		"""
-		#create grammar
-		productions = []
-		for lhs in rule_dict:
-			for rhs in rule_dict[lhs]:
-				probability = rule_dict[lhs][rhs]
-				rhs_list = list(rhs)
-				new_production = nltk.WeightedProduction(lhs,rhs_list,prob=probability)
-				productions.append(new_production)
-		start = nltk.Nonterminal('TOP')
-		return WeightedGrammar(start,productions)
-
-
 class ProcessDependencies(ProcessFiles):
 	"""
 	Subclass of ProcessFiles that is focussed on the specific
@@ -358,7 +243,6 @@ class ProcessDependencies(ProcessFiles):
 		
 		#process file until one of them ends
 		while new:
-			print sentence_nr
 			#consistency check
 			if not self.check_consistency(new[1], new[2]):
 				print "Warning: dependencies and alignment might be inconsistent"
@@ -391,11 +275,11 @@ class ProcessDependencies(ProcessFiles):
 				for key in total_score:
 					if sentence_length < key:
 						total_score[key] += score
-						sentences[key] += 1 
+						sentences[key] += 1
 				#write to files
 				print_string_s = "s %i\t\tlength: %i\t\tscore: %f\t\trank: %i\n" % (sentence_nr, sentence_length, score, rank)
 				print_string_t = "%s\n\n" % tree
-				print 'score', score
+				print 'sentence: %i, score: %f' %(sentence_nr, score)
 				parsed_sentences +=1
 			self.print_function(print_string_t,treesf)
 			self.print_function(print_string_s,scoref)
@@ -403,13 +287,13 @@ class ProcessDependencies(ProcessFiles):
 			new = self.next()
 		#Make a table of the results
 		results_table, results_string = self._results_string(total_score, sentences)
-		if scoref:
-			scoref.write('\n\nSCORES\n\n------------------------------------------------------\n%s' %results_string)
-			scoref.close()
-		if treesf:
-			treesf.close()	
+		not scoref or (scoref.write('\n\nSCORES\n\n------------------------------------------------------\n%s' %results_string) and scoref.close())
+		not treesf or treesf.close()	
 
 	def _results_string(self,total_score, sentences):
+		"""
+		Generate a string with the results
+		"""
 		score10, score20,score40,score100 = 0,0,0,0
 		if sentences[100] != 0:
 			score100 = total_score[100]/sentences[100]
@@ -457,7 +341,7 @@ class ProcessDependencies(ProcessFiles):
 	def percentage_labelled(self,max_length, label_type):
 		"""
 		Compute the percentage of the spans in the dictionary
-		that is labelled by
+		that is labelled by a labelling method
 		"""
 		self._reset_pointer()
 		sentence_nr = 1
@@ -478,7 +362,56 @@ class ProcessDependencies(ProcessFiles):
 			new = self.next()
 		return total, total_labelled
 				
+	def check_consistency(self, sentence, dep_list):
+		"""
+		Check whether a list with dependencies is
+		consistent with a sentence, by comparing the words.
+		Some flexibility is allowed, to account for words
+		that are spelled differently. Return True if the
+		dependency parse contains no more than 3 words not
+		present in the sentence and False otherwise.
+		"""
+		words = set([])
+		if dep_list == []:
+			return True
+		for relation in dep_list:
+			dependent = re.findall('(?<=\, ).*(?=-[0-9]*\))',relation)
+			words.add(dependent[0])
+		words_sentence = set(sentence.split(' '))
+		#some flexibility is allowed because of american/english spelling
+		if len(words - words_sentence) < 3:
+			return True
+		else:
+			return False
 
+	def consistent_labels(self, label_type, max_length = 40):
+		"""
+		Determines the consistency of a set of alignments with a type of labels
+		over the entire corpus.
+		"""
+		self._reset_pointer()
+		sentence_nr = 1
+		label_dict = {}
+		new = self.next()
+		while new:
+			print sentence_nr
+			sentence_length = len(new[1].split())
+			if sentence_length < max_length:
+				a = Alignments(new[0],new[1])
+				if label_type == "Dependencies":
+					dependencies = Dependencies(new[2])
+					labels = dependencies.labels()
+				elif label_type == "Constituencies":
+					constituencies = Constituencies(new[2][0])
+					labels = constituencies.find_labels()
+				else:
+					raise ValueError("Type of labels not implemented")
+			label_dict = a.consistent_labels(labels, label_dict)
+			new = self.next()
+			sentence_nr+= 1
+		return label_dict
+
+		
 	def sample(self, samplesize, maxlength = False, display = False):
 		"""
 		Create a sample of sentence from the inputted files.
@@ -535,156 +468,45 @@ class ProcessDependencies(ProcessFiles):
 	
 	def tex_preamble(self):
 		tex_preamble = '\documentclass{report}\n\usepackage[english]{babel}\n\usepackage{fullpage}\n\usepackage[all]{xy}\n\usepackage{tikz-dependency}\n\\author{Dieuwke Hupkes}\n\\title\n{Dependencies}\n\\begin{document}'
-		return tex_preamble
-	
-	def check_consistency(self, sentence, dep_list):
-		"""
-		Check whether a list with dependencies is
-		consistent with a sentence, by comparing the words.
-		Some flexibility is allowed, to account for words
-		that are spelled differently. Return True if the
-		dependency parse contains no more than 3 words not
-		present in the sentence and False otherwise.
-		"""
-		words = set([])
-		if dep_list == []:
-			return True
-		for relation in dep_list:
-			dependent = re.findall('(?<=\, ).*(?=-[0-9]*\))',relation)
-			words.add(dependent[0])
-		words_sentence = set(sentence.split(' '))
-		#some flexibility is allowed because of american/english spelling
-		if len(words - words_sentence) < 3:
-			return True
-		else:
-			return False
+		return tex_preamble	
 
-	def consistent_labels(self, label_type, max_length = 40):
+	def unique_rules(self, step_size, HAT_file, max_length = 40):
 		"""
-		Determines the consistency of a set of alignments with a type of labels
-		over the entire corpus.
-		"""
-		self._reset_pointer()
-		sentence_nr = 1
-		label_dict = {}
-		new = self.next()
-		while new:
-			print sentence_nr
-			sentence_length = len(new[1].split())
-			if sentence_length < max_length:
-				a = Alignments(new[0],new[1])
-				if label_type == "Dependencies":
-					dependencies = Dependencies(new[2])
-					labels = dependencies.labels()
-				elif label_type == "Constituencies":
-					constituencies = Constituencies(new[2][0])
-					labels = constituencies.find_labels()
-				else:
-					raise ValueError("Type of labels not implemented")
-			label_dict = a.consistent_labels(labels, label_dict)
-			new = self.next()
-			sentence_nr+= 1
-		return label_dict
-
-		
-	def select_best_rules(self,productions,n, rules):
-		"""
-		Create a dictionary with the productions with the best scores.
+		Compute the number of 
 		"""
 		raise NotImplementedError
-
-	def em(self, max_iter, max_length = 40):
+				
+	def all_HATs(self, file_name, max_length = 40):
 		"""
-		When passing a grammar represented by a dictionary,
-		iteratively assign probabilities to all HATs of the
-		corpus and recompute the counts of the grammar with
-		relative frequency estimation until convergence or
-		until a maximum number iterations is reached.
-		Return the new grammar
-		:param start_grammar	Grammar represented as a nested dictionary
-		:param max_iter			Maximum number of iterations
-		:param max_length		Maximum sentence length considered
+		Compute all HATs and pickle to a file with the provided name,
+		together with its sentence number and root label.
 		"""
-		#Build in some method for measuring the change of two grammars
-		print 'run EM with a maximum of %i iterations' %max_iter
-		i = 1#
-		grammar = self.all_rules(HATfile = 'HATs')
-		while i <= max_iter:
-			sentence_nr = 1
-			new_grammar = copy.deepcopy(grammar)
-			print "iteration %i" % i
-			HATs = open('HATs','r')
-			while 1:
-				try:
-					#this is very ugly, see if you can change this
-					a = Alignments('0-0','1')
-					s_nr, root, new_HAT = pickle.load(HATs)
-					print 'iteration %i, sentence %i' %(i, s_nr)
-					a.compute_weights(root, new_grammar, new_HAT, grammar)
-				except (EOFError):
-					HATs.close()
-					break
-			grammar = copy.deepcopy(self.normalise(new_grammar))
-			i +=1
-		return grammar
-
-	def unique_rules(self, step_size, max_length = 40):
-		"""
-		Go through a file and keep track of growth of 
-		the	number of unique rules and total rules when the
-		corpus grows.
-		"""
-		unique_rules = {}
-		unique_total = 0
-		all_rules = {}
-		all_total = 0
 		self._reset_pointer()
-		sentences = 0
-		unique_dict = {}
+		f = open(file_name,'w')
+		sentence_nr = 1
 		new = self.next()
 		while new:
-			sentence_length = len(new[1].split())
-			if sentence_length >= max_length:
-				pass
-			else:
-				sentences += 1
-				a = Alignments(new[0],new[1])
-				dependencies = Dependencies(new[2],new[1])
+			sentence = new[1]
+			if len(sentence.split()) < max_length:
+				dependencies = Dependencies(new[2],sentence)
+				a = Alignments(new[0],sentence)
 				l = Labels(dependencies.dependency_labels())
-				t1 = time.time()
+#				print l.labels
 				labels = l.label_most()
-				t2 = time.time()
-				print 'labelling time: ', t2-t1
-				for rule in a.hat_rules(Rule.uniform_probability,[], labels):
-					lhs = rule.lhs().symbol()
-					rhs = tuple([rule._str(rhs) for rhs in rule.rhs()])
-					if lhs not in all_rules or rhs not in all_rules[lhs]:
-						# lhs --> rhs is not yet in all_rules
-						if lhs in unique_rules and rhs in unique_rules[lhs]:
-							# lhs --> rhs was seen once before, remove from
-							# unique dictionary, add to all_rules dictionary
-							unique_rules[lhs].remove(rhs)
-							unique_total -= 1
-							all_rules[lhs] = all_rules.get(lhs,{})
-							all_rules[lhs].update({rhs:2})
-						else:
-							# this is the first time we have seen lhs --> rhs
-							unique_total +=1
-							all_total += 1
-							unique_rules[lhs] = unique_rules.get(lhs,set([]))
-							unique_rules[lhs].add(rhs)
-					else:
-						# we have seen lhs --> rhs several times before
-						all_rules[lhs][rhs] += 1
-				
-				# if mode stepsize == 0, add to dict
-				if sentences % step_size == 0:
-					unique_dict[sentences] = [all_total, unique_total,float(unique_total)/all_total]
-					print 'Alignments: %i\tAll rules: %i\tUnique rules: %i\tPercentage unique:%f' %(sentences, all_total, unique_total, float(unique_total)/all_total)
+				labels = l.annotate_span(labels)
+				if not labels:
+					print 'sentence skipped because of inconsistency with dependency parse'
+					new = self.next()
+					sentence_nr +=1
+					continue
+				print "Creating HATforest for sentence ", sentence_nr
+				root = labels[(0,len(sentence.split()))]
+				HAT_dict = a.HAT_dict(labels)
+				pickle.dump([sentence_nr,root,HAT_dict],f)
 			new = self.next()
-		return unique_dict
-				
-				
+			sentence_nr += 1
+		f.close()
+		
 	def all_rules(self, HATfile=False, max_length = 40):
 		"""
 		Creates a dictionary with all the rules of all HATs of
