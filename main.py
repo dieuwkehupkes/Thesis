@@ -85,9 +85,8 @@ if __name__ == "__main__":
 	
 	parser.add_argument("--score", action= "store_true",help="Assign the corpus a consistency score")
 	parser.add_argument("--evaluate",action="store_true",help="Evaluate a grammar, grammar input required")
-	parser.add_argument("--em", action="store_true",help="create a grammar of the corpus using EM")
-	parser.add_argument("--create", action="store_true",help="create a normalised grammar from input treefile")
 	parser.add_argument("--branching", action="store_true", help="compute the branching factor of the nodes in the provided treefile")
+	parser.add_argument("--HATs", action="store_true", help="compute all HATs of the corpus and write to a file")
 	
 	parser.add_argument("--target", help="File with target sentences")
 	
@@ -108,10 +107,11 @@ if __name__ == "__main__":
 	parser.add_argument("-t","--trees_to", default=False,help="Write any trees outputted by the program to specified file name")
 	parser.add_argument("-s","--scores_to", default=False,help="Write any scores outputted by the program to specified file name")
 	parser.add_argument("-g","--grammar_to",default="grammar",help="Write grammar returned by the program to file")
+	parser.add_argument("-H","--HATs_to",default="HATs", help="Used in combination with --HATs, pickle HATs to filename")
 	
 	args = parser.parse_args()
 
-	if not (args.score or args.em or args.evaluate or args.create or args.branching):
+	if not (args.score or args.evaluate or args.branching or args.HATs):
 		parser.error("No running mode is specified, add --em, --evaluate or --score")
 
 	if not (args.dependencies or args.constituencies):
@@ -132,34 +132,11 @@ if __name__ == "__main__":
 		else:
 			raise NotImplementedError
 
-	elif args.create:
-		if not args.trees:
-			parser.error("Please provide a tree file to create grammar")
-		if not args.grammar_to:
-			parser.error("Please provide a file name to write the grammar to")
+	elif args.HATs:
+		#there are more options here, maybe labelling should be taken into account too
 		main = Main()
-		main.create_grammar(args.trees, args.grammar_to)
-
-	
-	elif args.em and args.evaluate:
-		main = Main()
-		if args.dependencies:
-			files = ProcessDependencies(args.alignments, args.source, args.trees)
-		else:
-			files = ProcessConstituencies(args.alignments, args.source, args.trees)
-		main.em(files, args.max_length, args.grammar_to, args.EM_iterations, 1)
-		main.evaluate_grammar(files, args.grammar_to, args.scores_to, args.max_length)
-	
-	elif args.em:
-		print "Run EM with %i iterations to produce an output grammar\nSentences: %s\nAlignments: %s\nParses: %s\n\nMonolingual trees: Dependency Parses" % (args.EM_iterations, args.source, args.alignments, args.trees)
-		if args.grammar_to:
-			print "Grammar will be written to: %s\n" % args.grammar_to
-		main = Main()
-		if args.dependencies:
-			files = ProcessDependencies(args.alignments, args.source, args.trees)
-		else:
-			files = ProcessConstituencies(args.alignments, args.source, args.trees)
-		new_grammar = main.em(files, args.max_length, args.grammar_to, args.EM_iterations, 1)
+		files = ProcessDependencies(args.alignments,args.source,args.trees)
+		files.all_HATs(args.HATs_to,args.max_length)
 
 	elif args.evaluate:
 		main = Main()
