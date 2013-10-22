@@ -18,7 +18,8 @@ class AlignmentsTests():
 		for span in spans:
 			spanlist.append(span)
 		spanlist.sort()
-		return spanlist == spanlist_man
+		assert spanlist == spanlist_man, "Alignments.spans is not functioning as it should'"
+		return True
 
 	def span_test2(self):
 		"""
@@ -35,7 +36,8 @@ class AlignmentsTests():
 		for span in spans:
 			spanlist.append(span)
 		spanlist.sort()
-		return spanlist == spanlist_man
+		assert spanlist == spanlist_man, "Alignments.spans is not functioning as it should. Error when generating spans for monotone one-to-one alignment."
+		return True
 
 
 	def span_test3(self):
@@ -54,7 +56,8 @@ class AlignmentsTests():
 		for span in spans:
 			spanlist.append(span)
 		spanlist.sort()
-		return spanlist == spanlist_man
+		assert spanlist == spanlist_man, "Alignments.spans is not functioning as it should. Error when generating spans for monotone one-to-one alignment with unaligned words"
+		return True
 	
 	def span_test4(self):
 		"""
@@ -71,7 +74,8 @@ class AlignmentsTests():
 		for span in spans:
 			spanlist.append(span)
 		spanlist.sort()
-		return spanlist == spanlist_man
+		assert spanlist == spanlist_man, "Alignments.spans is not functioning as it should. Error when generating spans for many-to-many alignment with unaligned words"
+		return True
 
 	def spans_test_all(self):
 		"""
@@ -85,7 +89,8 @@ class AlignmentsTests():
 		alignment = '0-0 1-1 2-2 3-3'
 		a = Alignments(alignment,sentence)
 		score = a.agreement(tree)
-		return score == 1
+		assert score == 1, "Alignment.agreement is not functioning as it should"
+		return True
 	
 	def consistency_test2(self):
 		tree = nltk.Tree('(ROOT (NP (NP (NN approval)) (PP (IN of) (NP (DT the) (NNS minutes))) (PP (IN of) (NP (DT the) (JJ previous) (NN sitting)))))')
@@ -93,7 +98,8 @@ class AlignmentsTests():
 		alignment = '5-6 4-5 3-4 3-2 2-1 6-8 3-3 1-1 0-0 7-7'
 		a = Alignments(alignment,sentence)
 		score = a.agreement(tree)
-		return score == 0.8
+		assert score == 0.8, "Alignment.agreement is not functioning as it should"
+		return True
 		
 	def consistency_test3(self):
 		tree = nltk.Tree('(ROOT ( NP ( NP (NN approval )) (PP of the minutes) (PP (IN of) (NP (DT the ) (JJ previous ) (NN sitting ) ))))')
@@ -101,7 +107,8 @@ class AlignmentsTests():
 		alignment = '5-6 4-5 3-4 3-2 2-1 6-8 3-3 1-1 0-0 7-7'
 		a = Alignments(alignment,sentence)
 		score = a.agreement(tree)
-		return score == 1
+		assert score == 1, "Alignment.agreement is not functioning as it should"
+		return True
 	
 	def dict_test(self):
 		"""
@@ -120,9 +127,4 @@ class AlignmentsTests():
 	
 if __name__ == "__main__":
 	x = AlignmentsTests()
-#	x.update_test2()
 	print x.alignment_test_all()
-#	x.grammar_test()
-	
-	
-
