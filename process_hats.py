@@ -1,5 +1,6 @@
 import pickle
 import nltk.grammar
+import copy
 
 class ProcessHATs():
 	"""
@@ -18,7 +19,8 @@ class ProcessHATs():
 	
 	def next(self):
 		"""
-		Return the next HAT in the file
+		Return the next item in the file. If no 
+		:return [sentence_nr, HATdict, root]
 		"""
 		try:
 			#return sentence_nr, root, new_HAT
@@ -27,6 +29,10 @@ class ProcessHATs():
 			return None
 			
 	def _reset_pointer(self):
+		"""
+		Reset the pointer of self.HATfile such that
+		the next line to read is the first line.
+		"""
 		self.HATfile.seek(0)
 	
 	def normalise(self,rule_dict):
@@ -50,7 +56,59 @@ class ProcessHATs():
 				normalised_dict[lhs][rhs] = rule_dict[lhs][rhs]/float(total)
 		return normalised_dict
 
-	def em(self, max_iter, max_length = 40):
+	def unique_rules(self, stepsize):
+		"""
+		Go through HATcorpus and keep track of the
+		percentage of the rules that is unique.
+		Store the number of rules and the number of unique
+		rules if the number of HATs processed % stepsize is 0
+		"""
+		unique_dict = {}
+		unique_rules, unique_total = {}, 0
+		all_rules, all_total = {}, 0
+		sentences = 0
+		self._reset_pointer()
+		new = self.next()
+		while new:
+			H = HATGrammar(new[2],new[1])
+			HATs = H.HATs
+			sentences+= 1
+			#go through lhs
+			for lhs in HATs:
+				lhs_plain = H.plain_label(lhs)
+				unique_rules[lhs_plain], all_rules[lhs_plain] = set([]), {}
+				for rhs in HATs[lhs]:
+					rhs_plain = H.plain_label(rhs)
+					if len(rhs) == 1:
+						#don't take into account lexical rules
+						continue
+					print '%s --> %s' %(lhs_plain, rhs_plain)
+					if rhs_plain in all_rules[lhs_plain]:
+						"rule seen twice"
+						#rule was seen already, increase counter
+						all_rules[lhs_plain][rhs_plain] += 1
+						all_total += 1
+					elif rhs_plain in unique_rules[lhs_plain]:
+						"rule seen once"
+						# rule was seen one before, move from
+						# unique-rules to all_rules, decrease counter
+						# unique rules, add to all rules
+						unique_total -= 1
+						unique_rules[lhs_plain].remove(rhs_plain)
+						all_rules[lhs_plain][rhs_plain] = 2
+					else:
+						#rule was not seen before, add to unique_rules
+						unique_total += 1
+						all_total +=1
+						unique_rules[lhs_plain].add(rhs_plain)
+			if sentences % stepsize == 0:
+				update = [all_total, unique_total,float(unique_total)/all_total]
+				unique_dict[sentences] = update
+				print 'A%i\tAll: %i\tUnique: %i\tPercentage unique:%f' %(sentences, update[0], update[1], update[2])
+			new = self.next()
+		return unique_dict
+
+	def em(self, max_iter):
 		"""
 		When passing a grammar represented by a dictionary,
 		iteratively assign probabilities to all HATs of the
@@ -62,104 +120,47 @@ class ProcessHATs():
 		:param max_iter			Maximum number of iterations
 		:param max_length		Maximum sentence length considered
 		"""
-		raise NotImplementedError
 		#Build in some method for measuring the change of two grammars
-#		print 'run EM with a maximum of %i iterations' %max_iter
-#		i = 1#
-#		self.all_rules(HATfile = 'HATs')
-#		new_grammar = copy.deepcopy(start_grammar)
-#		while i <= max_iter:
-#			print "iteration %i" % i
-#			new_grammar_dict = self.em_iteration(new_grammar, max_length)
-#			i +=1
-#		return new_grammar
+		print 'run EM with a maximum of %i iterations' %max_iter
+		i = 1
+		grammar = self.initialise_grammar()
+		old_grammar = copy.deepcopy(grammar)
+		while i <= max_iter:
+			new_grammar = {}
+			print "iteration %i" % i
+			new_grammar = self.em_iteration(old_grammar, new_grammar)
+			i +=1
+			old_grammar = copy.deepcopy(new_grammar)
+		return new_grammar
 
-
-#	def em_iteration(self, grammar, pickled_HATs, n=1, max_length = 40):
-#		"""
-#		Assign probabilities to all HATs in the corpus with the
-#		current grammar, recompute probabilities and return the
-#		new grammar.
-#		It is assumed that the HATs are precomputed and pickled into
-#		a file in the correct order. Every sentence under max_length should
-#		be represented in the file as: [sentence_nr, HAT_dict, root].
-#		"""
-#		new_grammar = {}
-#		self._reset_pointer()
-#		f = open(pickled_HATs, 'r')
-#		new = self.next()
-#		sentence_nr = 1
-#		while new:
-#			sentence_length = len(new[1].split())
-#			# tests if input is as desired, skip if not
-#			if sentence_length >= max_length:
-#				print 'sentence skipped'
-#				pass
-#			else:
-#				new_alignment = Alignments(new[0], new[1])
-#				s_nr, HATdict, root = pickle.load(f)
-#				assert sentence_nr == s_nr
-#				a.compute_weights(root, new_grammar, computed_HATforest = False, pcfg_dict = {}, labels = {})
-#			new_sentence = self.next_sentence()
-#			sentence_nr += 1
-#		grammar_norm = self.normalise(new_grammar)
-#		f.close()
-#		return grammar_norm
-
-	def unique_rules(self, step_size, max_length = 40):
+	def initialise_grammar(self):
 		"""
-		Go through a file and keep track of growth of 
-		the	number of unique rules and total rules when the
-		corpus grows.
+		Initialise a grammar based on all HATs in the corpus
 		"""
-		raise NotImplementedError
-#		#This function should be moved to process HATs
-#		unique_rules = {}
-#		unique_total = 0
-#		all_rules = {}
-#		all_total = 0
-#		self._reset_pointer()
-#		sentences = 0
-#		unique_dict = {}
-#		new = self.next()
-#		while new:
-#			sentence_length = len(new[1].split())
-#			if sentence_length >= max_length:
-#				pass
-#			else:
-#				sentences += 1
-#				a = Alignments(new[0],new[1])
-#				dependencies = Dependencies(new[2],new[1])
-#				l = Labels(dependencies.dependency_labels())
-#				labels = l.label_most()
-#				for rule in a.hat_rules(Rule.uniform_probability,[], labels):
-#					lhs = rule.lhs().symbol()
-#					rhs = tuple([rule._str(rhs) for rhs in rule.rhs()])
-#					if lhs not in all_rules or rhs not in all_rules[lhs]:
-#						# lhs --> rhs is not yet in all_rules
-#						if lhs in unique_rules and rhs in unique_rules[lhs]:
-#							# lhs --> rhs was seen once before, remove from
-#							# unique dictionary, add to all_rules dictionary
-#							unique_rules[lhs].remove(rhs)
-#							unique_total -= 1
-#							all_rules[lhs] = all_rules.get(lhs,{})
-#							all_rules[lhs].update({rhs:2})
-#						else:
-#							# this is the first time we have seen lhs --> rhs
-#							unique_total +=1
-#							all_total += 1
-#							unique_rules[lhs] = unique_rules.get(lhs,set([]))
-#							unique_rules[lhs].add(rhs)
-#					else:
-#						# we have seen lhs --> rhs several times before
-#						all_rules[lhs][rhs] += 1
-#				
-#				# if mode stepsize == 0, add to dict
-#				if sentences % step_size == 0:
-#					unique_dict[sentences] = [all_total, unique_total,float(unique_total)/all_total]
-#					print 'Alignments: %i\tAll rules: %i\tUnique rules: %i\tPercentage unique:%f' %(sentences, all_total, unique_total, float(unique_total)/all_total)
-#			new = self.next()
-#		return unique_dict
+		init_grammar = {}
+		return self.em_iteration(init_grammar, {})
+
+	def em_iteration(self, old_grammar, new_grammar):
+		"""
+		Assign probabilities to all HATs in the corpus with the
+		current grammar, recompute probabilities and return the
+		new grammar.
+		It is assumed that the HATs are precomputed and pickled into
+		a file in the correct order. Every sentence under max_length should
+		be represented in the file as: [sentence_nr, HAT_dict, root].
+		"""
+		new_grammar = {}
+		self._reset_pointer()
+		new = self.next()
+		sentence_nr = 0
+		while new:
+			sentence_nr += 1
+			print 'update grammar for alignment %i' %sentence_nr
+			H = HATGrammar(new[2],new[1])
+			grammar = H.update_weights(new_grammar, old_grammar)
+			new = self.next()
+		grammar_norm = self.normalise(new_grammar)
+		return grammar_norm
 
 
 class HATGrammar():
@@ -249,21 +250,28 @@ class HATGrammar():
 			raise TypeError("unexpected label-type %s: %s" %(label, type(label)))
 
 
-	def to_WeightedGrammar(self,rule_dict):
+	def to_WeightedGrammar(self,rule_dict, remove_old = False):
 		"""
 		Transforms a set of rules represented in a
 		nested dictionary into a WeightedGrammar object.
 		It is assumed that the startsymbol of the grammar is 
 		TOP, if this is not the case, parsing with the grammar
 		is not possible.
+		If remove_old = True, remove the old grammar during the
+		process to save memory.
 		"""
 		#create grammar
 		productions = []
 		for lhs in rule_dict:
+			total = 0
 			for rhs in rule_dict[lhs]:
 				probability = rule_dict[lhs][rhs]
+				total += probability
 				rhs_list = list(rhs)
 				new_production = nltk.WeightedProduction(lhs,rhs_list,prob=probability)
 				productions.append(new_production)
+				if not remove_old: del rule_dict[lhs][rhs]
+			assert total == 1.0
+			if not remove_old: del rule_dict[lhs]
 		start = nltk.Nonterminal('TOP')
 		return nltk.WeightedGrammar(start,productions)
