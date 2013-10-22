@@ -3,14 +3,17 @@ import nltk.tree
 
 class ConstituencyTree():
 	"""
-	A class representing a constuency tree from a sentence.
-	Object is a flat object, is mainly used to view the
-	hierarchical structure of a sentence via labels
+	A class representing a constuency tree. The classes uses
+	the nltk class nltk.Tree, but adds some functionality that
+	is useful with respects to alignments.
 	"""
 	def __init__(self, tree, sentence= False):
 		"""
-		Initialise with a string representation of a constituency tree. 
-		Transform to a nested list representation of the tree.
+		Create a ConstituencyTree object.
+		
+		:param tree:		A constituency tree.
+		:type tree:		str or nltk.Tree object.
+		:param sentence:	The sentence that the leafnodes of the tree constitute.	
 		"""
 		if isinstance(tree, nltk.Tree):
 			self.tree = tree
@@ -20,6 +23,12 @@ class ConstituencyTree():
 		self.labels = {}
 	
 	def reconstruct_sentence(self):
+		"""
+		Reconstruct the sentence from the leaf nodes of the
+		tree. If a sentence was passed in initalisation, return
+		this sentence.
+		:type return:	str
+		"""
 		if self.sentence:
 			return sentence
 		else:
@@ -28,6 +37,8 @@ class ConstituencyTree():
 	def root_span(self,subtree,startpos):
 		"""
 		Recursively compute the span a node covers
+		:param subtree:		a subtree of self.tree
+		:param startpos:	the first position the subtree dominates
 		"""
 		cur_startpos = startpos
 		for child in subtree:
@@ -41,7 +52,7 @@ class ConstituencyTree():
 
 	def nr_of_nonterminals(self):
 		"""
-		Return the number of nonterminals in the tree
+		Return the number of nonterminals in self.tree.
 		"""
 		return len(self.tree.treepositions()) - len(self.tree.leaves())
 
@@ -49,6 +60,10 @@ class ConstituencyTree():
 		"""
 		Return the number of non-terminal nodes in the tree
 		that occur in the provided list of phrases.
+		:param subtree:		A subtree of self.tree.
+		:param startpos:	The left-most word position the subtree dominates.
+		:param phrase_list:	A list of allowed phrases.
+		:return:	the number of nodes in the tree that is in phrase_list.
 		"""
 		nr_consistent = 0
 		#Add one if rootnode is in phraselist
@@ -90,3 +105,17 @@ class ConstituencyTree():
 				else:
 					branching_dict = ConstituencyTree(child).branching_factor(branching_dict)
 		return branching_dict
+
+
+
+####################################################################################
+#DEMONSTRATION
+####################################################################################
+
+
+def demo():
+	print 'implement demo'
+
+if __name__ == "__main__":
+	demo()
+
