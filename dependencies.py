@@ -1,7 +1,3 @@
-"""
-Module for dealing with dependencies.....
-"""
-
 import re
 import copy
 from labelling import *
@@ -15,15 +11,14 @@ class Dependencies():
 
 	def __init__(self, dependency_list, sentence = False):
 		"""
-		Initialize with a list of dependencies represented as a string
-		as follows:
+		Create a Dependencies object, based on the passed dependency list.
+		If no sentence is passed, the sentence is reconstructed from the
+		dependency list, leaving gaps for items that were not included.
 		
-			reltype(head-pos_head, dependent-pos_dependent)
-		
-		The first position in the centence is 1. A dictionary will be created
-		with entries of the form:
-
-			pos_head: [pos_dependent, reltype]
+		:param dependency_list:	A list with dependencies of the form 
+								reltype(head-pos_head, dependent-pos_dependent)
+								min(pos-dependent) = 1
+		:return:	A dictionaries with entries of the form	pos_head: [pos_dependent, reltype]
 		"""
 		self.dep_list = dependency_list
 		self.nr_of_deps = -1
@@ -75,24 +70,45 @@ class Dependencies():
 		return True
 		
 	def find_head_pos(self, relation):
+		"""
+		Find the position of the head of a dependency relation
+		using a regular	expression.
+		"""
 		return int(re.search('(?<=-)[0-9]*(?=, )',relation).group(0))
 	
 	def find_head(self, relation):
+		"""
+		Find the head word of a dependency relation using a regular
+		expression.
+		"""
 		return re.search('(?<=\().*(?=-[0-9]*,)',relation).group(0)
 		
 	def find_dependent_pos(self,relation):
+		"""
+		Find the position of the dependent of a dependency relation
+		using a regular	expression.
+		"""
 		return int(re.search('(?<=-)[0-9]*(?=\)$)', relation).group(0))
 	
 	def find_dependent(self, relation):
+		"""
+		Find the depending word of a dependency relation using a regular
+		expression.
+		"""
 		return re.search('(?<=, ).*(?=-)',relation).group(0)
 	
 	def find_relationtype(self, relation):
+		"""
+		Find the type of a dependency relation using a
+		regular expression.
+		"""
 		return re.match('[a-z\_]*(?=\()',relation).group(0)
 		
 	def reconstruct_sentence(self, sentence):
 		"""
 		Reconstruct the sentence corresponding to the 
-		dependency parse. Output as list.
+		dependency parse.
+		:return:	a list with the words of the sentence.
 		"""
 		if sentence:
 			# If sentence was input or already computed
@@ -179,19 +195,22 @@ class Dependencies():
 			self.wordspans[key] = (min(min(deplist)),max(max(deplist)))
 			return self.wordspans[key]
  
- 	def spanrelations(self, rightbranching = False, leftbranching = False, arg_combine = False, interpunction = True):
+ 	def spanrelations(self, rightbranching = False, leftbranching = False, interpunction = True):
  		"""
- 		Create a dictionary with spanrelations that are 'deeper'
- 		than the standard relations in the dependency parse, and allow
- 		for stepwise combining a head with its arguments. The latter can
- 		be done in different fashions: if 'rightbranching' is true, relations
- 		will be included that first combine with the right arguments, and then
- 		with the left arguments, and vise versa for leftbranching. If both left-
- 		and rightbranching are true, ...... arg_combine specifies whether arguments
- 		can combine with each other before combining with the head.
- 		If interpunction is set to True, gaps are taken into account in allowed
- 		dependency relations returned (i.e., if (0,7) (8,13) is an allowed relation 
- 		and (7,8) is a comma, also (0,8) (8,13) and (0,7) (7,13) are added.
+ 		Create a dictionary with spanrelations that are 'deeper' than the standard 
+ 		relations in the dependency parse, such that stepwise combining head and
+ 		arguments is allowed. Parameters rightbranching, leftbranching and interpunction
+ 		describe how exactly arguments and heads are allowed to combine.
+ 		
+ 		:param rightbranching:	allow an argument to combine with the arguments one by one,
+ 								giving preference to arguments to the right.
+ 		:param leftbranching:	allow an arguments to combine with the head one by one,
+ 								giving preference to arguments to the left.
+ 		:param interpunction:	Take gaps in the dependency parse into account, by adding
+ 								extra relations in which the gap is already combined
+ 								with one of its left or right adjacing units.
+ 		
+ 		If both left- and rightbranching are true, all combination orders are allowed.
  		"""
  		#Create normal span relations
  		spanrels = {}
@@ -218,8 +237,6 @@ class Dependencies():
 				left = [ ( i+1, index_head ,i) for i in xrange(index_head-1) ]
 				right = [ (0,i,i+1) for i in xrange(index_head, len(deplist)-1) ]
 				relations = left + right
-			if arg_combine:
-				pass
 			# add relations to dictionary
 			for tuples in relations:
 				rel1 = (deplist[tuples[0]][0],deplist[tuples[1]][1])
@@ -238,6 +255,8 @@ class Dependencies():
 		For instance, if (5,6) and (7,8) are 
 		related, and (6,7) = ',', then add 
 		 (5,7) - (7,8) and (5,6) - (6,8)
+		 
+		:param spanrels: a dictionary that describes which spanrelations are desired.
 		"""
 		#Add extra spans in the keys
 		gap_spanrels = copy.deepcopy(spanrels)
@@ -333,7 +352,6 @@ class Dependencies():
  		labels = Labels(labels_basic)
  		return labels.SAMT_labels()
  
-	
 	def label_all(self):
 		"""
 		Label all spans of the sentence.
@@ -342,73 +360,30 @@ class Dependencies():
 		labels = Labels(labels_basic)
 		return labels.label_most()
 	
- 	def labels(self, ldepth = 0, rdepth = 0, max_var = 1):
- 		"""
- 		When ran without any variables, produces standard labels for spans
- 		according to the following scheme:
- 		
- 		* label[(i,i+1)] = HEAD 	iff word i+1 is the head of the sentence
- 		
- 		* label[(i,j+1)] = rel		iff there is a dependency relation rel(x, y) and wordspan(y) = (i,j+1)
- 		
- 		* label[(i,i+1)] = rel-head iff there is a dependency relation rel(x,i+1) and word i+1 was not labelled by one of the previous conditions
- 		
+	def labels(self, label_type = 'basic'):
+		"""
+		Return labels of given type.
 		
- 		Parameters can be used to indicate that compound labels should be
- 		found. ldepth indicates the depth on the left, rdepth indicates the depth
- 		on the right, and max_var indicates how many variables should maximally
- 		be used. E.g, ldepth = 1 means that Y/X is allowed, while Y+Z/X is not,
- 		if max_var is 2, Y/X and X\Y. X+Y is only constructed if there is a Z such that
- 		X+Y/Z or Z\X+Y. 'Normal' labels are prefered over compound labels.
- 		
- 		If ldepth = rdepth = max, labels for all spans are produced, using the function label_all()
- 		"""
- 		#first create standard labels:
- 		if ldepth == rdepth == max_var == 'max':
- 			return self.label_all()
- 		else:
- 			ldepth, rdepth, max_var = int(ldepth), int(rdepth), int(max_var)
- 		
- 		labels = self.dependency_labels()
- 		if max_var == 1 or (ldepth == 0 and rdepth ==0):
- 			return labels
- 		
- 		#loop through labels again to find compound labels  
- 		for head in self.deps:
- 			head_span = (head-1, head)
- 			deplist = self.argument_list(head_span)
- 			#Compute index head and nr of right and left dependents
- 			index_head = deplist.index(head_span)
- 			nr_left = index_head
- 			nr_right = len(deplist) - 1 - index_head
- 			for left in [i for i in xrange(0, ldepth+1) if i < max_var and i<= nr_left]:
- 				for right in [j for j in xrange(rdepth+1) if left+j < max_var and j <= nr_right]:
- 					if left == 0:
- 						new_label = labels.get(self.wordspans[head],'root')
- 						left_index = deplist[0][0]
- 					else:
- 						left_index = deplist[left-1][1]
- 						compound_left = '+'.join([labels[deplist[k]] for k in xrange(left)])
- 						compound_span = (deplist[0][0],left_index)
- 						labels[compound_span] = labels.get(compound_span, compound_left)
- 						new_label = compound_left + "/" + labels[self.wordspans[head]]
- 					if right == 0:
- 						right_index = deplist[-1][1]
- 					else:
- 						right_index = deplist[-right][0]
-						compound_right = '+'.join([labels[deplist[l]] for l in xrange(-right,0)])
-						compound_span = (right_index,deplist[-1][1])
-						labels[compound_span] = labels.get(compound_span, compound_right)
-						new_label = new_label + '\\' + compound_right
-					#Set new label in dictionary
-					labelled_span = (left_index, right_index)
-					labels[labelled_span] = labels.get(labelled_span, new_label)
- 		return labels
+		:type label_type:	str.
+		:param type:	describes which label_type should be used. Options: all, basic or SAMT.
+		
+		The default labeltype is basic.
+		"""
+		if label_type == 'basic':
+			return self.dependency_labels()
+		elif label_type == 'SAMT':
+			return self.SAMT_labels()
+		elif label_type == 'all':
+			return self.label_all()
+		else:
+			raise ValueError("%s is no valid labeltype" %label_type)
+
 
 	def percentage_SAMT(self):
 		"""
-		Return how many spans were labelled with an SAMT label
-		and how many spans there were in total.
+		Compute how many spans were labelled by
+		an SAMT label.
+		:return:	number of spans, number of labelled spans
 		"""
 		s_length = len(self.sentence)
 		all_spans = [(i,j+1) for i in xrange(s_length) for j in xrange(s_length) if j>=i]
@@ -416,11 +391,12 @@ class Dependencies():
 		return len(all_spans), len(labelled_spans)
 
 
-	def branching_factor(self,b_dict):
+	def branching_factor(self,b_dict = {}):
 		"""
-		Update a dictionary with counts for different
-		branching factors with the branching factors
-		of the nodes in the current dependency tree.
+		Compute the branching factor of all nodes in the
+		dependency tree. If an input dictionary is given,
+		update the branching factors in the dictionary with
+		the newly found branching factors.
 		"""
  		for head in self.deps:
  			b_factor = len(self.deps[head])
@@ -429,8 +405,13 @@ class Dependencies():
  			
  	
  	def POStag(self, word):
+ 		"""
+ 		Find a postag for a word.
+ 		"""
  		if word in ("'",",",".",':',';','.'):
  			tag = 'PUNCT'
+ 		elif word == '-':
+ 			tag = 'DASH'
  		else:
  			tag = 'NOTAG'
  		return tag
@@ -481,63 +462,95 @@ class Dependencies():
  		return label_dict
  
 	def print_spans(self):
+		"""
+		Displaying function. Print all
+		word_spans of of the dependency parse.
+		"""
 		print self.wordspans, '\n'
 
 	def print_deps(self):
+		"""
+		Displaying function. Print all the
+		dependency relations in the dependency
+		parse.
+		"""
 		print self.deps, '\n'
-	
+
+
+####################################################################################
+#DEMONSTRATION
+####################################################################################
+
 def demo():
-	dependencies = ['nsubj(give-2, I-1)','root(ROOT-0, give-2)','det(boy-4, the-3)','iobj(give-2, boy-4)','det(flowers-6, some-5)','dobj(give-2, flowers-6)']
-	print 'Sentence: I give the boy some flowers'
-	print 'Dependencies: nsubj(give-2, I-1), root(ROOT-0, give-2), det(boy-4, the-3), iobj(give-2, boy-4), det(flowers-6, some-5), dobj(give-2, flowers-6)\n'
-	print 'Word spans:'
-	d = Dependencies(dependencies)
-	d.print_labels(d.wordspans)
-
-"""
-Testing
-"""
-
-def test():
 	"""
-	Test right branching relations for sentence 'I give the boy some flowers'
+	A demonstration of how the Dependencies class can be used.
 	"""
+	i = raw_input("\nPress enter to go through demo, q can be pressed at any stage to the quit demo.\t")
+	if (i == 'q' or i == 'Q'): return
+
+	print "\n>>> s =  I give the boy some flowers"
+	print ">>> dependencies = ['nsubj(give-2, I-1)','root(ROOT-0, give-2)','det(boy-4, the-3)','iobj(give-2, boy-4)','det(flowers-6, some-5)','dobj(give-2, flowers-6)']"	
+	#dependencies
 	dependencies = ['nsubj(give-2, I-1)','root(ROOT-0, give-2)','det(boy-4, the-3)','iobj(give-2, boy-4)','det(flowers-6, some-5)','dobj(give-2, flowers-6)']
-	d = Dependencies(dependencies)
-	print d.branching_factor({1:4,2:3,3:2})
-	man_relations = {(1, 2): [(0, 1), (2, 4), (4, 6)], (5, 6): [(4, 5)], (3, 4): [(2, 3)], (1,6): [(0,1)], (1,4): [(4,6)], (0,4): [(4,6)], (0,2): [(2,4)]}
+	
+	if (raw_input("") == 'q' or i == 'Q'): return
 
-def test1():
-	dependencies = ['nn(President-2, Mr-1)','nsubj(welcome-6, President-2)','nsubj(welcome-6, I-4)','aux(welcome-6, would-5)','root(ROOT-0, welcome-6)','det(action-8, some-7)','dobj(welcome-6, action-8)','prep(action-8, in-9)','det(area-11, this-10)','pobj(in-9, area-11)']
-	d = Dependencies(dependencies)
-	print d.reconstruct_sentence()
-	return
+	print "Create a dependency object:\n>>>d = Dependencies(dependencies)\n"
+	d = Dependencies(['nsubj(give-2, I-1)','root(ROOT-0, give-2)','det(boy-4, the-3)','iobj(give-2, boy-4)','det(flowers-6, some-5)','dobj(give-2, flowers-6)'])
 
-def test2():
-	sentence = 'madam president , i shall keep to the subject of the minutes .'
-	dependencies = ['ccomp(keep-6, madam-1)','dobj(madam-1, president-2)','nsubj(keep-6, i-4)','aux(keep-6, shall-5)','root(ROOT-0, keep-6)','prep(keep-6, to-7)','det(subject-9, the-8)','pobj(to-7, subject-9)','prep(subject-9, of-10)','det(minutes-12, the-11)','pobj(of-10, minutes-12)']
-	d = Dependencies(dependencies)
-	print d.textree()
-#	d.print_labels(labels), '\n'
+	if (raw_input("") == 'q' or i == 'Q'): return
+	print "During initialisation, information about the dependency parse was computed:"
 
-def print_scores():
-	dependencies = 'Data/europarl-v7.dependencies.head100'
-	scores = open('Testing/europarl-v7.dependencies.head100.compositionality_score', 'w')
-	deps = open(dependencies, 'r')
-	new_line = deps.readline()
-	total_score = 0
-	nr_of_deps = 0
-	while new_line != '':
-		nr_of_deps += 1
-		dependency_list = []
-		while new_line != '\n':
-			dependency_list.append(new_line)
-			new_line = deps.readline()
-		d = Dependencies(dependency_list)
-		score = d.comp_score()
-		total_score += score
-		scores.write(str(score) +'\n')
-		new_line = deps.readline()
-	scores.close()
-	print nr_of_deps
-	print total_score/nr_of_deps
+	if (raw_input("") == 'q' or i == 'Q'): return
+	print ">>> d.nr_of_deps\n", d.nr_of_deps
+
+	if (raw_input("") == 'q' or i == 'Q'): return
+	print ">>> d.head_pos\n", d.head_pos
+
+	if (raw_input("") == 'q' or i == 'Q'): return
+	print ">>> d.deps\n", d.deps
+	
+	if (raw_input("") == 'q' or i == 'Q'): return
+	print ">>> d.wordspans\n", d.wordspans
+
+	if (raw_input("") == 'q' or i == 'Q'): return
+	print ">>> d.sentence\n", d.sentence, '\n'
+
+	if (raw_input("") == 'q' or i == 'Q'): return
+	print "Different types of labels can be computed, that label spans of the sentence, for instance:\n"
+	if (raw_input("") == 'q' or i == 'Q'): return
+	print ">>> d.labels('basic')\n", d.labels('basic'), '\n'
+	if (raw_input("") == 'q' or i == 'Q'): return
+	print ">>> d.labels('SAMT')\n", d.labels('SAMT'), '\n'
+
+	if (raw_input("") == 'q' or i == 'Q'): return
+	print "the labels can be annotated with their span:\n"
+
+	if (raw_input("") == 'q' or i == 'Q'): return
+	print ">>> d.annotate_span(d.labels('basic'))\n", d.annotate_span(d.labels('basic'))
+
+	if (raw_input("") == 'q' or i == 'Q'): return
+	print "\nDifferent types of spanrelations can be computed, for instance:\n"
+	if (raw_input("") == 'q' or i == 'Q'): return
+	print "The most basic spanrelations:"
+	if (raw_input("") == 'q' or i == 'Q'): return
+	print ">>> d.spanrelations(False,False,True)\n", d.spanrelations(False,False,True),'\n'
+	if (raw_input("") == 'q' or i == 'Q'): return
+	print "deeper spanrelations:"
+	if (raw_input("") == 'q' or i == 'Q'): return	
+	print ">>> d.spanrelations(True,True,True)\n",d.spanrelations(True,True,True)
+	
+	if (raw_input("") == 'q' or i == 'Q'): return
+	print '\n\nThe branching factor of the nodes in the dependency relations can be computed, as well as its compositionality level.'
+	if (raw_input("") == 'q' or i == 'Q'): return
+	print ">>> d.branching_factor()\n", d.branching_factor()
+	if (raw_input("") == 'q' or i == 'Q'): return
+	print ">>> d.comp_score()\n", d.comp_score(), '\t(Half the nodes have a dependent)'
+
+	if (raw_input("") == 'q' or i == 'Q'): return
+
+	print "\nThis is the end of the demonstration.\n"
+	
+if __name__ == "__main__":
+	print  "\nA demonstration showing how a ``Dependencies`` object can be created and how some of the class methods can be used."
+	demo()
