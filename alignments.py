@@ -1,5 +1,6 @@
 """
-A module for processing alignments.
+Module for processing alignments. This module contains three classes. Running alignments.py
+will give a demonstration of te functionality of the classes.
 """
 
 import sys
@@ -10,24 +11,36 @@ from constituencies import *
 
 class Alignments:
 	"""
-	A class that represents alignments. Contains methods to compute
-	all spans that have a contiguous translation equivalent source
-	side span, and to create CFG's that uniquely generate all
-	alignment trees, or all hierarchical alignment trees.
+	A class that represents alignments. Important methods in this class
+	compute the monolingual source phrases according to this alignment,
+	generate all rules or all maximally recursive rules that are
+	associated with the alignment and generate a dictionary representing
+	all trees that are generated with this rules in a compact fashion.
 	"""
-	def __init__(self,alignment, sentence, targetsentence = ''):
+	def __init__(self,links, source, target = ''):
 		"""
+		Construct a new alignment object with the alignment links
+		given by 'links', the sourcesentence given by 'source', and 
+		possibly a target sentence 'target'. Construct a set-representation
+		of the alignment, and compute a lexical dictionary describing
+		the spans of the words.
+		
+		:param links:	a string of the form '0-1 2-1 ...' representing
+						the alignment links. Word numbering starts at 0.
+		:param source:	A string representing the source sentence.
+		:param target:	A string representing the target sentence.
+		
 		Class is initialized with a string representation of
 		the alignment that starts counting at 0 of the form 
 		'0-1 2-1 ...' and the sentence the alignment represents.
 		During intialization, a set-representation of the alignment
 		is created.
 		"""
-		self.ts = targetsentence
-		self.lengthS = len(sentence.split())
+		self.ts = target
+		self.lengthS = len(source.split())
 		self.consistent = True
-		self.alignment = self.make_set(alignment)
-		self.sentence = sentence
+		self.alignment = self.make_set(links)
+		self.sentence = source
 		self.lex_dict = self.lex_dict()
 		self.phrases = False
 
@@ -37,11 +50,13 @@ class Alignments:
 		the length of source and target sentence.
 		Output a warning when alignment and sentence do not have
 		the same number of words.
+		
+		:param alignment:	A string representing the alignment, as was passed during
+							initialisation
 		"""
 		links = alignment.split()
 		pos = 0
-		lengthT = 0
-		lengthS = 0
+		lengthT, lengthS = 0, 0
 		for link in links:
 			link_list = link.split('-')
 			source_pos, target_pos = int(link_list[0]), int(link_list[1])
@@ -54,7 +69,7 @@ class Alignments:
 		lengthS = lengthS + 1
 		self.lengthT = lengthT+1
 		if lengthS > self.lengthS:
-#			print "Alignments has more words than sentence, skipped"
+			#alignment has more links than the sentence, inconsistent
 			self.consistent = False
 		elif lengthS < self.lengthS:
 			print "Caution: sentence does not have the same length as alignment, are there", self.lengthS - lengthS, "unaligned words at the end of the sentence?"
@@ -63,13 +78,15 @@ class Alignments:
 	def spans(self):
 		"""
 		Return all a generator with all valid source side 
-		spans that are part of a phrase pair.
+		spans that are part of a phrase pair, and all one-length
+		units that are necessarily part of a tree describing the
+		translation.
 		Contrary to the convention, also unaligned sequences
 		of words are allowed as spans.
 		
-		Spans are computed using a simple version of the
-		algorithm presented in Chang & Gildea (2006),
-		implementation could be more efficient.
+		Spans are computed using the first shift-reduce algorithm 
+		presented in Chang & Gildea (2006). This is not the most
+		efficient algorithm to compute phrase pairs.
 		"""
 		F_links = self._links_fromF()
 		E_links = self._links_fromE()
@@ -89,10 +106,11 @@ class Alignments:
 
 	def compute_phrases(self):
 		"""
-		Return a list with all translation admissable
-		phrases in the alignment.
-		Use an algorithm similar to the one presented in
-		Chiang & Gildea (2006)
+		Return a list with all source phrases of the alignment.
+		Similar to Alignments.spans, but returns a list rather
+		than a generator, and does not include all one-length units.
+		
+		:return: A list with all valid source phrases
 		"""
 		if self.phrases:
 			return self.phrases
@@ -114,7 +132,7 @@ class Alignments:
 	def _links_fromE(self):
 		"""
 		Precompute values for the function
-		E_c(j) = |{(i',j')\in A | j' =< j}|
+		E_c(j) = |{(i',j')\in A | j' =< j}|.
 		"""
 		E_links = {}
 		E_links[-1], E_links[-2] = 0, 0
@@ -127,7 +145,7 @@ class Alignments:
 	def _links_fromF(self):
 		"""
 		Precompute values for the function
-		F_c(j) = |{(i',j')\in A | i' =< i}|
+		F_c(j) = |{(i',j')\in A | i' =< i}|.
 		"""
 		F_links = {}
 		F_links[-1], F_links[-2] = 0, 0
@@ -140,7 +158,7 @@ class Alignments:
 	def _minspan(self,(x,y)):
 		"""
 		Returns the minimum position on the target side
-		that are linked to positions [x,y]
+		that are linked to positions [x,y].
 		"""
 		alignment_links = [j for (i,j) in self.alignment if (i >= x and  i <= y)]
 		if alignment_links == []:
@@ -151,7 +169,7 @@ class Alignments:
 	def _maxspan(self,(x,y)):
 		"""
 		Returns the maximum position on the target side
-		that are linked to positions [x,y]
+		that are linked to positions [x,y].
 		"""
 		alignment_links = [j for (i,j) in self.alignment if (i >= x and  i <= y)]
 		if alignment_links == []:
@@ -161,10 +179,16 @@ class Alignments:
 
 	def prune_production(self, rule, lex_dict):
 		"""
-		Function that replaces all leafnodes that
-		do not constitute a translation unit with the
-		lexical item specified by the dictionary, such
-		that tree nodes all represent translation units.
+		Replace all leafnodes that do not constitute
+		a valid source phrase with the lexical item the
+		leafnode dominates.
+		
+		:type rule: 	a Rule object
+		:param lex_dict:	a dictionary with spans as keys, and the corresponding
+							lexical items as values.
+		
+		:return:	a Rule object in which all nodes are either valid
+					source spans or lexical items.
 		"""
 		for i in xrange(len(rule.spans)):
 			span = rule.spans[i]
@@ -183,6 +207,8 @@ class Alignments:
 		The rules are computed by transforming the alignment into
 		a graph whose edges correspond to valid spans and partial
 		sets and using the path function of the Node class.
+		This function is not as extensively tested as the hat_rules function,
+		as it is rarely used for computational issues.
 		"""
 		# Create nodes for all positions between words
 		nodes = [Node(i) for i in xrange(0, self.lengthS + 1)]
@@ -205,18 +231,25 @@ class Alignments:
 				yield self.prune_production(rule, self.lex_dict)
 
 
-	def hat_rules(self, prob_function, args, labels = {}):
+	def hat_rules(self, prob_function, args = [], labels = {}):
 		#maybe change this to variable number of args with *args
 		"""
-		Returns a generator with all rules of a PCFG
-		uniquely generating all *hierarchical* alignment trees. Rule
-		probabilities are assigned according to input probability function.
-		Args should specify a list of arguments for this function, currently
-		assumes there is only 1 argument.
+		Return a generator with all rules of a PCFG
+		uniquely generating all *hierarchical* alignment trees. The rules
+		are assigned probabilities using the input probability function, args
+		are the arguments of these function.
 
-		The rules are computed by transforming the alignment into
-		a graph whose edges correspond to valid spans and partial
-		sets and using the shortest_path function of the Node class.
+		The rules are computed by transforming the alignment into a set
+		of Node objects and links between them that together constitute a
+		graph whose edges correspond to valid spans and partial
+		sets, and using the shortest_path function of the Node class.
+		
+		:param prob_function:	A probability function from the Rule class, according to which
+								probabilities should be assigned.
+		:param args:			The arguments the probability function needs.
+		
+		:type labels:			A dictionary assigning labels to spans.
+		:param labels:			The labels that should be assigned to the spans.
 		"""
 		# Create nodes for all positions between words
 		root_span = (0,self.lengthS)
@@ -244,10 +277,9 @@ class Alignments:
 		of the grammar. (i.e., the `lexicon', that tells 
 		you the span corresponding to a word).
 		If labels are provided for the spans, the rules
-		will be labelled accordingly. Labels should be given
-		in the form of a dictionary formatted as follows:
-		::
-			label = {span : label ,...}
+		will be labelled accordingly.
+		
+		:type labels:	A dictionary assigning labels to spans.
 		"""
 		sent = self.sentence.split()
 		length = len(sent)
@@ -263,7 +295,15 @@ class Alignments:
 	
 	def HAT_dict(self,labels = {}):
 		"""
-		Returns a dictionary that uniquely generates the HATforest.
+		Transform all HATrules into a dictionary that memory
+		efficiently represents the entire forest of HATs.
+		As a HAT_dict uniquely represents a HATforest, the labels
+		of all spans should be unique avoid amibuity.
+	
+		:param labels:	A dictionary assigning labels to spans.
+		:return:	A dictionary that represents the HATforest, by describing for
+					every allowed span what is allowed expansions are. Entries are of
+					the form {lhs: [(rhs_11,...,rhs_1m),...,(rhs_n1,...,rhs_nk)]
 		"""
 		assert len(labels.keys()) == len(set(labels.values())), "Labels are not unique"
 		hat_dict = {}
@@ -281,6 +321,7 @@ class Alignments:
 		"""
 		Output which percentage of the spans in the alignment
 		are labelled by the set of inputted labels.
+		:return:	total, labelled
 		"""
 		phrases = self.compute_phrases()
 		total = len(phrases)
@@ -313,7 +354,9 @@ class Alignments:
 		"""
 		Output what percentage of the nodes of an inputted tree
 		are consistent with the alignment.
-		:param tree		An nltk tree object.
+		:param tree:		An nltk tree object.
+		:return:	a float that describes the percentage of the nodes
+					of tree that were nodes according to the alignment.
 		"""
 		t = ConstituencyTree(tree)
 		phrases = self.compute_phrases()
@@ -321,91 +364,13 @@ class Alignments:
 		nodes_all = t.nr_of_nonterminals()
 		return float(nodes_consistent)/nodes_all
 	
-	def compute_weights(self, root, counts = {}, computed_HATforest = False, pcfg_dict = {}, labels = {}):
-		"""
-		Compute weights of the rules in all HATs of the alignment
-		through relative frequency estimation, assuming the total
-		probability of all HATs is 1.
-		If no external pcfg_dictionary is provided, the probability mass
-		will be uniformly distributed over all HATs. Otherwise, HATs will
-		be assigned probabilities proportional to the probability they
-		receive under the input PCFG.
-		If no HAT_dictionary is provided, it will be computed. However,
-		if it was already computed earlier, it can be passed as a argument to
-		the function to reduce computing times.
-		"""
-		#set the HAT_dictionary
-		if computed_HATforest:
-			HAT_dict = computed_HATforest
-		else:
-			HAT_dict = self.HAT_dict(labels)
-		probs = {}
-		self.probmass(pcfg_dict, HAT_dict, probs, root)
-		self.update(HAT_dict,pcfg_dict, probs, counts, 1, root)
-		return counts
-
-	def probmass(self, pcfg_dict, HAT_dict, probs, head_node, children = ()):
-		"""
-		Compute the probability mass of all subtrees headed by head_node, children
-		given the current pcfg.
-		"""
-		nodes = (head_node,)+children
-		plain_head, plain_children = self._plain_label(head_node), self._plain_label(children)
-		assert len(children) == 0 or children in HAT_dict[head_node], 'Head node %s does not have children %s' % (head_node, children)
-		#We already computed the value before
-		if nodes in probs:
-			return probs[nodes]
-		#node is a leaf node
-		elif head_node not in HAT_dict:
-			prob = 1
-		#compute prob mass of trees headed by head_node children
-		elif len(nodes) > 1:
-			prob = pcfg_dict.get(plain_head,{}).get(plain_children,1)
-			assert pcfg_dict == {} or plain_children in pcfg_dict[plain_head], '%s --> %s    not in external pcfg' %(plain_head, ' '.join(plain_children))
-			for child in children:
-				prob = prob*self.probmass(pcfg_dict, HAT_dict, probs, child)
-			probs[nodes] = prob
-		#compute prob mass of trees headed by head_node
-		else:
-			assert len(nodes) == 1
-			prob = 0
-			for rhs in HAT_dict[head_node]:
-				prob += self.probmass(pcfg_dict, HAT_dict, probs, head_node, rhs)
-				probs[nodes] = prob
-		assert prob > 0, 'probability mass of subtrees headed by %s cannot be 0' %head_node
-		return prob
-			
-	def update(self, HAT_dict,pcfg_dict, probs, counts, p_cur, lhs):
-		"""
-		Compute the updated counts for a node, given its parent
-		and how often this parent occurred in the forest.
-		"""
-		if lhs not in HAT_dict:
-			return
-		lhs_plain = self._plain_label(lhs)
-		counts[lhs_plain] = counts.get(lhs_plain,{})
-		for rhs in HAT_dict[lhs]:
-			rhs_plain = self._plain_label(rhs)
-			tup = (lhs,) + rhs
-			c_new = p_cur * float(probs[tup])/probs[(lhs,)]
-			counts[lhs_plain][rhs_plain] = counts[lhs_plain].get(rhs_plain,0) + c_new
-			for child in rhs:
-				self.update(HAT_dict,pcfg_dict, probs, counts, c_new, child)
-		return
-
-	def _plain_label(self,label):
-		"""
-		strip the label from the part determining
-		its span, to make it uniform
-		"""
-		if isinstance(label, str):
-			return label.split('-[')[0]
-		elif isinstance(label,tuple):
-			return tuple([self._plain_label(l) for l in label])
-		else:
-			raise TypeError("unexpected label-type %s: %s" %(label, type(label)))
 
 	def lex_dict(self):
+		"""
+		Use self.sentence to create a lexical dictionary
+		that assigns lexical items to spans.
+		:return: A dictionary {(0,1) : word1,..,(n-1,n): wordn}
+		"""
 		lex_dict = {}
 		sentence_list = self.sentence.split()
 		for i in xrange(len(sentence_list)):
@@ -414,7 +379,8 @@ class Alignments:
 	
 	def texstring(self):
 		"""
-		Generate latexcode for displaying the alignment.
+		Generate latexcode that generates a visual representation
+		of the alignment.
 		"""
 		if self.ts == '':
 			raise ValueError('cannot create representation without targetstring')
@@ -434,16 +400,20 @@ class Alignments:
 
 class Waypoint:
 	"""
-	Defines a waypoint in a one-directional path. This
-	allows us to save memory by not having to copy path
-	arrays for every path, but represent them as linked
-	lists.
+	Defines a waypoint in a one-directional path. The class
+	Waypoint is used in the representation of paths. Multiple
+	paths can be saved more memory efficient as path arrays
+	can be shared between paths. As they contain link to other
+	Waypoints, Waypoints can represent paths as linked lists.
 	"""
 	def __init__(self, node, link = None):
 		"""
-		Creates a new waypoint, call with the
-		node it represents and a link to the
-		next waypoint.
+		Create a waypoint object.
+		
+		:type node:		A Node Object.
+		:param node:	The node it represents.
+		:type link:		A Waypoint object.
+		:param link:	A link to the next waypoint.
 		"""
 		self.node = node
 		self.link = link
@@ -452,17 +422,22 @@ class Waypoint:
 		self.length = 1 if not link else len(link) + 1
 
 	def __len__(self):
+		"""
+		Return the length of the path.
+		"""
 		return self.length
 	
 	def __repr__(self):
+		"""
+		Unpack the linked list and return the
+		path it represents.
+		"""
 		waypoint = self
 		path = [waypoint.node.value]
 		while waypoint.link:
 			path.append(waypoint.link.node.value)
 			waypoint = waypoint.link
 		return str(path)
-
-#Miss in andere file zetten
 
 class Node:
 	"""
@@ -471,6 +446,8 @@ class Node:
 	other nodes by using link_to. The
 	paths_to method calculates all paths
 	from this node to the given node.
+	The Node class is used to represent alignments as
+	graphs.
 	"""
 	def __init__(self, value):
 		"""
@@ -486,6 +463,7 @@ class Node:
 		"""
 		Add a directed edge from this node to
 		the given node.
+		:type node:	A Node object.
 		"""
 		self.links.append(node)
 		
@@ -493,6 +471,7 @@ class Node:
 		"""
 		Remove the edge to this node, if
 		present
+		:type node: A Node object.
 		"""
 		if node in self.links:
 			self.links.remove(node)
@@ -503,6 +482,7 @@ class Node:
 		Returns a generator that calculates all
 		paths to the given node. These paths
 		are calculated recursively.
+		:type node:	a Node object
 		"""
 		if node == self:
 			# Reached our destination, stop searching.
@@ -549,8 +529,9 @@ class Node:
 		to node using an adapted Dijkstra algorithm
 		starting from the end.
 		The function also stores paths that can be
-		used for later use (i.e paths longer than 1
-		from self to intermediate nodes.
+		used for later(i.e paths longer than 1
+		from self to intermediate nodes).
+		:type node:	A Node object.
 		"""
 		
 		if node in self.shortest_paths:
@@ -613,7 +594,7 @@ class Node:
 		
 	def __hash__(self):
 		"""
-		Set the hash representation of the node..
+		Set the hash representation of the node.
 		"""
 		return self.value
 		
@@ -654,6 +635,9 @@ class Rule:
 		of an array of nodes) that it produces.
 		Labels can be provided to annotate the spans
 		of a rule.
+		:param root:	The rootspan of the node.
+		:type path:		A Waypoint.
+		:type labels:	A dictionary assigning labels to spans.
 		"""
 		self.root = root
 		spans = []
@@ -678,8 +662,9 @@ class Rule:
 		"""
 		Compute the probability of a rule according to
 		how many span_relations it makes true.
-		span_relations is a dictionary that describes
-		which nodes should be siblings.
+		:param span_relations:	A list containing a dictionary
+								which describes which
+								spanrelations are desired.
 		"""
 		probability = 1
 		span_relations = span_relations[0]
@@ -690,14 +675,16 @@ class Rule:
 						probability = probability * 2
 		self.probability = probability
 	
-	def probability_labels(self, args):
+	def probability_labels(self, labels):
 		"""
 		Compute the probability of a rule according
 		to how many of the nodes it generates can
 		be labelled according to a set of given
 		labels.
+		:param labels:	A list containing a dictionary that
+						assigns labels to spans.
 		"""
-		labels = args[0]
+		labels = labels[0]
 		probability = 1
 		for (i,j) in self.spans:
 			if (i,j) in labels.keys():
@@ -707,13 +694,17 @@ class Rule:
 		self.probability = probability
 		return
 	
-	def uniform_probability(self, args):
+	def uniform_probability(self, args = []):
 		"""
 		Set probability to 1.
 		"""
 		self.probability = 1
 	
 	def lhs(self):
+		"""
+		Return the left hand side of the rule.
+		:type return:	nltk.Nonterminal object.
+		"""
 		return self._lhs
 	
 	def _lhs(self, labels):
@@ -725,6 +716,10 @@ class Rule:
 		return Nonterminal(lhs)
 	
 	def rhs(self):
+		"""
+		Return the right hand side of the rule.
+		:type return:	a tuple with nltk.Nonterminal objects
+		"""
 		return self._rhs
 	
 
@@ -766,3 +761,138 @@ class Rule:
 		return ("%s -> %s" % 
 			(self.lhs().symbol(), " ".join([self._str(rhs) for rhs in self.rhs()])))
 
+
+####################################################################################
+#DEMONSTRATION
+####################################################################################
+
+
+def demos():
+	import os
+	print  "\nA demonstration showing how an ``Alignments`` object can be created and how some of the class methods can be used. There are 3 demo's available."
+	demos = {'1': demo_basic, '2': demo_basic2, '3':HAT_demo}
+	while 1:
+		print "\n\nPlease choose a demo from the following options:\n"
+		print "\tdemo1: basic functions for alignment 0-0 1-1 2-2."
+		print "\tdemo2: basic functions for alignment 0-0 1-2 2-1 2-3 3-4."
+		print "\tdemo3: demonstration of generating HATgrammars.\n"
+		valid = 0
+		while not valid:
+			option = raw_input("Execute one of the demo's by typing its number, or exit by typing 'q'\t")
+			if option == 'q': return
+			try:
+				demos[option]()
+				valid = 1
+			except KeyError:
+				print "This is not a valid option"
+	return
+
+def demo_basic():
+	"""
+	Demonstration 1, basic monotone one-to-one alignment.
+	"""
+	if raw_input("\nDemo1\n\nPress enter to go through demo, q can be pressed at any stage to quit the demo.\t") == 'q': return
+	
+	if (raw_input("\nCreate an Alignments object ") == 'q'): return
+	a = Alignments('0-0 1-1 2-2', 'I am happy')
+	print ">>> a = Alignments('0-0 1-1 2-2', 'I am happy','Ik ben gelukkig')\n"
+	if (raw_input("") == 'q'): return
+
+	if (raw_input("As this is a monotone alignment, all spans are translation equivalent ") == 'q'): return
+	print "\n>>> a.compute_phrases()\n", a.compute_phrases()
+	if (raw_input("") == 'q'): return
+	
+	if (raw_input("Phrases can also be returned in a generator object ") == 'q'): return
+	print ">>> phrases = a.spans()"
+	phrases = a.spans()
+	print ">>> phrases\n", phrases
+
+	if (raw_input("") == 'q'): return
+	if (raw_input(">>> for phrase in phrases:\n ...\tprint phrase\n") == 'q'): return	
+	if (raw_input("") == 'q'): return			
+	for phrase in phrases:
+		print phrase
+
+	if raw_input("") == 'q': return
+	if raw_input("Compute a lexical dictionary") == 'q': return
+	print ">>> a.lex_dict"
+	print  a.lex_dict
+	
+	if raw_input("\nEnd of demo1\n\n") == 'q': return
+	import os
+	os.system('clear')
+	return
+	
+
+def demo_basic2():
+	"""
+	Demonstration 2. Simple one-to-many alignment.
+	"""
+	if raw_input("\nDemo2\n\nPress enter to go through demo, q can be pressed at any stage to quit the demo.\t") == 'q': return
+	
+	if (raw_input("\nCreate an Alignments object ") == 'q'): return
+	a = Alignments('0-0 1-2 2-1 2-3 3-4', 'I am not happy')
+	print ">>> a = Alignments('0-0 1-2 2-1 2-3 3-4', 'I am not happy', 'Je ne suis pas heureux')\n"
+	if (raw_input("") == 'q'): return
+	
+	if (raw_input("Find spans with a translation equivalent ") == 'q'): return
+	print "\n>>> a.compute_phrases()\n", a.compute_phrases()
+	if (raw_input("") == 'q'): return
+	
+	if raw_input("") == 'q': return
+	if raw_input("Compute a lexical dictionary") == 'q': return
+	print ">>> a.lex_dict"
+	print a.lex_dict
+	
+	if raw_input("\nEnd of demo2\n\n") == 'q': return
+	import os
+	os.system('clear')
+
+
+def HAT_demo():
+	"""
+	Demonstration 3. Simple one to many alignment, HATfunctionality.
+	"""
+	if raw_input("\nDemo3\n\nPress enter to go through demo, q can be pressed at any stage to quit the demo.\t") == 'q': return
+	a = Alignments('0-0 1-2 2-1 2-3 3-4', 'I also like French', 'Ik houd ook van Frans')
+	print ">>> a = Alignments('0-0 1-2 2-1 2-3 3-4', 'I also like French', 'Ik houd ook van Frans')\n"
+	if (raw_input("") == 'q'): return
+	if raw_input("Make a generator with the possible minimal expansions of all rules, give the all the same weight") == 'q': return
+	rules = a.hat_rules(Rule.uniform_probability)
+	print ">>> rules = a.hat_rules(Rule.uniform_probability)\n>>> rules\n", rules
+	if (raw_input("") == 'q'): return
+	if (raw_input("Print the rules:") == 'q'): return
+	if (raw_input(">>> for rule in rules:\n ...\tprint rule\n") == 'q'): return		
+	for rule in rules:
+		print rule	
+	if (raw_input("") == 'q'): return
+	
+	if raw_input("If labels are provided, the rules will be labelled with these labels:") == 'q': return
+	labels = {(0,1): 'a', (1,2): 'b', (2,3): 'c', (3,4): 'd', (1,3): 'A', (1,4): 'B', (0,3): 'C', (0,4): 'S'}
+	rules = a.hat_rules(Rule.uniform_probability, labels = labels)
+	print ">>> labels = {(0,1): 'a', (1,2): 'b', (2,3): 'c', (3,4): 'd', (1,3): 'A', (0,4): 'S'}"
+	print ">>> rules = a.hat_rules(Rule.uniform_probability, labels = labels)"
+	print ">>> for rule in rules\n...\tprint rule\n"
+	for rule in rules:
+		print rule
+	if (raw_input("") == 'q'): return
+	
+	if raw_input("HATs can also be represented as a dictionary") == 'q': return
+	HAT_dict = a.HAT_dict()
+	print ">>> HAT_dict =  a.HAT_dict()"
+	print ">>> HAT_dict\n", HAT_dict
+	if (raw_input("") == 'q'): return
+	if raw_input("\nThis HAT_dict contains the same set of rules as we generated earlier, but also the lexical rules.") == 'q': return
+	if (raw_input("") == 'q'): return
+	print ">>> for lhs in HAT_dict:\n...\tfor rhs in HAT_dict[lhs]:\n...\t\t	print '%s --> %s' %(lhs, ' '.join(rhs))"
+	for lhs in HAT_dict:
+		for rhs in HAT_dict[lhs]:
+			print '%s --> %s' %(lhs, ' '.join(rhs))
+	
+	if (raw_input("") == 'q'): return
+	if raw_input("\nEnd of demo3\n\n") == 'q': return
+	import os
+	os.system('clear')
+
+if __name__ == "__main__":
+	demos()
