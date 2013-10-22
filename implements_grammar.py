@@ -3,7 +3,7 @@ from nltk.grammar import *
 
 class WeightedGrammar_nn(nltk.WeightedGrammar):
     """
-	A non-normalised WeightedGrammar
+	A non-normalised WeightedGrammar.
     """
     EPSILON = 0.01
 
