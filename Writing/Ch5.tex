@@ -1,0 +1,310 @@
+\documentclass[hidelinks]{report}
+\input{commands.tex}
+\begin{document}
+
+\chapter{An empirical study of Consistency between Dependency Parses and HATs}
+
+After having discussed the main ingredients for our research, as well as its foundations, blablabla introduction. In this Chapter, we will describe our findings on the consistency between dependency parses and HATs, as well as the experiments that led us to these findings.
+
+We will start this chapter by providing a description of the datasets that we used for our experiments. In the subsequent section\begin{enumerate}
+\item section 1: data
+\item section 2: experiment 1
+\item section 3: experiment 2
+\item section 4: manuele analyse
+\end{enumerate}
+
+\section{Data}
+
+We had available 4 large automatically aligned parallel corpora for the language pairs English-Dutch, English-French, English-German and English-Chinese. The first thee corpora were data from the European Parliament taken from the Europarl corpus \citep{koehn2005europarl}, while the English-Chinese data came from the Hong Kong Parallel Corpus. The word-alignments were found using GIZA++ \citep{och03:asc}, using the previously mentioned `grow-diag-and-final'-heuristic, with 4 iterations on model 1, and 3 iterations with the hmm model, model 3 and model 4. The corpora were tokenised and lowercased before GIZA++ was run. In general, the guidelines for building a baseline for the WMT workshops were followed.\footnote{See http://www.statmt.org/wmt07/baseline.html}
+
+In addition to the automatically aligned corpora, we had access to 5 manually aligned corpora. These corpora were much smaller than the automatically aligned corpora, and covered the language pairs English-French \citep{graca2008building,och2000improved}, English-Spanish, English-Portuguese \citep{graca2008building}, English-German \citep{pado2006optimal}.
+
+\begin{table}[!ht]
+\centering
+\begin{tabular}{|l|l|l|l|l|l|}
+\hline
+\bf Language pair & \bf Source & \bf Size & \bf Alignments\\
+\hline \hline
+English - Dutch & European Parliament & 945167 & {\small GIZA++} \\
+\hline
+English - German & European Parliament & 995909 & {\small GIZA++} \\
+& Europarl & 987 & {\small\cite{pado2006optimal}}\\
+\hline
+English - Chinese & Hong Kong Parallel Corpus & 1723487 & {\small GIZA++} \\
+\hline
+English - French & European Parliament & 949408 & {\small GIZA++} \\
+& Hansard & 447 & {\small \cite{och2000improved}}\\
+& Europarl & 100 & {\small \cite{graca2008building}} \\
+\hline
+English - Spanish & Europarl & 100 & {\small \cite{graca2008building}} \\
+\hline
+English - Portuguese & Europarl & 100 & {\small \cite{graca2008building}}\\
+\hline
+\end{tabular}
+\caption{Datasets}\label{tab:datasets}
+\end{table}
+
+\section{Direct Consistency}
+\label{sec:depHATs}
+
+Quantifying the consistency between a dependency tree and an alignment is not a trivial task. When the parts described by a dependency tree are all parts according to the alignment, there is no dubiety: such an alignment should get an optimal score. If this is not the case it is less clear, as there are multiple things that should be taken into account. Not only should the measure of consistency be based on whether the head and its dependent are both phrases according to the alignment, they should also be combined in a reasonable fashion.
+
+To give an abstract example, consider the following dependency parse and alignment trees:
+
+\begin{figure}[ht!]
+\centering
+{\footnotesize
+\begin{tabular}{m{3.5cm}m{2.3cm}m{2.3cm}m{2.3cm}}
+\begin{dependency}[theme=simple]%[hide label]
+\begin{deptext}[column sep=.5cm, row sep=.1ex]
+A \& B \& C \& D \\
+\end{deptext}
+\depedge{4}{3}{}
+\depedge{4}{2}{}
+\depedge{2}{1}{}
+\end{dependency} \qtreecenterfalse & \Tree [ [ [ A B ] C ] D ] & \Tree [ [ A B ] [ C D ] ] & \Tree [ [ A B ] C D ]
+\end{tabular}}
+\end{figure}
+
+All the parts that exist in the dependency tree also exist in all alignment trees. The third alignment tree is obviously most similar to the dependency parse, as it prescribes the same compositional structure and uses the same number of rules. However, the first and second alignment tree are indistinguishable if only the number of correct (and possibly incorrect) nodes is considered, as they both contain two correct and one incorrect node. However, the second alignment tree seems more in line with the dependency parse than the first one, because it does not only prescribe that A should be combined with B into a new part, but also that C and D are combined with one rule.
+
+\subsection{Experiment 1}
+
+The analysis of the example provides a new insight: as it seems, alignment trees and dependency parses are intuitively compatible if the relations in the dependency parse are respected by the alignment tree, which gives rise to a straightforward definition of consistency between dependency relations and HATs:
+
+\begin{definition}[Direct Consistency]\label{def:depHAT}
+Let $s = w_1 w_2 \dots w_n$ be a sentence, and $D = \{ (i,j) |$ there is a dependency arrow from word $w_i$ to word $w_j \}$ a set of dependencies describing a dependency tree for $s$. Let span($j$) be the range $[m,n]$ in which $m$ and $n$ are the maximum and minimum position that can be reached from $w_j$ by following the directed dependency arrows, respectively. A dependency relation $(i,j)$ is said to be respected by an alignment tree $T$ over $s$ if and only if there is a node in $T$ of which both $[i,i]$ and span($j$) are children.
+\end{definition}
+
+Under this definition of consistency, the first alignment tree in the previous example would receive a score of 1/3, the second alignment tree would receive a score of 2/3, and the third alignment tree a score of 3/3. Which seems to correspond with their adequacy of describing the dependency structure.
+
+\subsection{Results}
+
+We have measured the consistency of the first 10.000 of our automatically aligned datasets, and all the manually aligned datasets. Alignments were assigned a score that corresponded with the highest percentage of dependency relations that was preserved in one of its HATs. We have found the best scoring HATs by assigning weights to the grammar rules of the HATs, that were associated with the number of dependency relations a grammar rule made true, and parsing the HAT with this weighted grammar. We reported on the scores for sentences shorter than 10, 20 and 40 words.
+
+%maybe change numbers to numbers of larger datasets later
+\begin{table}[!ht]
+\centering
+\begin{tabular}{|l|c|c|c|}
+\hline
+&\multicolumn{3}{c|}{\textbf{Similarity Score}}\\
+\textbf{Language Pair} & |s| < 10 & |s| < 20 & |s| < 40\\
+\hline \hline
+English-Dutch & 0.47 & 0.42 & 0.40 \\
+\hline
+English-French & 0.46 & 0.42 & 041 \\
+\hline
+English-German & 0.44 & 0.41 & 0.38 \\
+\hline
+English-Chinese & 0.59 & 0.48 & 0.42\\
+\hline
+\end{tabular}
+\caption{Consistency scores of automatically aligned corpora according to consistency definition \ref{def:depHAT}.}\label{tab:scores1}
+\end{table}
+
+\begin{table}[!ht]
+\centering
+\begin{tabular}{|l|c|c|c|}
+\hline
+&\multicolumn{3}{c|}{\textbf{Similarity Score}}\\
+\textbf{Language Pair} & |s| < 10 & |s| < 20 & |s| < 40\\
+\hline \hline
+English-French (Hansard) & 0.63 & 0.54 & 0.51 \\
+\hline
+English-French (LREC) & 0.49 & 0.47 & 0.47 \\
+\hline
+English-German (Pado) & 0.43 & 0.42 & 0.41 \\
+\hline
+English-Portuguese (LREC) & 0.47 & 0.45 & 0.45 \\
+\hline
+English- Spanish (LREC) & 0.51 & 0.48 & 0.48\\
+\hline
+\end{tabular}
+\caption{Consistency scores of manually aligned corpora according to consistency definition \ref{def:depHAT}}\label{tab:scores2}
+\end{table}
+
+\subsection{Analysis}
+
+The consistency scores, which are depicted in Table \ref{tab:scores1} and \ref{tab:scores2}, are very low. On average not even half of the dependency relations of the English sentence are respected by any HAT. The dependency relations of shorter sentences are generally better respected than the dependency relations of longer sentences. The difference between the scores of the automatically aligned datasets and the manually aligned datasets is lower than we expected, which could indicate the influence of mistakes in the automatically aligned datasets is relatively small. However, the large difference between the two manually aligned French datasets indicates that is more likely due to the fact that the manually aligned datasets are too small to get a significant result.
+
+Without further elaboration, we have previously mentioned that the maximally recursive HATs and the linguistically motivated dependency structures possibly exploit compositionality in a different fashion. Under our current consistency definition, this discrepancy tends to cause lower scores, as we will illustrate with two examples.
+
+Firstly, consider the sentence `I give you flowers', and its (word-for-word) translation `Ik geef jou bloemen', with dependency parse:
+
+\begin{figure}[!ht]
+\centering
+{\small
+\begin{tabular}{m{5.5cm}m{5cm}}
+\begin{dependency}[theme=simple]%[hide label]
+\begin{deptext}[column sep=.5cm, row sep=.1ex]
+I \& give \& you \& flowers \\
+\end{deptext}
+\depedge{2}{1}{subj}
+\depedge{2}{3}{iobj}
+\depedge{2}{4}{dobj}
+\end{dependency} & \qtreecenterfalse \Tree [ I give you flowers ]
+\end{tabular}
+}
+\end{figure}
+
+The tree depicted next to the dependency parse is the only tree that respects all dependency relations. The sentence is very short and the dependency parse therefore very flat. In a tree that respects all relations according to Definition \ref{def:depHAT}, `I', `give', `you', and `flowers' are all siblings, which means the tree depicted next to the dependency parse is the only tree obtaining a maximal score. However, as the sentence is word for word translation, all subsequences are translation admissible, and all HATs will be completely binary. Even though the translation seems intuitively compositional, none of the HATs will receive a score higher than 1/4, because the dependency parse is not maximally branching.
+
+A similar situation arises when two arguments are translated into one, which happens, e.g., when arguments are translated as pre- or suffixes, when verbs do not require a subject or when spaces are emitted). Consider for instance the sentence 'Can you give me the salt' and its Italian translation 'puoi passarmi il sale':
+
+\begin{figure}[!ht]
+\centering
+{\small
+\begin{tabular}{m{6.7cm}m{6.7cm}}
+\begin{dependency}[theme=simple]%[hide label]
+\begin{deptext}[column sep=.5cm, row sep=.1ex]
+Can \& you \& give \& me \& the \& salt \\
+\end{deptext}
+\depedge{3}{1}{aux}
+\depedge{3}{2}{nsubj}
+\depedge{3}{4}{iobj}
+\depedge{6}{5}{det}
+\depedge{3}{6}{dobj}
+\end{dependency} &
+\begin{dependency}[theme=simple]\begin{deptext}[column sep=.5cm, row sep=.1ex]
+Puoi \& passarmi \& il \& sale \\
+\end{deptext}
+\deproot{2}{root+iobj}
+\depedge{2}{1}{aux+nsubj}
+\depedge{2}{4}{dobj}
+\depedge{4}{3}{det}
+\end{dependency} 
+\end{tabular}
+}
+\end{figure}
+
+Once again, the predicate-argument structure of the sentence is well preserved. However, some of the arguments are merged into single words in the Italian sentence. Besides the issue raised in the previous paragraph (the dependency structure is not maximally compositional), an additional problem thus arose: except for `me', none of the arguments can combine directly with `give' in an alignment tree, because `give' and `me' are one word in Italian, and will thus form a unit on their own. `Can' and `you' cannot combine with `give' at all, because they are first combined together. The maximum score a HAT of this translation could receive would thus be 2/5, in which only the relations (give, me) and (salt, the) are respected.
+
+Of course, we do not know if the low consistency scores can in fact be attributed to the fact that dependency parses are not maximally recursive, or have another cause.
+
+
+\section{Deeper Consistency}
+
+To investigate the issue raised in the previous section, let us consider the average branching factors of the nonterminal nodes in the HATs and the compositional structures given rise to by the dependency parses. In Table \ref{tab:branching}, we see, that the average branching factor of a HATnode is much lower than the average branching factor of a similar tree that is constructed based on a dependency parse, which supports the hypothesis that the HATs are more recursive than the dependency parses.
+
+\begin{table}[!ht]
+\centering
+\begin{tabular}{|l|c|c|}
+\hline\textbf{Language Pair} & \textbf{Dependency} &\textbf{best HAT}\\
+\hline \hline
+English-Dutch & 3.1 & 2.1 \\
+\hline
+English-French & 3.1 & 2.1 \\
+\hline
+English-German & 3.1 & 2.11 \\
+\hline
+English-Chinese & 3.0 & 2.2\\
+\hline
+\end{tabular}
+\caption{Average branching factors}\label{tab:branching}
+\end{table}
+
+A closer look at the distribution of the branching factors \ref{fig:branching} shows that the HATs have much more binary expansions, while the dependency structures have more nodes that have 3-7 children.
+
+\begin{figure}[!ht]
+\input{Graphics/branching.tex}
+\caption{The branching factor plotted against the number of nodes with that branching factor on a logarithmic scale, for the 4 automatically aligned datasets.}\label{fig:branching}
+\end{figure}
+
+
+\subsubsection{Experiment 2}
+
+To test the influence of discrepancy of compositionality in our data, we give a more flexible interpretation of consistency. Rather than defining consistency as direct similarity, as in Definition \ref{def:depHAT2}, we also assign maximal scores to HATs in which the arguments are combined with their predicates in stages. (e.g., combine `give' with `you', combine `give you' with `flowers', combine `I' with `give you flowers'). Under this perspective, a dependency relation is respected by a HAT if it is siblings with the head itself, or the head plus arguments the head earlier combined with, which is expressed in the following definition:
+
+\begin{definition}[]\label{def:depHAT2}
+Let $s = w_1 w_2 \dots w_n$ be a sentence, and $D = \{ (i,j) |$ there is a dependency arrow from word $w_i$ to word $w_j \}$ a set of dependencies describing a dependency tree for $s$. Let span($j$) be the range $[m,n]$ in which $m$ and $n$ are the maximum and minimum position that can be reached from $w_j$ by following the directed dependency arrows, respectively. Let $(i,j)$ be a dependency relation in $D$, and let $l_1,\ldots,l_n$ and $r_1,\ldots r_k$ be the left and right dependents of $i$, respectively, for which holds that $r_k < j$ or $l_1 > j$. A dependency relation $(i,j)$ is said to be respected by an alignment tree $T$ over $s$ if and only if one of the following three conditions is true: \begin{enumerate}
+\item There is a node in $T$ f which both $[i,i]$ and span($j$) are children.
+\item $\exists x$  and a node in $T$ of which span($l_x\ldots l_n~i~\ldots r_1 r_k$) and span($j$) are both children.
+\item $\exists x$  and a node in $T$ of which span($l_1\ldots l_n~i~r_1\ldots r_x$) and span($j$) are both children.
+\end{enumerate} 
+\end{definition}
+
+This extension of the definition of consistency between HATs and dependency parses solves the discrepancy between the type of compositionality of HATs and dependency parses only partly. The first example receives a maximal score using this definition, but the second does not, as `can' and `you' can still not combine with give one by one. 
+
+The more flexible definition \ref{def:depHAT2} thus does not cover all discrepancy between dependency parses and HATs. It can nor account for two arguments that are translated together, and neither for too severe reordering of arguments of dependency parses in translation. However, for several reasons we have chosen to not make an even more flexible version of consistency, the most important of which is that we believe we would move away too far away from what dependency parses are encoding. Although allowing arguments to combine with each other first before combining with the predicate would in some situations lead to a more appropriate score, it will in many situations assign optimal scores to HATs that do not adequately represent the compositional structure prescribed by the dependency parse.
+
+\paragraph{Remark} As previously mentioned, the Stanford Dependency style does not include punctuation. Where in the first consistency definition this did not really get in the way, it becomes problematic for the second, as tokens that are not involved in any dependency relation can interfere with the definition of consistency. To account for this, we allowed punctuation (or other tokens not processed by the dependency parser) to combine freely with the closest units (of arbitrary size), without them affecting the score.
+
+\subsection{Results}
+
+The second experiment followed the same procedure as before: we scored the first 10.000 alignments of our automatically aligned datasets, and al the manually aligned datasets, based on how many of their relations were true in their best HAT (according to Definition \ref{def:depHAT2}). We reported on the scores for sentences shorter than 10, 20 and 40 words.
+
+\begin{table}[!ht]
+\centering
+\begin{tabular}{|l|c|c|c|}
+\hline
+&\multicolumn{3}{c|}{\textbf{Similarity Score}}\\
+\textbf{Language Pair} & |s| < 10 & |s| < 20 & |s| < 40\\
+\hline \hline
+English-Dutch & 0.79 & 0.74 & 0.71 \\
+\hline
+English-French & 0.80 & 0.77 & 0.76\\
+\hline
+English-German & 0.75 & 0.71 & 0.68 \\
+\hline
+English-Chinese & 0.76 & 0.67 & 0.62\\
+\hline
+\end{tabular}
+\caption{Scores Experiment 2, automatic alignments}\label{tab:scores3}
+\end{table}
+
+\begin{table}[!ht]
+\centering
+\begin{tabular}{|l|c|c|c|}
+\hline
+&\multicolumn{3}{c|}{\textbf{Similarity Score}}\\
+\textbf{Language Pair} & |s| < 10 & |s| < 20 & |s| < 40\\
+\hline \hline
+English-French (Hansard) & 0.85 & 0.80 & 0.78 \\
+\hline
+English-French (LREC) & 0.78 & 0.82 & 0.82 \\
+\hline
+English-German (Pado) & 0.82 & 0.80 & 0.77 \\
+\hline
+English-Portuguese (LREC) & 0.75 & 0.76 & 0.76 \\
+\hline
+English- Spanish (LREC) & 0.79 & 0.80 & 0.80\\
+\hline
+\end{tabular}
+\caption{Results Experiment 2, manual alignments}\label{tab:scores4}
+\end{table}
+
+\subsection{Analysis}
+
+The scores for the second consistency matrix indicates
+
+\subsection{Scoring Alignments}
+
+A alignment will be scored by finding it highest scoring alignment tree, that is recursively defined as follows:
+
+\begin{definition}[Score of an Alignment Tree]
+ $s = w_1 w_2 \dots w_n$ be a sentence, and $D = \{ (i,j) |$ there is a dependency arrow from word $w_i$ to word $w_j \}$ a set of dependencies describing a dependency tree for $s$. Let $T$ be an alignment tree of $S$, and let $\mathcal{M}$ be the metric that decides what is needed for a dependency relation to be true in $T$. $M$ is associated with a set containing relations between nodes that make the relations in $D$ true, call this set $D'$. The (unnormalised) score of $H$ with $D$ is now defined as the score of its highest node $N$:
+
+$$
+E(N_a,D) = \sum_{c\in C_{N_a}} E(c,D)+ \sum_{c_1\in C_{N_a}} \sum_{c_2\in C_{N_a}} B(c_1,c_2)
+$$
+
+\noindent With base case $E(N,D) = 0$, $B(c_1,c_2) = 1$ iff  $(c_1,c_2)\in D'$, and $C_N$ the set of child nodes of $N$.
+
+The score can be normalised by dividing by $|D|$.
+\end{definition}
+
+The score of an alignment can now be determined by parsing the corresponding sentence with the grammar that represents its HAT forest of the alignment to find its best HAT. Details on implementation can be found in Appendix \ref{appendix:implementation}.
+
+\section{Bilingual grammars Using Dependency grammars}
+\label{sec:em}
+
+Something about training a grammar and statistical analysis (EM? Nr of rules that occur just once?)
+
+
+\section{Implementation}
+\label{sec:implementation}
+
+We have aimed to implement our experiments in such a way that it is reusable by others, and can easily be extended to other experiments. The package that was developed is available on  \href{https://github.com/dieuwkehupkes/Thesis}{https://github.com/dieuwkehupkes/Thesis}. Appendix \ref{appendix:implementation} provides an extensive documentation for the program, as well as instructions on how to download and use it.
+
+\bibliography{thesisDH}
+\end{document}

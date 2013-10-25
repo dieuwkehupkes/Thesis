@@ -467,19 +467,19 @@ class ProcessDependencies(ProcessFiles):
 		return selection
 	
 	def tex_preamble(self):
+		"""
+		Print the pre-amble of a tex document in which both 
+		dependency parses and alignments are printed.
+		"""
 		tex_preamble = '\documentclass{report}\n\usepackage[english]{babel}\n\usepackage{fullpage}\n\usepackage[all]{xy}\n\usepackage{tikz-dependency}\n\\author{Dieuwke Hupkes}\n\\title\n{Dependencies}\n\\begin{document}'
 		return tex_preamble	
 
-	def unique_rules(self, step_size, HAT_file, max_length = 40):
-		"""
-		Compute the number of 
-		"""
-		raise NotImplementedError
-				
+	
 	def all_HATs(self, file_name, max_length = 40):
 		"""
-		Compute all HATs and pickle to a file with the provided name,
-		together with its sentence number and root label.
+		Compute all HATs grammars, represent them as a dictionary and
+		and pickle [sentence_nr, rootlabel, HATdict] to a file with 
+		the	provided name file_name.
 		"""
 		self._reset_pointer()
 		f = open(file_name,'w')
@@ -507,52 +507,6 @@ class ProcessDependencies(ProcessFiles):
 			sentence_nr += 1
 		f.close()
 		
-	def all_rules(self, HATfile=False, max_length = 40):
-		"""
-		Creates a dictionary with all the rules of all HATs of
-		the entire corpus.
-		If a HATfile is provided, pickle all HAT grammars for further use,
-		together with their root label and their sentence number.
-		"""
-		#not yet uvaluated on real data
-		all_rules = {}
-		self._reset_pointer()
-		f = HATfile
-		if f:
-			f = open(HATfile,'w')
-		sentence_nr = 1
-		new = self.next()
-		while new:
-			sentence_length = len(new[1].split())
-			# tests if input is as desired, skip if not
-			if sentence_length >= max_length:
-				pass
-			else:
-				sentence = new[1]
-				dependencies = Dependencies(new[2], sentence)
-				a = Alignments(new[0],sentence)
-				l = Labels(dependencies.dependency_labels())
-				labels = l.label_most()
-				labels = l.annotate_span(labels)
-				if not labels:
-					print 'sentence skipped because of inconsistency with dependency parse'
-					new = self.next()
-					sentence_nr +=1
-					continue
-				print "updating grammar for", sentence_nr
-				root = labels[(0,sentence_length)]
-				HAT_dict = a.HAT_dict(labels)
-				#put HAT grammar in a file
-				if f:
-					pickle.dump([sentence_nr,root,HAT_dict],f)
-				#update weights for HATforest
-				a.compute_weights(root, all_rules, computed_HATforest = HAT_dict, labels = labels)
-			new = self.next()
-			sentence_nr +=1
-		if f:
-			f.close()
-		return all_rules
-
 
 	def relation_count(self, max_length):
 		"""

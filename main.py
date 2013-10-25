@@ -95,7 +95,7 @@ if __name__ == "__main__":
 	parser.add_argument("-m", "--max_length",default=40,type=int,help="Set the maximum sentence length, default = 40")
 	parser.add_argument("-p", "--prob_function",default=Rule.probability_spanrels,help="Change the standard method of assigning weights")
 	parser.add_argument("-pa","--prob_args", nargs=2, default=[True,True],help="Set the arguments for the probability function")
-	parser.add_argument("-la","--label_args", nargs = 3, default=[1,1,3],help="Specify how labels should be constructed")
+	parser.add_argument("-la","--label_args", default=['basic'],help="Specify how labels should be constructed")
 	parser.add_argument("--grammar", help="Input a grammar pickled in a file")
 	
 	group = parser.add_mutually_exclusive_group()

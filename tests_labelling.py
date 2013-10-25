@@ -106,9 +106,9 @@ class LabelsTests():
 		"""
 		l = self.base_test()
 		labels = l.label_most()
-		print labels
-	
+		return True
+			
 if __name__ == "__main__":
-	x = LabelsTest()
-	x.label_all_test()
-#	print x.test_all()
+	x = LabelsTests()
+#	x.label_all_test()
+	print x.test_all()
