@@ -1,0 +1,37 @@
+\begin{tabular}{|ll|}
+\hline
+\textbf{Part of English sentence:} & All of these matters will be addressed in that legislation .\\
+\textbf{German Translation:} & All diese Fragen werden in den genannten Rechtsvorschriften \\& angesprochen .\\ 
+&\\
+\textbf{Dependency Parse:}&\\
+\multicolumn{2}{|c|}{\begin{dependency}[theme=simple]
+\begin{deptext}[column sep=.5cm, row sep=.1ex]
+All\&of\&these\&matters\&will\&be\&addressed\&in\&that\&legislation\\
+0\&1\&2\&3\&4\&5\&6\&7\&8\&9\\
+\end{deptext}
+\deproot{7}{}
+\depedge{1}{2}{prep}
+\depedge{2}{4}{pobj}
+\depedge{4}{3}{det}
+\depedge{7}{1}{nsubjpass}
+\depedge{7}{5}{aux}
+\depedge{7}{6}{auxpass}
+\depedge{7}{8}{prep}
+\depedge{8}{10}{pobj}
+\depedge{10}{9}{det}
+\end{dependency}}\\
+\textbf{Alignment:}&\\
+\multicolumn{2}{|c|}{
+\scriptsize{
+$
+\xymatrix@C-2.3pc{
+All \ar @{-} [d] & of \ar @{-} [dl] & these \ar @{-} [dl] & matters \ar @{-} [dl] & will \ar @{-} [dl] & be \ar @{-} [drrr] & addressed \ar @{-} [drr] & in \ar @{-} [dlll] & that \ar @{-} [dll] \ar @{-} [dlll] & legislation \ar @{-} [dll] & . \ar @{-} [dl]\\
+All & diese & Fragen & werden & in & den & genannten & Rechtsvorschriften & angesprochen & .
+}$}}\\
+&\\
+\textbf{Reason non optimal score:}&\\
+\multicolumn{2}{|l|}{The score of this sentence is 0.77. The non optimal score is caused by the phrasal translation}\\
+\multicolumn{2}{|l|}{of `All of' into `all', such that the dependency relations between `All' and `of these matters',}\\
+\multicolumn{2}{|l|}{and between `of' and `these matters' are not respected.}\\
+\hline
+\end{tabular}

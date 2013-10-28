@@ -1,0 +1,35 @@
+\begin{tabular}{|ll|}
+\hline
+\textbf{English phrase:} & that the Council has taken so long to... \\
+\textbf{German translation:} & dass sich der Rat so viel Zeit mit  ... genommen hat \\ 
+&\\
+\textbf{Dependency Parse:}&\\
+\multicolumn{2}{|c|}{\begin{dependency}[theme=simple]
+\begin{deptext}[column sep=.5cm, row sep=.1ex]
+that\&the\&Council\&has\&taken\&so\&long\& to...\\
+1\&2\&3\&4\&5\&6\&7\&8\\
+\end{deptext}
+\depedge{7}{6}{advmod}
+\depedge{3}{2}{det}
+\depedge{5}{1}{mark}
+\depedge{5}{3}{nsubj}
+\depedge{5}{4}{aux}
+\depedge{5}{7}{advmod}
+\depedge{5}{8}{xcomp}
+\end{dependency}
+}\\
+\textbf{Alignment:}&\\
+\multicolumn{2}{|c|}{\scriptsize{
+$
+\xymatrix@C-2.3pc{
+that \ar @{-} [dr] & the \ar @{-} [drr] & Council \ar @{-} [drr] & has \ar @{-} [drrrrrrrr] & taken \ar @{-} [drrrrrr] & so \ar @{-} [d] & long \ar @{-} [dr] \ar @{-} [d] & to ...\ar @{-} [dr] \\
+& dass & sich & der & Rat & so & viel & Zeit & mit ... & & genommen & hat & .
+}$}
+}\\
+&\\
+\textbf{Reason non optimal score:}&\\
+\multicolumn{2}{|l|}{The arguments of `taken' in the dependency parse are reordered in German in a fashion that}\\
+\multicolumn{2}{|l|}{can not be accounted for by a maximally compositional tree: none of the HATs will obtain}\\
+\multicolumn{2}{|l|}{the score for the dependency relations (`taken','so long'), or (`taken', `to...').}\\
+\hline
+\end{tabular}
