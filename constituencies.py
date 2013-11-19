@@ -27,6 +27,7 @@ class ConstituencyTree():
 		Reconstruct the sentence from the leaf nodes of the
 		tree. If a sentence was passed in initalisation, return
 		this sentence.
+		
 		:type return:	str
 		"""
 		if self.sentence:
@@ -37,6 +38,7 @@ class ConstituencyTree():
 	def root_span(self,subtree,startpos):
 		"""
 		Recursively compute the span a node covers
+		
 		:param subtree:		a subtree of self.tree
 		:param startpos:	the first position the subtree dominates
 		"""
@@ -60,6 +62,7 @@ class ConstituencyTree():
 		"""
 		Return the number of non-terminal nodes in the tree
 		that occur in the provided list of phrases.
+		
 		:param subtree:		A subtree of self.tree.
 		:param startpos:	The left-most word position the subtree dominates.
 		:param phrase_list:	A list of allowed phrases.

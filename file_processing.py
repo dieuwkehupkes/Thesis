@@ -2,7 +2,6 @@
 File_processing is a module for processing sentences, alignments and treestructures.
 It brings together the functions from the other classes, enabeling the user to apply the functions
 using information from three files containing alingments, sentences and parses.
-Explain the different possibilities of the class.
 """
 
 from scoring import *
@@ -13,14 +12,12 @@ import time
 
 class ProcessFiles():
 	"""
-	Brings together all functions by enabling the user
-	to apply functions from the other classes to files
-	containing alignments, sentences and
-	dependency parses.
+	An object that allows the user to go through a set of linked files containing
+	alignments, sentences and parse trees.
 	"""
 	def __init__(self, alignmentfile, sentencefile, treefile, targetfile = False):
 		"""
-		During initialization the files are loaded for reading. Allows to leaf empty
+		During initialization the files are loaded for reading. Allows to leave empty
 		one of more files if they are not needed for functions that will be used
 		"""
 		self.tree_file, self.alignment_file, self.target_file, self.sentence_file = False,False,False,False
@@ -66,12 +63,6 @@ class ProcessFiles():
 		else:
 			return new_sentence
 
-
-	def print_function(self, to_print, filename):
-		if filename:
-			filename.write(to_print)
-
-
 	def score_all_sentences(self, rule_function, probability_function, prob_function_args, label_args, max_length = 40, scorefile = '', treefile = ''):
 		"""
 		Not implemented in general class, use from more specific subclasses.
@@ -80,6 +71,11 @@ class ProcessFiles():
 		raise NotImplementedError
 
 	def _reset_pointer(self):
+		"""
+		Reset the pointer such that
+		reading will start at the beginning of
+		the file.
+		"""
 		if self.tree_file:
 			self.tree_file.seek(0)
 		if self.sentence_file:
@@ -114,24 +110,6 @@ class ProcessFiles():
 			sentence_nr+= 1
 		return label_dict
 
-
-	def relation_count(self, max_length):
-		"""
-		Counts occurences of all relations in dependency
-		parses of sentences shorter than max_length.
-		"""
-		parsed_sentences = 0
-		self._reset_pointer()
-		relations = {}
-		new = self.next()
-		while new:
-			sentence_length = len(new[1].split())
-			if sentence_length < max_length:
-				dependencies = Dependencies(new[2])
-				dependencies.update_labels(relations)
-			new = self.next()
-			parsed_sentences += 1
-		return relations
 	
 	def relation_percentage(self, all_relations, relations_present):
 		percentage_dict = {}
@@ -158,6 +136,13 @@ class ProcessFiles():
 			f.write(key + '\t\t' + value + '\n')
 		f.close()
 	
+	def print_function(self, to_print, filename):
+		"""
+		Print contents to file if filename != False
+		"""
+		if filename:
+			filename.write(to_print)
+
 	def transform_contents(self,value):
 		"""
 		Return a suitable string representation of
@@ -224,7 +209,15 @@ class ProcessDependencies(ProcessFiles):
 	occasion in which trees are dependencies.
 	"""
 
-	def score_all_sentences(self, rule_function, probability_function, prob_function_args, label_args, max_length = 40, scorefile = False, treefile = False):
+	def score_all_sentences(self, rule_function, probability_function, prob_function_args, label_type, max_length = 40, scorefile = False, treefile = False):
+		"""
+		Score all alignments in the corpus.
+		
+		:param rule_function:	the type of rules to be used
+		:param probability_function:	the scoring mechanism to be used
+		:param prob_function_args:	the arguments for the probability function
+		:param label_type:	the type of labels to be used
+		"""
 		self._reset_pointer()
 		parsed_sentences = 0
 		sentence_nr = 1
@@ -249,7 +242,7 @@ class ProcessDependencies(ProcessFiles):
 			sentence = new[1]
 			alignment = new[0]
 			sentence_length = len(sentence.split())
-			dependencies = Dependencies(new[2])
+			dependencies = Dependencies(new[2], sentence)
 			a = Alignments(alignment,sentence)
 			# tests if input is as desired, skip if not
 			if sentence_length >= max_length:
@@ -261,7 +254,7 @@ class ProcessDependencies(ProcessFiles):
 			elif 'cannot' in sentence:
 				print_string_t = "No result, dependency parse and sentence out of sync due to tokenization 'cannot'"
 			else:
-				labels = dependencies.labels(label_args[0], label_args[1], label_args[2])
+				labels = dependencies.labels(label_type)
 #				labels = dependencies.annotate_span(l)
 				scoring = Scoring(alignment, sentence, labels)
 				#Set arguments for probability function
@@ -292,7 +285,7 @@ class ProcessDependencies(ProcessFiles):
 
 	def _results_string(self,total_score, sentences):
 		"""
-		Generate a string with the results
+		Generate a string with the results.
 		"""
 		score10, score20,score40,score100 = 0,0,0,0
 		if sentences[100] != 0:
@@ -337,6 +330,24 @@ class ProcessDependencies(ProcessFiles):
 			sentence_nr+= 1
 			new = self.next()
 		return branching_dict
+
+	def relation_count(self, max_length):
+		"""
+		Counts occurences of all relations in dependency
+		parses of sentences shorter than max_length.
+		"""
+		parsed_sentences = 0
+		self._reset_pointer()
+		relations = {}
+		new = self.next()
+		while new:
+			sentence_length = len(new[1].split())
+			if sentence_length < max_length:
+				dependencies = Dependencies(new[2])
+				dependencies.update_labels(relations)
+			new = self.next()
+			parsed_sentences += 1
+		return relations
 
 	def percentage_labelled(self,max_length, label_type):
 		"""
@@ -508,70 +519,17 @@ class ProcessDependencies(ProcessFiles):
 		f.close()
 		
 
-	def relation_count(self, max_length):
-		"""
-		Counts occurences of all relations in dependency
-		parses of sentences shorter than max_length.
-		"""
-		parsed_sentences = 0
-		self._reset_pointer()
-		relations = {}
-		new = self.next()
-		while new:
-			sentence_length = len(new[1].split())
-			if sentence_length < max_length:
-				dependencies = Dependencies(new[2])
-				dependencies.update_labels(relations)
-			new = self.next()
-			parsed_sentences += 1
-		return relations
-	
 	def relation_percentage(self, all_relations, relations_present):
 		percentage_dict = {}
 		for key in all_relations:
 			percentage_dict[key] = relations_present.get(key,0)/all_relations[key]
 		return percentage_dict
 	
-	def close_all(self):
-		"""
-		Close all input files.
-		"""
-		self.tree_file.close()
-		self.sentence_file.close()
-		self.alignment_file.close()
 	
-	def print_dict(self, dictionary, filename):
-		"""
-		Print the contents of a dictionary
-		to a file.
-		"""
-		f = open(filename, 'w')
-		for key in dictionary:
-			value = self.transform_contents(dictionary[key])
-			f.write(key + '\t\t' + value + '\n')
-		f.close()
-	
-	def transform_contents(self,value):
-		"""
-		Return a suitable string representation of
-		input
-		"""
-		if isinstance(value,str):
-			return value
-		elif isinstance(value,list) or isinstance(x,tuple):
-			str_list = [str(v) for v in value]
-			return '\t'.join(str_list)
-		elif isinstance(value,int):
-			return str(value)
-		else:
-			#not yet implemented, maybe it can be printed
-			return value
-		
 	def texstring(self,new):
 		"""
 		Output a texstring with the alignment, the dependency
-		and the 
-		ew = alignment, sentence, dep
+		and the sentence.
 		"""
 		sentence = '\\subsection*{Sentences}\n%s\n\\noindent %s\n' % (new[1],new[3])
 		dep = Dependencies(new[2])
@@ -611,6 +569,9 @@ class ProcessConstituencies(ProcessFiles):
 		return label_dict
 
 	def all_rules(self,max_length=40):
+		"""
+		Return all rules of the trees in the corpus
+		"""
 		raise NotImplementedError
 
 
@@ -661,7 +622,4 @@ class ProcessConstituencies(ProcessFiles):
 		"""
 		raise NotImplementedError
 
-
-#x = ProcessDependencies('Data/en-fr.aligned_manual.100','Data/1-100-final.en','Data/1-100-final.en.dependencies')
-#print x.unique_rules(10)
 

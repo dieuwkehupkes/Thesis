@@ -1,6 +1,7 @@
 import pickle
 import nltk.grammar
 import copy
+from alignments import *
 
 class ProcessHATs():
 	"""
@@ -19,7 +20,9 @@ class ProcessHATs():
 	
 	def next(self):
 		"""
-		Return the next item in the file. If no 
+		Return the next item in the file. If the last
+		element of the file is reached. return None.
+				
 		:return [sentence_nr, HATdict, root]
 		"""
 		try:
@@ -116,6 +119,7 @@ class ProcessHATs():
 		relative frequency estimation until convergence or
 		until a maximum number iterations is reached.
 		Return the new grammar
+		
 		:param start_grammar	Grammar represented as a nested dictionary
 		:param max_iter			Maximum number of iterations
 		:param max_length		Maximum sentence length considered
@@ -165,7 +169,9 @@ class ProcessHATs():
 
 class HATGrammar():
 	"""
-	Class that 
+	Class that represents a HAT grammar in a dictionary. Functions are
+	provided to transform the grammar into a weighted grammar object, and
+	to assign probabilities to the rules given an external PCFG.
 	"""
 	def __init__(self,HATdict,root):
 		"""
@@ -249,8 +255,28 @@ class HATGrammar():
 		else:
 			raise TypeError("unexpected label-type %s: %s" %(label, type(label)))
 
+	def normalise(self,rule_dict):
+		"""
+		Given a nested dictionary that represent rules as follows:
+		{lhs : {rhs1 : count, rhs2: count ...}, ....}, return a
+		similar nested dictionary with normalised counts
+		"""
+		normalised_dict = dict({})
+		total_lhs = 0
+		for lhs in rule_dict:
+			normalised_dict[lhs] = {}
+			total = 0
+			#loop twice through dictionary
+			#first to obtain total counts
+			for rhs in rule_dict[lhs]:
+				total += rule_dict[lhs][rhs]
+			# then to adjuct the counts in the
+			# new dictionary
+			for rhs in rule_dict[lhs]:
+				normalised_dict[lhs][rhs] = rule_dict[lhs][rhs]/float(total)
+		return normalised_dict
 
-	def to_WeightedGrammar(self,rule_dict, remove_old = False):
+	def to_WeightedGrammar(self,rule_dict, root, remove_old = False):
 		"""
 		Transforms a set of rules represented in a
 		nested dictionary into a WeightedGrammar object.
@@ -260,6 +286,8 @@ class HATGrammar():
 		If remove_old = True, remove the old grammar during the
 		process to save memory.
 		"""
+		if remove_old:
+			raise NotImplementedError
 		#create grammar
 		productions = []
 		for lhs in rule_dict:
@@ -270,8 +298,85 @@ class HATGrammar():
 				rhs_list = list(rhs)
 				new_production = nltk.WeightedProduction(lhs,rhs_list,prob=probability)
 				productions.append(new_production)
-				if not remove_old: del rule_dict[lhs][rhs]
 			assert total == 1.0
-			if not remove_old: del rule_dict[lhs]
-		start = nltk.Nonterminal('TOP')
+		start = nltk.Nonterminal(root)
 		return nltk.WeightedGrammar(start,productions)
+
+####################################################################################
+#DEMONSTRATION
+####################################################################################
+
+
+def demo():
+	"""
+	A demonstration function showing the workings of the HATgrammar class.
+	"""
+	if raw_input("\nPress enter to go through demo, q can be pressed at any stage to quit the demo.\t") == 'q': return
+	if raw_input("\nA HATgrammar object is initialised with a dictionary representing a HATgrammar, and the topnode of its HATgrammar") == 'q': return
+	if raw_input("\nWe create a HAT dictonary using the alignments class:\n") == 'q': return
+	if raw_input(">>> a = Alignments('0-0 1-1 2-2 4-3 3-4', 'a b c d e')\n") == 'q': return
+	a = Alignments('0-0 1-1 2-2 4-3 3-4', 'a b c d e')
+	if raw_input("We provide made-up labels, and create a HAT dictionary:") == 'q': return
+	print ">>> labels = dict(zip([(i,i+1) for i in xrange(5)] + [(0,5),(1,5),(0,3),(3,5),(2,5),(0,2),(1,3)],['0','1','2','4','3','A','B','C','D','E','F','G']))"
+	labels = dict(zip([(i,i+1) for i in xrange(5)] + [(0,5),(1,5),(0,3),(3,5),(2,5),(0,2),(1,3)],['0','1','2','4','3','A','B','C','D','E','F','G']))
+	print ">>> labels\n", labels
+	HAT_dict = a.HAT_dict(labels)
+	if raw_input("\n>>> HAT_dict = a.HAT_dict(labels)") == 'q': return
+	print ">>> HAT_dict\n", HAT_dict
+	if raw_input("") == 'q': return
+	if raw_input("And we create a HATgrammar object:\n") == 'q': return
+	if raw_input("h = HATGrammar(HAT_dict, 'A')\n") == 'q': return
+	h = HATGrammar(HAT_dict, 'A')
+	if raw_input("\nIf neither an external grammar, nor a grammar to be updated is provided, the function update_grammar computes the counts of the rules in the HAT, assuming the probability is uniformly diveded over all HATs:") == 'q': return
+	print "\n>>> grammar = {}"
+	grammar = {}
+	print "\n>>> grammar = h.update_weights(grammar)"
+	grammar = h.update_weights(grammar)
+	if raw_input("") == 'q': return	
+	if raw_input("\nThe following counts are computed:\n") == 'q': return	
+	print ">>> for lhs in grammar:\n...\tfor rhs in grammar[lhs]:\n...\t\tprint '%s --> %s\\t%f' % (lhs, " ".join(rhs), grammar[lhs][rhs])\n...\n"
+	for lhs in grammar:
+		for rhs in grammar[lhs]:
+			print '%s --> %s\t\t%f' % (lhs, " ".join(rhs), grammar[lhs][rhs])
+	if raw_input("\n") == 'q': return	
+	if raw_input("\nIf a current grammar to be updated had been provided, these counts would be added to the counts that were already in the dictionary:") == 'q': return
+	print "\n>>> grammar = {'A': {('F', 'E'): 0.2, ('C', 'D'): 0.4, ('0', 'B'): 0.4}, 'C': {('F', '2'): 0.2, ('0', 'G'): 0.2}, 'B': {('G', 'D'): 0.2, ('1', 'E'): 0.2}, 'E': {('2', 'D'): 0.4}, 'D': {('4', '3'): 1.0}, 'G': {('1', '2'): 0.4}, 'F': {('0', '1'): 0.4}, '1': {('b',): 1.0}, '0': {('a',): 1.0}, '3': {('e',): 1.0}, '2': {('c',): 1.0}, '4': {('d',): 1.0}"
+	grammar = {'A': {('F', 'E'): 0.2, ('C', 'D'): 0.4, ('0', 'B'): 0.4}, 'C': {('F', '2'): 0.2, ('0', 'G'): 0.2}, 'B': {('G', 'D'): 0.2, ('1', 'E'): 0.2}, 'E': {('2', 'D'): 0.4}, 'D': {('4', '3'): 1.0}, 'G': {('1', '2'): 0.4}, 'F': {('0', '1'): 0.4}, '1': {('b',): 1.0}, '0': {('a',): 1.0}, '3': {('e',): 1.0}, '2': {('c',): 1.0}, '4': {('d',): 1.0}}
+	print "\n>>> grammar = h.update_weights(grammar)"
+	grammar = h.update_weights(grammar)
+	if raw_input("") == 'q': return	
+	print ">>> for lhs in grammar:\n...\tfor rhs in grammar[lhs]:\n...\t\tprint '%s --> %s\\t%f' % (lhs, " ".join(rhs), grammar[lhs][rhs])\n...\n"
+	for lhs in grammar:
+		for rhs in grammar[lhs]:
+			print '%s --> %s\t\t%f' % (lhs, " ".join(rhs), grammar[lhs][rhs])
+	if raw_input("\n") == 'q': return	
+	if raw_input("\nAnd if an external PCFG is provided (also in the form of a grammar), the probability mass is divided over the HATs proportionally to the probabilities they have under this grammar:") == 'q': return
+	print "\npcfg = {'A': {('0','B'): 0.5, ('C','D'): 0.2, ('F','E'): 0.3}, 'B': {('G','D'):0.8, ('1','E'):0.2}, 'C': {('0','G'):0.4, ('F','2'):0.8}, 'D': {('4','3'):0.1}, 'E': {('2','D'):0.1}, 'F': {('0','1'):0.5}, 'G': {('1','2'):0.75}, '0':{('a',):1}, '1': {('b',):1}, '2':{('c',):1}, '3': {('e',):1}, '4': {('d',):1}}\n"
+	pcfg = {'A': {('0','B'): 0.5, ('C','D'): 0.2, ('F','E'): 0.3}, 'B': {('G','D'):0.8, ('1','E'):0.2}, 'C': {('0','G'):0.4, ('F','2'):0.8}, 'D': {('4','3'):0.1}, 'E': {('2','D'):0.1}, 'F': {('0','1'):0.5}, 'G': {('1','2'):0.75}, '0':{('a',):1}, '1': {('b',):1}, '2':{('c',):1}, '3': {('e',):1}, '4': {('d',):1}}
+	print "\n>>> grammar = {}"
+	grammar = {}
+	print "\n>>> grammar = h.update_weights(grammar, pcfg)"
+	grammar = h.update_weights(grammar, pcfg)
+	if raw_input("") == 'q': return	
+	if raw_input("\nResulting in the following updates:\n") == 'q': return	
+	print ">>> for lhs in grammar:\n...\tfor rhs in grammar[lhs]:\n...\t\tprint '%s --> %s\\t%f' % (lhs, " ".join(rhs), grammar[lhs][rhs])\n...\n"
+	for lhs in grammar:
+		for rhs in grammar[lhs]:
+			print '%s --> %s\t%f' % (lhs, " ".join(rhs), grammar[lhs][rhs])
+	if raw_input("") == 'q': return
+	if raw_input("The resulting dictionary can be normalised:") == 'q': return
+	normalised_grammar = h.normalise(grammar)
+	print ">>> for lhs in normalised_grammar:\n...\tfor rhs in normalised_grammar[lhs]:\n...\t\tprint '%s --> %s\\t%f' % (lhs, " ".join(rhs), normalised_grammar[lhs][rhs])\n...\n"
+	for lhs in normalised_grammar:
+		for rhs in normalised_grammar[lhs]:
+			print '%s --> %s\t\t%f' % (lhs, " ".join(rhs), normalised_grammar[lhs][rhs])
+	if raw_input("This grammar can be transformed to an nltk.WeightedGrammar object, such that parsing is possible") == 'q': return
+	G = h.to_WeightedGrammar(normalised_grammar, 'A')
+	print "\n>>> G = h.to_WeightedGrammar(normalised_grammar, 'A')\n"
+	print ">>> G\n", G
+	if raw_input("\n") == 'q': return	
+	print "\nEnd of demonstration\b"
+	return
+
+if __name__ == "__main__":
+	demo()

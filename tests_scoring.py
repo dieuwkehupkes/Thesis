@@ -5,7 +5,7 @@ class ScoreTests():
 	Test Scoring Class
 	"""
 	def score_test_all(self):
-		return self.score_test1() and self.score_test2() and self.score_test3() and self.score_test4() and self.score_test7() and self.score_test8()
+		return self.score_test1() and self.score_test2() and self.score_test3() and self.score_test4() and self.score_test7() and self.score_test8() and self.score_test9()
 
 	def score_test1(self):
 		"""
@@ -26,10 +26,13 @@ class ScoreTests():
 		relations = deps.spanrelations()
 		scoring = Scoring(alignment, sentence, {})
 		tree1, score1, rank1 = scoring.score(Alignments.rules, Rule.probability_spanrels, [relations, nr_of_deps])
+		assert score1 == 1.0, "Error in basic scoring an alignment with all rules"
 		tree2, score2, rank2 = scoring.score(Alignments.hat_rules, Rule.probability_spanrels, [relations, nr_of_deps])
+		assert score2 == 0.75, "Error in scoring an alignment with HATrules"
 		relations = deps.spanrelations(True, True)
 		tree3, score3, rank3 = scoring.score(Alignments.hat_rules, Rule.probability_spanrels, [relations, nr_of_deps])
-		return score1 == 1.0 and score2 == 0.75 and score3 == 1.0
+		assert score3 == 1.0
+		return True
 
 
 	def score_test2(self):
@@ -52,10 +55,13 @@ class ScoreTests():
 		relations = deps.spanrelations()
 		scoring = Scoring(alignment, sentence, {})
 		tree1, score1, rank1 = scoring.score(Alignments.rules, Rule.probability_spanrels, [relations, nr_of_deps])
+		assert score1 == 1.0
 		tree2, score2, rank2 = scoring.score(Alignments.hat_rules, Rule.probability_spanrels, [relations, nr_of_deps])
+		assert score2 == 0.6
 		relations = deps.spanrelations(True, True)
 		tree3, score3, rank3 = scoring.score(Alignments.hat_rules, Rule.probability_spanrels, [relations, nr_of_deps])
-		return score1 == 1.0 and score2 == 0.6 and score3 == 1.0
+		assert score3 == 1.0
+		return True
 
 	def score_test3(self):
 		"""
@@ -63,9 +69,9 @@ class ScoreTests():
 		Alignment: '5-6 4-5 3-4 3-2 2-1 6-8 3-3 1-1 0-0 7-7'
 		Dependencies: 'root(ROOT-0, approval-1)','prep(approval-1, of-2)', 'det(minutes-4, the-3)','pobj(of-2, minutes-4)','prep(approval-1, of-5)','det(sitting-8, the-6)','amod(sitting-8, previous-7)','pobj(of-5, sitting-8)'
 
-		Manual score all rules spanrels: 0.59
-		Manual score hat rules spanrels: 0.57
-		Manual score hat rules spanrels deep: 1.0
+		Manual score all rules spanrels: 6/7
+		Manual score hat rules spanrels: 3/7
+		Manual score hat rules spanrels deep: 5/7
 		"""
 		sentence = 'approval of the minutes of the previous sitting'
 		alignment = '5-6 4-5 3-4 3-2 2-1 6-8 3-3 1-1 0-0 7-7'
@@ -75,11 +81,13 @@ class ScoreTests():
 		relations = deps.spanrelations()
 		scoring = Scoring(alignment, sentence, {})
 		tree1, score1, rank1 = scoring.score(Alignments.rules, Rule.probability_spanrels, [relations, nr_of_deps],0)
+		assert score1 == float(6)/7
 		tree2, score2, rank2 = scoring.score(Alignments.hat_rules, Rule.probability_spanrels, [relations, nr_of_deps],0)
+		assert score2 == float(3)/7
 		relations = deps.spanrelations(True, True)
 		tree3, score3, rank3 = scoring.score(Alignments.hat_rules, Rule.probability_spanrels, [relations, nr_of_deps],0)
-		return score1 == float(6)/7 and score2 == float(3)/7 and score3 == float(5)/7
-
+		assert score3 == float(5)/7
+		return True
 
 	def score_test4(self):
 		"""
@@ -99,11 +107,14 @@ class ScoreTests():
 		relations = deps.spanrelations()
 		scoring = Scoring(alignment, sentence, {})
 		tree1, score1, rank1 = scoring.score(Alignments.rules, Rule.probability_spanrels, [relations, nr_of_deps])
+		assert score1 == 1.0
 		tree2, score2, rank2 = scoring.score(Alignments.hat_rules, Rule.probability_spanrels, [relations, nr_of_deps])
+		assert score2 == 1.0
 		relations = deps.spanrelations(True, True)
 		tree3, score3, rank3 = scoring.score(Alignments.hat_rules, Rule.probability_spanrels, [relations, nr_of_deps])
-		return score1 == 1.0 and score2 == 1.0 and score3 == 1.0
-
+		assert score3 == 1.0
+		return True
+		
 	def score_test5(self):
 		"""
 		no dependencies
@@ -112,14 +123,11 @@ class ScoreTests():
 		alignment = '0-0'
 		dependencies = []
 		deps = Dependencies(dependencies)
-		print deps.checkroot()
-		labels = deps.labels(1,1,3)
-		print labels
+		labels = deps.labels("SAMT")
 		scoring = Scoring(alignment, sentence, labels)
-		tree, score = scoring.score(Alignments.hat_rules, Rule.probability_labels, [labels])
-		print(tree)
-		print score
-	
+		score = scoring.score(Alignments.hat_rules, Rule.probability_labels, [labels])
+		return True
+			
 	def score_test6(self):
 		"""
 		dependencies form no tree
@@ -128,11 +136,10 @@ class ScoreTests():
 		alignment = '0-0'
 		dependencies = ['discourse(.-1, pt-3)','nsubj(agree-7, we-5)','advmod(agree-7, basically-6)','rcmod(.-1, agree-7)','prep(agree-7, with-8)','det(assessment-10, the-9)','pobj(with-8, assessment-10)','cc(assessment-10, and-11)','det(thoughts-13, the-12)','conj(assessment-10, thoughts-13)','root(ROOT-0, put-14)','advmod(put-14, forward-15)','prep(put-14, by-16)','det(rapporteur-18, the-17)','pobj(by-16, rapporteur-18)','det(report-23, the-20)','amod(report-23, sixth-21)','amod(report-23, periodic-22)','pobj(concerning-19, report-23)','prep(report-23, on-24)','det(situation-29, the-25)','amod(situation-29, social-26)','cc(social-26, and-27)','conj(social-26, economic-28)','pobj(on-24, situation-29)','cc(situation-29, and-30)','conj(situation-29, development-31)','prep(development-31, of-32)','det(regions-34, the-33)','pobj(of-32, regions-34)','prep(regions-34, of-35)', 'det(union-38, the-36)','nn(union-38, european-37)','pobj(of-35, union-38)']
 		deps = Dependencies(dependencies)
-		labels = deps.labels(1,1,3)
+		labels = deps.labels("basic")
 		scoring = Scoring(alignment, sentence, labels)
-		tree, score = scoring.score(Alignments.hat_rules, Rule.probability_labels, [labels])
-		print(tree)
-		print score
+		score = scoring.score(Alignments.hat_rules, Rule.probability_labels, [labels])
+		return True
 	
 	def score_test7(self):
 		"""
@@ -146,7 +153,8 @@ class ScoreTests():
 		relations = deps.spanrelations(True,True)
 		nr_of_deps = deps.nr_of_deps
 		tree, score, rank = scoring.score(Alignments.hat_rules, Rule.probability_spanrels, [relations, nr_of_deps])
-		return score == 1.0
+		assert score == 1.0
+		return True
 	
 	def score_test8(self):
 		"""
@@ -160,7 +168,8 @@ class ScoreTests():
 		relations = deps.spanrelations(True,True)
 		nr_of_deps = deps.nr_of_deps
 		tree, score, rank = scoring.score(Alignments.hat_rules, Rule.probability_spanrels, [relations, nr_of_deps])
-		return score == 1.0
+		assert score ==1.0
+		return True
 	
 	def score_test9(self):
 		sentence = "( parliament adopted the text )"
@@ -171,12 +180,11 @@ class ScoreTests():
 		relations = deps.spanrelations(True,True)
 		nr_of_deps = deps.nr_of_deps
 		tree, score, rank = scoring.score(Alignments.hat_rules, Rule.probability_spanrels, [relations, nr_of_deps])
-		print tree
+		return True
 
 
 
 if __name__ == "__main__":
 	x = ScoreTests()
-	x.score_test9()
-#	print x.score_test_all()
+	print x.score_test_all()
 

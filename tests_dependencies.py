@@ -10,7 +10,8 @@ class DependencyTests():
 		d = Dependencies(dependencies)
 		spanrels = d.spanrelations(interpunction = False)
 		manual_spanrels= {(1,2): set([(0,1)]), (5,6): set([(0,2),(3,4),(4,5),(6,11)]), (7,8):set([(6,7),(8,11)]),(8,9): set([(9,11)]), (10,11): set([(9,10)])}
-		return spanrels == manual_spanrels
+		assert spanrels == manual_spanrels
+		return True
 
 	def labels_test1(self):
 		"""
@@ -21,7 +22,8 @@ class DependencyTests():
 		d = Dependencies(dependencies)
 		man_labels = {(0,1): 'nsubj', (1,2): 'root', (2,3): 'det', (2,4): 'iobj', (3,4): 'iobj-h', (4,5): 'det', (4,6): 'dobj', (5,6): 'dobj-h', (0,6): 'ROOT'}
 		labels = d.labels()
-		return labels == man_labels
+		assert labels == man_labels
+		return True
 
 	def labels_annotation_test(self):
 		"Test annotated labels for a manually constructed sentence"
@@ -30,7 +32,8 @@ class DependencyTests():
 		man_labels = {(0,1): 'nsubj-[0-1]', (1,2): 'root-[1-2]', (2,3): 'det-[2-3]', (2,4): 'iobj-[2-4]', (3,4): 'iobj-h-[3-4]', (4,5): 'det-[4-5]', (4,6): 'dobj-[4-6]', (5,6): 'dobj-h-[5-6]', (0,6): 'ROOT-[0-6]'}
 		labels = d.labels()
 		new_labels = d.annotate_span(labels)
-		return new_labels == man_labels
+		assert new_labels == man_labels
+		return True
 
 	def rr_test(self):
 		"""
@@ -40,7 +43,8 @@ class DependencyTests():
 		d = Dependencies(dependencies)
 		relations = d.spanrelations(True,False)
 		man_relations = {(1, 2): set([(0, 1), (2, 4), (4, 6)]), (5, 6): set([(4, 5)]), (3, 4): set([(2, 3)]), (1,6): set([(0,1)]), (1,4): set([(4,6)])}
-		return relations == man_relations
+		assert relations == man_relations
+		return True
 
 	def lr_test(self):
 		"""
@@ -50,7 +54,8 @@ class DependencyTests():
 		d = Dependencies(dependencies)
 		relations = d.spanrelations(False,True)
 		man_relations = {(1, 2): set([(0, 1), (2, 4), (4, 6)]), (5, 6): set([(4, 5)]), (3, 4): set([(2, 3)]), (0,4): set([(4,6)]), (0,2): set([(2,4)])}
-		return relations == man_relations
+		assert relations == man_relations
+		return True
 
 	def allr_test1(self):
 		"""
@@ -60,7 +65,8 @@ class DependencyTests():
 		d = Dependencies(dependencies)
 		relations = d.spanrelations(True,True)
 		man_relations = {(1, 2): set([(0, 1), (2, 4), (4, 6)]), (5, 6): set([(4, 5)]), (3, 4): set([(2, 3)]), (0,4): set([(4,6)]), (0,2): set([(2,4)]), (1,4): set([(0,1),(4,6)]), (1,6): set([(0,1)])}	
-		return relations == man_relations
+		assert relations == man_relations
+		return True
 
 	def allr_test2(self):
 		dependencies = ['det(minutes-2, the-1)','nsubjpass(distributed-13, minutes-2)','prep(minutes-2, of-3)','pobj(of-3, the-4)','amod(the-4, sitting-5)','prep(the-4, on-6)','pobj(on-6, Thursday-7)','num(September-10, 21-9)','nsubjpass(distributed-13, September-10)','aux(distributed-13, have-11)','auxpass(distributed-13, been-12)','root(ROOT-0, distributed-13)']
@@ -71,7 +77,8 @@ class DependencyTests():
 			if man_relations[key] != relations[key]:
 				print 'key', key
 				print 'man', man_relations[key], 'auto', relations[key]
-		return relations == man_relations
+		assert relations == man_relations
+		return True
 
 	def test_samt_labels(self):
 		"""
@@ -96,7 +103,8 @@ class DependencyTests():
 #		for key in l:
 #			if man_labels[key] != l[key]:
 #				print key, man_labels[key], l[key]
-		return man_labels == l
+		assert man_labels == l
+		return True
 		
 
 	def test_all_labels(self):

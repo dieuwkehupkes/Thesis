@@ -321,6 +321,7 @@ class Alignments:
 		"""
 		Output which percentage of the spans in the alignment
 		are labelled by the set of inputted labels.
+		
 		:return:	total, labelled
 		"""
 		phrases = self.compute_phrases()
@@ -354,6 +355,7 @@ class Alignments:
 		"""
 		Output what percentage of the nodes of an inputted tree
 		are consistent with the alignment.
+		
 		:param tree:		An nltk tree object.
 		:return:	a float that describes the percentage of the nodes
 					of tree that were nodes according to the alignment.
@@ -369,6 +371,7 @@ class Alignments:
 		"""
 		Use self.sentence to create a lexical dictionary
 		that assigns lexical items to spans.
+		
 		:return: A dictionary {(0,1) : word1,..,(n-1,n): wordn}
 		"""
 		lex_dict = {}
@@ -463,6 +466,7 @@ class Node:
 		"""
 		Add a directed edge from this node to
 		the given node.
+		
 		:type node:	A Node object.
 		"""
 		self.links.append(node)
@@ -470,7 +474,8 @@ class Node:
 	def remove_link(self,node):
 		"""
 		Remove the edge to this node, if
-		present
+		present.
+		
 		:type node: A Node object.
 		"""
 		if node in self.links:
@@ -482,6 +487,7 @@ class Node:
 		Returns a generator that calculates all
 		paths to the given node. These paths
 		are calculated recursively.
+		
 		:type node:	a Node object
 		"""
 		if node == self:
@@ -531,6 +537,7 @@ class Node:
 		The function also stores paths that can be
 		used for later(i.e paths longer than 1
 		from self to intermediate nodes).
+		
 		:type node:	A Node object.
 		"""
 		
@@ -635,6 +642,7 @@ class Rule:
 		of an array of nodes) that it produces.
 		Labels can be provided to annotate the spans
 		of a rule.
+		
 		:param root:	The rootspan of the node.
 		:type path:		A Waypoint.
 		:type labels:	A dictionary assigning labels to spans.
@@ -662,6 +670,7 @@ class Rule:
 		"""
 		Compute the probability of a rule according to
 		how many span_relations it makes true.
+		
 		:param span_relations:	A list containing a dictionary
 								which describes which
 								spanrelations are desired.
@@ -681,6 +690,7 @@ class Rule:
 		to how many of the nodes it generates can
 		be labelled according to a set of given
 		labels.
+		
 		:param labels:	A list containing a dictionary that
 						assigns labels to spans.
 		"""
@@ -703,6 +713,7 @@ class Rule:
 	def lhs(self):
 		"""
 		Return the left hand side of the rule.
+		
 		:type return:	nltk.Nonterminal object.
 		"""
 		return self._lhs
@@ -718,6 +729,7 @@ class Rule:
 	def rhs(self):
 		"""
 		Return the right hand side of the rule.
+		
 		:type return:	a tuple with nltk.Nonterminal objects
 		"""
 		return self._rhs
@@ -768,6 +780,9 @@ class Rule:
 
 
 def demos():
+	"""
+	A demonstration function showing the workings of the alignments class
+	"""
 	import os
 	print  "\nA demonstration showing how an ``Alignments`` object can be created and how some of the class methods can be used. There are 3 demo's available."
 	demos = {'1': demo_basic, '2': demo_basic2, '3':HAT_demo}

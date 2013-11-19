@@ -12,6 +12,7 @@ class Labels():
 	def __init__(self,labels):
 		"""
 		Create a labelling object, with basic labels.
+		
 		:param labels:	A dictionary assigning labels to spans
 		"""
 		self.labels = labels
@@ -202,6 +203,14 @@ class Labels():
 
 
 def demo():
+	
+	basic_labels = {(0,1): 'poss', (1,2): 'nsubj-h', (2,3): 'xvmod', (3,4): 'root', (4,5): 'xcomp-h', (5,6): 'dobj', (0,2): 'nsubj', (4,6): 'xcomp', (0,6): 'ROOT'}
+	l = Labels(basic_labels)
+	L =  l.label_most()
+	for key in L:
+		print '%s\t%s' % (key, L[key])
+	return
+
 	i = raw_input("Press enter to go through demo, q can be pressed at any stage to quit the demo.\t")
 	if (i == 'q' or i == 'Q'): return
 	

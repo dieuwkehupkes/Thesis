@@ -25,7 +25,7 @@ class Dependencies():
 		self.head_pos = None
 		self.deps = self.set_dependencies(dependency_list)
 		self.set_wordspans()
-		self.sentence = self.reconstruct_sentence(sentence)
+		self.sentence = sentence
 
 	def set_dependencies(self,dependency_list):
 		"""
@@ -104,19 +104,20 @@ class Dependencies():
 		"""
 		return re.match('[a-z\_]*(?=\()',relation).group(0)
 		
-	def reconstruct_sentence(self, sentence):
+	def reconstruct_sentence(self):
 		"""
 		Reconstruct the sentence corresponding to the 
 		dependency parse.
+		
 		:return:	a list with the words of the sentence.
 		"""
-		if sentence:
+		if self.sentence:
 			# If sentence was input or already computed
 			# return sentence
-			if isinstance(sentence,list):
+			if isinstance(self.sentence,list):
 				pass
 			else:
-				sentence = sentence.split()
+				sentence = self.sentence.split()
 		else:
 			# create sentence from dependency parse
 			try:
@@ -127,7 +128,8 @@ class Dependencies():
 				pos_word = self.find_dependent_pos(relation)
 				word = self.find_dependent(relation)
 				sentence[pos_word-1] = word
-		return sentence
+		self.sentence = sentence
+		return self.sentence
 	
 	def textree(self):
 		"""
@@ -313,7 +315,7 @@ class Dependencies():
 		labels = {}
 		#Check if dependencies are nonempty and form a tree
  		if self.deps == {} or not self.checkroot():
- 			print 'no labels were created because dependency list was empty or did not form a tree'
+ 			#No labels are created because dependency list is empty or does not form a tree
  			return labels
  		else:
 	 		#manually add label for sentence head and rootspan
@@ -328,10 +330,11 @@ class Dependencies():
 	 				dep_word_span = (dep[0]-1, dep[0])
 	 				labels[dep_word_span] = labels.get(dep_word_span, dep[1]+'-h')
 	 	#If a sentence is inputted, label unlabelled spans
- 		for word_pos in xrange(len(self.sentence)):
+	 	sentence = self.reconstruct_sentence()
+ 		for word_pos in xrange(len(sentence)):
  			word_span = (word_pos,word_pos+1)
  			if word_span not in labels:
- 				labels[word_span] = self.POStag(self.sentence[word_pos])
+ 				labels[word_span] = self.POStag(sentence[word_pos])
  		return labels
  	
  	def SAMT_labels(self):
@@ -369,7 +372,9 @@ class Dependencies():
 		
 		The default labeltype is basic.
 		"""
-		if label_type == 'basic':
+		if label_type == None:
+			return {}
+		elif label_type == 'basic':
 			return self.dependency_labels()
 		elif label_type == 'SAMT':
 			return self.SAMT_labels()

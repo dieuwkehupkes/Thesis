@@ -9,6 +9,9 @@ from tests_HATforest import *
 #create testing objects for all classes and print outcome
 
 class Tests():
+	"""
+	Test all functionality from the module.
+	"""
 	def test_all(self):
 		d = DependencyTests()
 		n = NodeTests()
