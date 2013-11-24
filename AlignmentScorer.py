@@ -55,7 +55,7 @@ if __name__ == "__main__":
 	
 	
 	#Output writing options
-	parser.add_argument("-t","--trees_to", default=False,help="Write any trees outputted by the program to specified file name")git
+	parser.add_argument("-t","--trees_to", default=False,help="Write any trees outputted by the program to specified file name")
 	parser.add_argument("-s","--scores_to", default=False,help="Write any scores outputted by the program to specified file name")
 	
 	
