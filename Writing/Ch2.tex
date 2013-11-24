@@ -42,7 +42,7 @@ A second line of research followed a more theoretical approach, involving fundam
 \Tree [.\textit{supply} [.ARG0\\subj A ] [.ARG1\\obj B ] [.ARG2\\prep-obj \textit{with} C ] ] & $\mathbf{\Longrightarrow}$ & \Tree [.\textit{fournir} [.ARG0\\subj A ] [.ARG2\\i-obj B ] [.ARG3\\d-obj C ] ]\\
 \end{tabular}
 \end{framed}
-\caption{Transfer rule that accounts for the translation of `A supplies B with C' into `A fournit C \`{a} B' \citep[source:][p.230]{hutchins1992introduction}.}\label{fig:transferex}
+\caption{A transfer rule that accounts for the translation of `A supplies B with C' into `A fournit C \`{a} B' \citep[source:][p.230]{hutchins1992introduction}.}\label{fig:transferex}
 \end{figure}
 
 Although the early systems were sometimes successful in small subdomains of language (e.g., \cite{chandioux1976meteo} for meteorological forecasts), they failed to scale to bigger domains, as it is very hard to formalize all of language in one system. Driven by exactly this thought, a new line of research came off the ground, that was not primarily based on linguistic knowledge, but on large pairs of texts that were translations of each other.\footnote{Such parallel texts were not created for this purpose, but exist by the grace of multilingual societies. Parallel corpora can be created from, e.g., proceedings of governments that are kept in two languages, websites that are translated into multiple languages, and news organisations that publish their articles for a multilingual audience \citep{koehn2008statistical}. Techniques to align these text on the sentence level \citep[e.g.,][]{varga2007parallel} have made such parallel texts very valuable for MT research.} Corpus based models can be roughly divided into exemplar based models and statistical models, although exemplar based models do not necessarily exclude the use of probabilistic techniques.
@@ -101,7 +101,7 @@ Consider the following pair of sentences and a possible alignment (the numbers i
 The parameters for this IBM model are thus: a set of lexical translation probabilities $P(f|e)$, a set of fertility probabilities $P(n|e)$ and a set of distortion probabilities $P(i|j,l)$ for each target position $i$, source position $j$ and target length $l$. In practice, $i,j,l$ and $n$ are maximally $25$.
 }
 \end{framed}
-\caption{Example from \cite[p.3]{brown1990statistical}, that shows the workings of the IBM word-based translation model}\label{fig:IBM-model}
+\caption{An example from \cite[p.3]{brown1990statistical}, that shows the workings of the IBM word-based translation model}\label{fig:IBM-model}
 \end{figure}
 
 
@@ -180,7 +180,7 @@ The sentence pair (`La donna italiana \`{e} bella', `The italian woman is beauti
 {\footnotesize \noindent Simultaneously expand all pre-terminals to obtain the sentence pair (which summarises 5 steps):}
 {\tiny\begin{center}\begin{tabular}{m{5.1cm}m{1ex}m{5.1cm}} \Tree [.S [.NP [.DT The ] [.JJ italian ] [.NN woman ] ] [.VP [.VBZ is ] [.ADJP beautiful ] ] ] & $\sim$ & \Tree [.S [.NP [.DT La ] [.NN donna ] [.JJ italiana ] ] [.VP [.VBZ \`{e} ] [.ADJP bella ] ] ] \end{tabular}\end{center}}
 \end{framed}
-\caption{Synchronous generation of translation}\label{fig:syncgen}
+\caption{The synchronous generation of a sentence and its translation.}\label{fig:syncgen}
 \end{figure}
 
 \subsection{The computational difficulties of SCFG's}

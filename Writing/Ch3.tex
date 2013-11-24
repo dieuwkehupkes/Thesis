@@ -9,7 +9,7 @@ In the previous chapter we saw that rule-based MT models that incorporate inform
 \centering
 \input{Graphics/double_compositionality.tex}
 \end{framed}
-\caption{A graphical representation of the issues in regarding compositinal translation.}\label{fig:comptrans2}
+\caption{A graphical representation of the situation at hand in this thesis.}\label{fig:comptrans2}
 \end{figure}
 
 The chapter is structured as follows. In Section \ref{sec:comp_trans}, we will link SCFGs to compositional translation, and discuss compositional translation and its difficulties on a rather abstract level, quite distant from actual language and data. In Section \ref{sec:invest}, we will discuss, on an intuitive level, how compositionality can be represented, and therefore identified, by providing some examples of compositional translation structures. In Section \ref{sec:trans_eq} and \ref{sec:comp_structures}, we will discuss the main ingredients to find compositional translation trees, and how they can be interpreted, which lays the groundwork for an empirical investigation of translation data. In Section \ref{sec:empirical_studies}, we will discuss what questions can be addressed by empirical research, and discuss studies that were conducted by others. In Section \ref{sec:dep_parses}, we will discuss, very briefly,  the remaining gap in this branch of research, and provide the last bit of background information needed for the research conducted in this thesis, by discussing dependency parses. The chapter ends with a short summary in Section \ref{sec:summary}
@@ -137,7 +137,7 @@ monotone & $\forall w \forall x\forall y \forall z \big ( \left ( (x,y)\in a \la
 \hline
 \end{tabular}
 }
-\caption{Different types of alignments and how they are characterised.}
+\caption{Different types of alignments and their logical characterization.}
 \label{table:alignments}
 \end{table}
 
@@ -263,7 +263,7 @@ The number of translation parts in an alignment depends on the type of the align
 \end{itemize}
 }
 \end{framed}
-\caption{Translation units of alignment from \ref{fig:alignment2}}\label{fig:transequi}
+\caption{The translation units of the alignment for the sentence pair (My dog also likes eating sausages, Mijn hond houdt ook van worstjes eten), depicted in Figure \ref{fig:alignment2}.}\label{fig:transequi}
 \end{figure}
 
 \subsubsection{Set-permutation Trees}
@@ -279,7 +279,7 @@ Using Definition \ref{def:exp1}, a translation tree can be constructed top down,
 \begin{figure}[!ht]
 \centering
 \Tree [.\{\{0\},\{1\},\{3\},\{2,4\},\{6\},\{5\}\} [.\{\{0\},\{1\}\} [.\{0\}  my ] [.\{1\} dog ] ] [.\{\{3\},\{2,4\},\{6\},\{5\}\} [.\{\{3\},\{2,4\}\} [.\{3\} also ] [.likes ] ] [.\{\{6\},\{5\}\} [.\{5\} eating ] [.\{6\} sausage ] ] ] ]
-\caption{A possible alignment tree for the alignment of Figure \ref{fig:alignment} \label{fig:alignment_tree}}
+\caption{A possible alignment tree for the alignment depicted in Figure \ref{fig:alignment2}. \label{fig:alignment_tree}}
 \end{figure}
 
 Note that the trees we have described are describing a compositional translation of the source side. The target side tree, however, can be constructed from this tree if it is known how the children of each node were reordered (this information is encoded in the set-permutation).
@@ -382,10 +382,10 @@ A dependency graph of a sentence $s = w_1~\ldots~w_n$ is a directed acyclic grap
 \item $\exists\negthinspace w\in\negthinspace V$ s.t. $\forall w'\negthinspace\in\negthinspace V~(w,w')\negthinspace\notin\negthinspace E$ \hfill (rootedness)
 \item $\forall w_1 w_2 w_3\negthinspace \in\negthinspace V\Big( (w_1,w_3)\negthinspace\in\negthinspace E~\land~(w_2,w_3)\negthinspace \in\negthinspace E\Big) \rightarrow w_1\negthinspace=\negthinspace w_2$ \hfill (single-headedness)
 \end{enumerate}
-The edges in $\mathcal{G}~$can be labeled with the function of the dependent.
+The edges in $\mathcal{G}~$can be labelled with the function of the dependent.
 \end{definition}
 
-\noindent An example of a dependency graph is depicted in Figure \ref{fig:depgraph}. As the general definition of a graph is used, it is not immediately clear how  Definition \ref{def:depgraph} and Definition \ref{def:depgram} relate. To clarify: the set of vertices $V$ in $\mathcal{G}$ correspond to the lexical items, and thus the set $L$ in a dependency grammar. The edges $V$ correspond to the dependency relations $R$, while their labels must be in $C$. The function $F$ describes which functions words are allowed to have in the sentence. 
+\noindent An example of a dependency graph is depicted in Figure \ref{fig:depgraph}. As the general definition of a graph is used, it is not immediately clear how  Definition \ref{def:depgraph} and Definition \ref{def:depgram} relate. To clarify: the set of vertices $V$ in $\mathcal{G}$ correspond to the lexical items, and thus the set $L$ in a dependency grammar. The edges $V$ correspond to the dependency relations $R$, while their labels must be in $C$. The function $F$ describes which functions a word is allowed to have in a sentence. 
 
 \begin{figure}[!ht]
 \centering
@@ -401,7 +401,7 @@ My \& dog \& also \& likes \& eating \& sausage \\
 \depedge{4}{5}{xcomp}
 \depedge{5}{6}{dobj}
 \end{dependency}
-\caption{Dummy Dependency Graph, find other later}\label{fig:depgraph}
+\caption{A dependency graph of the previously considered sentence `My dog also likes eating sausage'.}\label{fig:depgraph}
 \end{figure}
 
 A condition often put on dependency graphs, is projectivity, that prescribes a linear ordering of the nodes in the tree. Projectivity simplifies parsing, as it reduces the search space, but it is often argued that it deprives dependency grammar from its most important asset \citep{covington1990dependency,debusmann2000introduction}: the elegant method for handling discontinuous constituents (see Figure \ref{fig:npdeptree}). For fixed word order languages like English, in which phrases belonging together tend to stay together, projectivity is thus a reasonable criterion, but to account for languages in which there are less restrictions on the word-order (e.g., Russian, Latin) non-projectivity is often required to provide an intuitive analysis. An example of a non-projective in an otherwise fixed word-order language (Dutch) is depicted in Figure \ref{fig:npdeptree}.
@@ -421,7 +421,7 @@ Ik \& weet \& dat \& hij \& me \& liet \& winnen\\
 \depedge{6}{7}{}
 \depedge{7}{5}{}
 \end{dependency}
-\caption{Non projective dependency graph of the Dutch sentence `Ik weet dat hij me liet winnen'.}\label{fig:npdeptree}
+\caption{A non projective dependency graph of the Dutch sentence `Ik weet dat hij me liet winnen'.}\label{fig:npdeptree}
 \end{figure}
 
 \section{Summary}
