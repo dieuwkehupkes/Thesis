@@ -1,0 +1,302 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>file_processing &mdash; Implementation  documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Implementation  documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Implementation  documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for file_processing</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Created on ... 2013</span>
+<span class="sd">@author: Dieuwke Hupkes</span>
+<span class="sd">Class for processing a sentence and alignment file together with</span>
+<span class="sd">a file with dependency parses that ....</span>
+<span class="sd">&quot;&quot;&quot;</span>
+ 
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="kn">from</span> <span class="nn">scoring</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<div class="viewcode-block" id="ProcessFiles"><a class="viewcode-back" href="../file_processing.html#file_processing.ProcessFiles">[docs]</a><span class="k">class</span> <span class="nc">ProcessFiles</span><span class="p">():</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	Brings together all functions by enabling the user</span>
+<span class="sd">	to apply functions from the other classes to files</span>
+<span class="sd">	containing alignments, sentences and</span>
+<span class="sd">	dependency parses.</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">alignmentfile</span><span class="p">,</span> <span class="n">sentencefile</span><span class="p">,</span> <span class="n">dependencyfile</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		During initialization the files are loaded for reading</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">dependency_file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">dependencyfile</span><span class="p">,</span><span class="s">&#39;r&#39;</span><span class="p">)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">sentence_file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">sentencefile</span><span class="p">,</span><span class="s">&#39;r&#39;</span><span class="p">)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">alignment_file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">alignmentfile</span><span class="p">,</span><span class="s">&#39;r&#39;</span><span class="p">)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">label_dict</span> <span class="o">=</span> <span class="p">{}</span>
+		
+<div class="viewcode-block" id="ProcessFiles.next"><a class="viewcode-back" href="../file_processing.html#file_processing.ProcessFiles.next">[docs]</a>	<span class="k">def</span> <span class="nf">next</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="n">new_alignment</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">alignment_file</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+		<span class="n">new_sentence</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sentence_file</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+		<span class="n">new_dependent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dependency_file</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+		<span class="c">#If end of file is reached, return False</span>
+		<span class="k">if</span> <span class="n">new_alignment</span> <span class="o">==</span> <span class="s">&#39;&#39;</span><span class="p">:</span>
+			<span class="k">return</span> <span class="bp">False</span>
+		<span class="n">dependency_list</span> <span class="o">=</span> <span class="p">[]</span>
+		<span class="k">while</span> <span class="n">new_dependent</span> <span class="o">!=</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span> <span class="ow">and</span> <span class="n">new_dependent</span> <span class="o">!=</span> <span class="s">&#39;&#39;</span><span class="p">:</span>
+			<span class="n">dependency_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_dependent</span><span class="p">)</span>
+			<span class="n">new_dependent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dependency_file</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+		<span class="k">return</span> <span class="n">new_alignment</span><span class="p">,</span> <span class="n">new_sentence</span><span class="p">,</span> <span class="n">dependency_list</span>
+				</div>
+<div class="viewcode-block" id="ProcessFiles.check_consistency"><a class="viewcode-back" href="../file_processing.html#file_processing.ProcessFiles.check_consistency">[docs]</a>	<span class="k">def</span> <span class="nf">check_consistency</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sentence</span><span class="p">,</span> <span class="n">dep_list</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Check whether a list with dependencies is</span>
+<span class="sd">		consistent with a sentence.</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">words</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([])</span>
+		<span class="k">if</span> <span class="n">dep_list</span> <span class="o">==</span> <span class="p">[]:</span>
+			<span class="k">return</span> <span class="bp">True</span>
+		<span class="k">for</span> <span class="n">relation</span> <span class="ow">in</span> <span class="n">dep_list</span><span class="p">:</span>
+			<span class="n">dependent</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s">&#39;(?&lt;=\, ).*(?=-[0-9]*\))&#39;</span><span class="p">,</span><span class="n">relation</span><span class="p">)</span>
+			<span class="n">words</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">dependent</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+		<span class="n">words_sentence</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">sentence</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39; &#39;</span><span class="p">))</span>
+		<span class="c">#some flexibility is allowed because of american/english spelling</span>
+		<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">words</span> <span class="o">-</span> <span class="n">words_sentence</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+			<span class="k">return</span> <span class="bp">True</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="k">return</span> <span class="bp">False</span>
+	</div>
+<div class="viewcode-block" id="ProcessFiles.spanrels"><a class="viewcode-back" href="../file_processing.html#file_processing.ProcessFiles.spanrels">[docs]</a>	<span class="k">def</span> <span class="nf">spanrels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">dependency_list</span><span class="p">):</span>
+		<span class="n">dependencies</span> <span class="o">=</span> <span class="n">Dependencies</span><span class="p">(</span><span class="n">dependency_list</span><span class="p">)</span>
+		<span class="n">relations</span> <span class="o">=</span> <span class="n">dependencies</span><span class="o">.</span><span class="n">get_spanrels</span><span class="p">()</span>
+		<span class="n">labels</span> <span class="o">=</span> <span class="n">dependencies</span><span class="o">.</span><span class="n">labels</span><span class="p">()</span>
+		<span class="k">return</span> <span class="n">relations</span><span class="p">,</span> <span class="n">labels</span>
+		</div>
+<div class="viewcode-block" id="ProcessFiles.comp_spanrels"><a class="viewcode-back" href="../file_processing.html#file_processing.ProcessFiles.comp_spanrels">[docs]</a>	<span class="k">def</span> <span class="nf">comp_spanrels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">dependency_list</span><span class="p">):</span>
+		<span class="n">dependencies</span> <span class="o">=</span> <span class="n">Dependencies</span><span class="p">(</span><span class="n">dependency_list</span><span class="p">)</span>
+		<span class="n">relations</span> <span class="o">=</span> <span class="n">dependencies</span><span class="o">.</span><span class="n">get_comp_spanrels</span><span class="p">()</span>
+		<span class="n">labels</span> <span class="o">=</span> <span class="n">dependencies</span><span class="o">.</span><span class="n">labels</span><span class="p">()</span>
+		<span class="k">return</span> <span class="n">relations</span><span class="p">,</span> <span class="n">labels</span>
+	</div>
+<div class="viewcode-block" id="ProcessFiles.score"><a class="viewcode-back" href="../file_processing.html#file_processing.ProcessFiles.score">[docs]</a>	<span class="k">def</span> <span class="nf">score</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new</span><span class="p">,</span> <span class="n">metric</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">treetype</span> <span class="o">=</span> <span class="s">&#39;hats&#39;</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Load with number of metric used to score and the</span>
+<span class="sd">		type of trees to be considered. Metric 1 considers</span>
+<span class="sd">		all relations in the dependency tree, metric 2 only </span>
+<span class="sd">		the ones displaying compositionality. &#39;all&#39; considers</span>
+<span class="sd">		all trees over the alignments &#39;hats&#39; only the HATs.</span>
+<span class="sd">		@param new: a list [alignment, sentence, list with dependencies]</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="k">if</span> <span class="n">metric</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+			<span class="n">relations</span><span class="p">,</span><span class="n">labels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">spanrels</span><span class="p">(</span><span class="n">new</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+		<span class="k">elif</span> <span class="n">metric</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+			<span class="n">relations</span><span class="p">,</span><span class="n">labels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">comp_spanrels</span><span class="p">(</span><span class="n">new</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Metric does not exist&quot;</span><span class="p">)</span>
+		<span class="c"># Create a scoring object and parse the sentence</span>
+		<span class="n">scoring</span> <span class="o">=</span> <span class="n">Scoring</span><span class="p">(</span><span class="n">new</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">new</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">relations</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
+		<span class="k">if</span> <span class="n">treetype</span> <span class="o">==</span> <span class="s">&#39;all&#39;</span><span class="p">:</span>
+			<span class="n">productions</span> <span class="o">=</span> <span class="n">scoring</span><span class="o">.</span><span class="n">alignment</span><span class="o">.</span><span class="n">rules</span><span class="p">(</span><span class="n">relations</span><span class="p">,</span><span class="n">labels</span><span class="p">)</span>
+		<span class="k">elif</span> <span class="n">treetype</span> <span class="o">==</span> <span class="s">&#39;hats&#39;</span><span class="p">:</span>
+			<span class="n">productions</span> <span class="o">=</span> <span class="n">scoring</span><span class="o">.</span><span class="n">alignment</span><span class="o">.</span><span class="n">hat_rules</span><span class="p">(</span><span class="n">relations</span><span class="p">,</span><span class="n">labels</span><span class="p">)</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="k">raise</span> <span class="ne">NameError</span><span class="p">(</span><span class="s">&quot;Type of tree does not exist&quot;</span><span class="p">)</span>
+		<span class="n">grammar</span> <span class="o">=</span> <span class="n">scoring</span><span class="o">.</span><span class="n">grammar</span><span class="p">(</span><span class="n">productions</span><span class="p">)</span>
+		<span class="n">parse</span> <span class="o">=</span> <span class="n">scoring</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">grammar</span><span class="p">)</span>
+		<span class="n">score</span> <span class="o">=</span> <span class="n">scoring</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">parse</span><span class="p">)</span>
+		<span class="k">return</span> <span class="n">parse</span><span class="p">,</span> <span class="n">score</span>
+	</div>
+<div class="viewcode-block" id="ProcessFiles.consistent_labels"><a class="viewcode-back" href="../file_processing.html#file_processing.ProcessFiles.consistent_labels">[docs]</a>	<span class="k">def</span> <span class="nf">consistent_labels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">alignment</span><span class="p">,</span> <span class="n">sentence</span><span class="p">,</span> <span class="n">labels</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Find the percentage of inputted labels that is</span>
+<span class="sd">		consistent with the alignment without computing</span>
+<span class="sd">		the best parse tree.</span>
+<span class="sd">		Returns a dictionary with labels as keys and as</span>
+<span class="sd">		value a pair with how often the label occured in</span>
+<span class="sd">		the dependency parse and how often it was</span>
+<span class="sd">		consistent with the alignment</span>
+<span class="sd">		@param input: a dictionary that assigning labels</span>
+<span class="sd">		to spans</span>
+<span class="sd">		Gives an upperbound for the score of the alignment</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">label_dict</span> <span class="o">=</span> <span class="p">{}</span>
+		<span class="n">this_alignment</span> <span class="o">=</span> <span class="n">Alignment</span><span class="p">(</span><span class="n">alignment</span><span class="p">,</span><span class="n">sentence</span><span class="p">)</span>
+		<span class="n">spans</span> <span class="o">=</span> <span class="n">this_alignment</span><span class="o">.</span><span class="n">spans</span><span class="p">()</span>
+		<span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">labels</span><span class="p">:</span>
+			<span class="n">consistent</span> <span class="o">=</span> <span class="mi">0</span>
+			<span class="k">if</span> <span class="n">labels</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="ow">in</span> <span class="n">spans</span><span class="p">:</span>
+				<span class="n">consistent</span> <span class="o">=</span> <span class="mi">1</span>
+			<span class="n">current</span> <span class="o">=</span> <span class="n">label_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">label</span><span class="p">,[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+			<span class="n">label_dict</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">current</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">current</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">consistent</span><span class="p">)</span>
+		<span class="k">return</span> <span class="n">label_dict</span>
+		
+		</div>
+<div class="viewcode-block" id="ProcessFiles.score_all"><a class="viewcode-back" href="../file_processing.html#file_processing.ProcessFiles.score_all">[docs]</a>	<span class="k">def</span> <span class="nf">score_all</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">treefile</span><span class="p">,</span> <span class="n">scorefile</span><span class="p">,</span> <span class="n">max_length</span> <span class="o">=</span> <span class="mi">40</span><span class="p">,</span> <span class="n">metric</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">treetype</span> <span class="o">=</span> <span class="s">&#39;hats&#39;</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Score all input sentences and write scores and</span>
+<span class="sd">		trees to two different files. </span>
+<span class="sd">		A maximum sentence length can be specified</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">reset_pointer</span><span class="p">()</span>
+		<span class="n">label_dictionary</span> <span class="o">=</span> <span class="p">{}</span>
+		<span class="n">parsed_sentences</span> <span class="o">=</span> <span class="mi">0</span>
+		<span class="n">sentence_nr</span> <span class="o">=</span> <span class="mi">1</span>
+		<span class="n">ts</span> <span class="o">=</span> <span class="mi">0</span>
+		<span class="n">total_score</span> <span class="o">=</span> <span class="p">{</span><span class="mi">10</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span> <span class="mi">20</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span> <span class="mi">40</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">:</span><span class="mi">0</span><span class="p">}</span>
+		<span class="n">sentences</span> <span class="o">=</span> <span class="p">{</span><span class="mi">10</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span> <span class="mi">20</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span> <span class="mi">40</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">:</span><span class="mi">0</span><span class="p">}</span>
+		<span class="n">trees</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">treefile</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>
+		<span class="n">results</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">scorefile</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>
+		<span class="n">new</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+		<span class="k">while</span> <span class="n">new</span><span class="p">:</span>
+			<span class="c">#check if sentence and dependency list are consistent</span>
+			<span class="k">print</span> <span class="n">sentence_nr</span>
+			<span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_consistency</span><span class="p">(</span><span class="n">new</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">new</span><span class="p">[</span><span class="mi">2</span><span class="p">]):</span>
+				<span class="k">print</span> <span class="s">&quot;Warning: dependencies and alignment might be inconsistent&quot;</span>			
+			<span class="n">sentence_length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">new</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">())</span>
+			<span class="k">if</span> <span class="n">sentence_length</span> <span class="o">&lt;</span> <span class="n">max_length</span><span class="p">:</span>
+				<span class="n">tree</span><span class="p">,</span> <span class="n">score</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">new</span><span class="p">,</span> <span class="n">metric</span><span class="p">,</span> <span class="n">treetype</span><span class="p">)</span>
+				<span class="n">trees</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">tree</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n\n</span><span class="s">&#39;</span><span class="p">)</span>
+				<span class="n">results</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;s &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">sentence_nr</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\t\t</span><span class="s">length: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">sentence_length</span><span class="p">)</span>
+				 <span class="o">+</span> <span class="s">&#39;</span><span class="se">\t\t</span><span class="s">score: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">score</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+				<span class="c">#update total scores</span>
+				<span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">total_score</span><span class="p">:</span>
+					<span class="k">if</span> <span class="n">sentence_length</span> <span class="o">&lt;</span> <span class="n">key</span><span class="p">:</span>
+						<span class="n">total_score</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">+=</span> <span class="n">score</span>
+						<span class="n">sentences</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span> 
+				<span class="n">ts</span> <span class="o">+=</span> <span class="n">score</span>
+				<span class="n">parsed_sentences</span> <span class="o">+=</span> <span class="mi">1</span>
+			<span class="k">else</span><span class="p">:</span>
+				<span class="n">results</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;No result, sentence longer than &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">max_length</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot; words</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+			<span class="n">new</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+			<span class="n">sentence_nr</span> <span class="o">+=</span> <span class="mi">1</span>
+		<span class="c"># Write results to file</span>
+		<span class="n">results</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n\n</span><span class="s">SCORES</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+		<span class="n">results</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">length</span><span class="se">\t\t\t</span><span class="s"> nr of sentences </span><span class="se">\t\t</span><span class="s">score&quot;</span><span class="p">)</span>
+		<span class="n">results</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">-----------------------------------------------&quot;</span><span class="p">)</span>
+		<span class="n">results</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s"> &lt;10</span><span class="se">\t\t\t</span><span class="s">&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">sentences</span><span class="p">[</span><span class="mi">10</span><span class="p">])</span><span class="o">+</span><span class="s">&#39;</span><span class="se">\t\t\t\t\t\t</span><span class="s">&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">total_score</span><span class="p">[</span><span class="mi">10</span><span class="p">]</span><span class="o">/</span><span class="n">sentences</span><span class="p">[</span><span class="mi">10</span><span class="p">]))</span>
+		<span class="n">results</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s"> &lt;20</span><span class="se">\t\t\t</span><span class="s">&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">sentences</span><span class="p">[</span><span class="mi">20</span><span class="p">])</span><span class="o">+</span><span class="s">&#39;</span><span class="se">\t\t\t\t\t\t</span><span class="s">&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">total_score</span><span class="p">[</span><span class="mi">20</span><span class="p">]</span><span class="o">/</span><span class="n">sentences</span><span class="p">[</span><span class="mi">20</span><span class="p">]))</span>
+		<span class="n">results</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s"> &lt;40</span><span class="se">\t\t\t</span><span class="s">&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">sentences</span><span class="p">[</span><span class="mi">40</span><span class="p">])</span><span class="o">+</span><span class="s">&#39;</span><span class="se">\t\t\t\t\t\t</span><span class="s">&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">total_score</span><span class="p">[</span><span class="mi">40</span><span class="p">]</span><span class="o">/</span><span class="n">sentences</span><span class="p">[</span><span class="mi">40</span><span class="p">]))</span>
+		<span class="n">results</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s"> all</span><span class="se">\t\t\t</span><span class="s">&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">sentences</span><span class="p">[</span><span class="mi">100</span><span class="p">])</span><span class="o">+</span><span class="s">&#39;</span><span class="se">\t\t\t\t\t\t</span><span class="s">&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">total_score</span><span class="p">[</span><span class="mi">100</span><span class="p">]</span><span class="o">/</span><span class="n">sentences</span><span class="p">[</span><span class="mi">100</span><span class="p">])</span><span class="o">+</span><span class="s">&quot;</span><span class="se">\n\n</span><span class="s">&quot;</span><span class="p">)</span>
+		<span class="c">#close files</span>
+		<span class="n">trees</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+		<span class="n">results</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+	</div>
+<div class="viewcode-block" id="ProcessFiles.reset_pointer"><a class="viewcode-back" href="../file_processing.html#file_processing.ProcessFiles.reset_pointer">[docs]</a>	<span class="k">def</span> <span class="nf">reset_pointer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">dependency_file</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">sentence_file</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">alignment_file</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+			</div>
+<div class="viewcode-block" id="ProcessFiles.relation_count"><a class="viewcode-back" href="../file_processing.html#file_processing.ProcessFiles.relation_count">[docs]</a>	<span class="k">def</span> <span class="nf">relation_count</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_length</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Counts occurences of all relations</span>
+<span class="sd">		sentences shorter than max_length.</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">parsed_sentences</span> <span class="o">=</span> <span class="mi">0</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">reset_pointer</span><span class="p">()</span>
+		<span class="n">relations</span> <span class="o">=</span> <span class="p">{}</span>
+		<span class="n">new</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+		<span class="k">while</span> <span class="n">new</span><span class="p">:</span>
+			<span class="n">sentence_length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">new</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">())</span>
+			<span class="k">if</span> <span class="n">sentence_length</span> <span class="o">&lt;</span> <span class="n">max_length</span><span class="p">:</span>
+				<span class="n">dependencies</span> <span class="o">=</span> <span class="n">Dependencies</span><span class="p">(</span><span class="n">new</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+				<span class="n">dependencies</span><span class="o">.</span><span class="n">update_labels</span><span class="p">(</span><span class="n">relations</span><span class="p">)</span>
+			<span class="n">new</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+			<span class="n">parsed_sentences</span> <span class="o">+=</span> <span class="mi">1</span>
+		<span class="k">return</span> <span class="n">relations</span>
+		</div>
+<div class="viewcode-block" id="ProcessFiles.close_all"><a class="viewcode-back" href="../file_processing.html#file_processing.ProcessFiles.close_all">[docs]</a>	<span class="k">def</span> <span class="nf">close_all</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">dependency_file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">sentence_file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">alignment_file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+	</div>
+<div class="viewcode-block" id="ProcessFiles.print_dict"><a class="viewcode-back" href="../file_processing.html#file_processing.ProcessFiles.print_dict">[docs]</a>	<span class="k">def</span> <span class="nf">print_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dictionary</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Print the contents of a dictionary</span>
+<span class="sd">		to a file.</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>
+		<span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">dictionary</span><span class="p">:</span>
+			<span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">key</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\t\t</span><span class="s">&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">dictionary</span><span class="p">[</span><span class="n">key</span><span class="p">])</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+		<span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Implementation  documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Dieuwke Hupkes.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,7 @@
+parse Module
+============
+
+.. automodule:: parse
+    :members:
+    :undoc-members:
+    :show-inheritance:

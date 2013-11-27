@@ -1,0 +1,448 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>alignments &mdash; Implementation  documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Implementation  documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Implementation  documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for alignments</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Module Description</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">graph_alignment</span> <span class="kn">import</span> <span class="o">*</span>
+
+<div class="viewcode-block" id="Alignments"><a class="viewcode-back" href="../alignments.html#alignments.Alignments">[docs]</a><span class="k">class</span> <span class="nc">Alignments</span><span class="p">:</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	A class that represents alignments. A string that represents</span>
+<span class="sd">	an alignment in the usual form is passed, during initialization</span>
+<span class="sd">	the corresponding set representation is generated. Methods are</span>
+<span class="sd">	provided for computing all allowed spans, and generating a CFG</span>
+<span class="sd">	that uniquely generates all hierarchical alignment trees*.</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">alignment</span><span class="p">,</span> <span class="n">sentence</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Represent the alignment as a set. Input is a</span>
+<span class="sd">		string representation of the alignment, like &#39;0-1 2-1 ...&#39;</span>
+<span class="sd">		Counting starts from 0</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">lengthS</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sentence</span><span class="o">.</span><span class="n">split</span><span class="p">())</span>	<span class="c">#maybe use tokenize for this</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">alignment</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_set</span><span class="p">(</span><span class="n">alignment</span><span class="p">)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">sentence</span> <span class="o">=</span> <span class="n">sentence</span>
+		<span class="c">#make check for consistency sentence and alignment</span>
+
+<div class="viewcode-block" id="Alignments.make_set"><a class="viewcode-back" href="../alignments.html#alignments.Alignments.make_set">[docs]</a>	<span class="k">def</span> <span class="nf">make_set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">alignment</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Return a set with all alignment links,</span>
+<span class="sd">		and keep track of the length of source</span>
+<span class="sd">		and target language</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">links</span> <span class="o">=</span> <span class="n">alignment</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+		<span class="n">pos</span> <span class="o">=</span> <span class="mi">0</span>
+		<span class="n">lengthT</span> <span class="o">=</span> <span class="mi">0</span>
+		<span class="n">lengthS</span> <span class="o">=</span> <span class="mi">0</span>
+		<span class="k">for</span> <span class="n">link</span> <span class="ow">in</span> <span class="n">links</span><span class="p">:</span>
+			<span class="n">link_list</span> <span class="o">=</span> <span class="n">link</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;-&#39;</span><span class="p">)</span>
+			<span class="n">source_pos</span><span class="p">,</span> <span class="n">target_pos</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">link_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="n">link_list</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+			<span class="n">links</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">source_pos</span><span class="p">,</span><span class="n">target_pos</span><span class="p">)</span>
+			<span class="k">if</span> <span class="n">target_pos</span> <span class="o">&gt;</span> <span class="n">lengthT</span><span class="p">:</span>
+				<span class="n">lengthT</span> <span class="o">=</span> <span class="n">target_pos</span>
+			<span class="k">if</span> <span class="n">source_pos</span> <span class="o">&gt;</span> <span class="n">lengthS</span><span class="p">:</span>
+				<span class="n">lengthS</span> <span class="o">=</span> <span class="n">source_pos</span>
+			<span class="n">pos</span> <span class="o">+=</span> <span class="mi">1</span>
+		<span class="n">lengthS</span> <span class="o">=</span> <span class="n">lengthS</span> <span class="o">+</span> <span class="mi">1</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">lengthT</span> <span class="o">=</span> <span class="n">lengthT</span><span class="o">+</span><span class="mi">1</span>
+		<span class="k">if</span> <span class="n">lengthS</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">lengthS</span><span class="p">:</span>
+			<span class="k">print</span> <span class="s">&quot;Alignments has more words than sentence, skipped&quot;</span>
+<span class="c">#			raise ValueError(&quot;Alignments has more words than sentence&quot;)</span>
+		<span class="k">elif</span> <span class="n">lengthS</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">lengthS</span><span class="p">:</span>
+			<span class="k">print</span> <span class="s">&quot;Caution: sentence does not have the same length as alignment, are there&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lengthS</span> <span class="o">-</span> <span class="n">lengthS</span><span class="p">,</span> <span class="s">&quot;unaligned words at the end of the sentence?&quot;</span>
+		<span class="k">return</span> <span class="nb">set</span><span class="p">(</span><span class="n">links</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Alignments.spans"><a class="viewcode-back" href="../alignments.html#alignments.Alignments.spans">[docs]</a>	<span class="k">def</span> <span class="nf">spans</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Compute phrase pairs as. Could be more efficient</span>
+<span class="sd">		by making use of previously computed values for</span>
+<span class="sd">		functions. Basic idea taken from Chang &amp; Gildea.</span>
+<span class="sd">		Returns a generator with valid spans and partial</span>
+<span class="sd">		sets.</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">phrase_pairs</span> <span class="o">=</span> <span class="p">[]</span>
+		<span class="n">F_links</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_links_fromF</span><span class="p">()</span>
+		<span class="n">E_links</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_links_fromE</span><span class="p">()</span>
+		<span class="c">#Use a shift reduce algorithm to find phrase pairs</span>
+		<span class="n">loopList</span> <span class="o">=</span> <span class="p">[]</span>
+		<span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">lengthS</span><span class="p">):</span>
+			<span class="n">loopList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+			<span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">loopList</span><span class="p">):</span>
+				<span class="n">u_xy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_maxspan</span><span class="p">((</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">))</span>
+				<span class="n">l_xy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_minspan</span><span class="p">((</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">))</span>
+				<span class="n">f_xy</span> <span class="o">=</span> <span class="p">(</span><span class="n">F_links</span><span class="p">[</span><span class="n">u_xy</span><span class="p">]</span> <span class="o">-</span> <span class="n">F_links</span><span class="p">[</span><span class="n">l_xy</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="p">(</span><span class="n">E_links</span><span class="p">[</span><span class="n">y</span><span class="p">]</span> <span class="o">-</span> <span class="n">E_links</span><span class="p">[</span><span class="n">x</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+				<span class="k">if</span> <span class="n">f_xy</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+					<span class="k">yield</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+					<span class="c">#for number in xrange(x+1,y):</span>
+					<span class="c">#	if number in loopList:</span>
+					<span class="c">#		loopList.remove(number)</span>
+				<span class="k">else</span><span class="p">:</span>
+					<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">partial_set</span><span class="p">((</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">),</span><span class="n">E_links</span><span class="p">):</span>
+						<span class="k">yield</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Alignments.partial_set"><a class="viewcode-back" href="../alignments.html#alignments.Alignments.partial_set">[docs]</a>	<span class="k">def</span> <span class="nf">partial_set</span><span class="p">(</span><span class="bp">self</span><span class="p">,(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">),</span><span class="n">E_links</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Compute if [x,y] is a single partial set, which is true iff:</span>
+<span class="sd">		* [x,y] is not a valid span;</span>
+<span class="sd">		* there is at most one aligned word in [x,y]</span>
+<span class="sd">		This function will not check if (x,y) is a valid span, as the function</span>
+<span class="sd">		is only called from compute_spans if (x,y) is not a valid span.</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">nr_aligned</span> <span class="o">=</span> <span class="mi">0</span>
+		<span class="k">for</span> <span class="n">position</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+			<span class="k">if</span> <span class="n">E_links</span><span class="p">[</span><span class="n">position</span><span class="p">]</span> <span class="o">-</span> <span class="n">E_links</span><span class="p">[</span><span class="n">position</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+				<span class="n">nr_aligned</span> <span class="o">+=</span> <span class="mi">1</span>
+		<span class="k">if</span> <span class="n">nr_aligned</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+			<span class="k">return</span> <span class="bp">True</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="k">return</span> <span class="bp">False</span>
+			
+</div>
+<div class="viewcode-block" id="Alignments._links_fromE"><a class="viewcode-back" href="../alignments.html#alignments.Alignments._links_fromE">[docs]</a>	<span class="k">def</span> <span class="nf">_links_fromE</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Precompute values for the function</span>
+<span class="sd">		E_c(j) = |{(i&#39;,j&#39;)\in A | j&#39; =&lt; j}|</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">E_links</span> <span class="o">=</span> <span class="p">{}</span>
+		<span class="n">E_links</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">E_links</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+		<span class="n">E_links</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">([(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">alignment</span> <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">])</span>
+		<span class="k">for</span> <span class="n">position</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">lengthS</span><span class="p">):</span>
+			<span class="n">links_from_position</span> <span class="o">=</span> <span class="nb">len</span><span class="p">([(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">alignment</span> <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="n">position</span><span class="p">])</span>
+			<span class="n">E_links</span><span class="p">[</span><span class="n">position</span><span class="p">]</span> <span class="o">=</span> <span class="n">E_links</span><span class="p">[</span><span class="n">position</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">links_from_position</span>
+		<span class="k">return</span> <span class="n">E_links</span>
+</div>
+<div class="viewcode-block" id="Alignments._links_fromF"><a class="viewcode-back" href="../alignments.html#alignments.Alignments._links_fromF">[docs]</a>	<span class="k">def</span> <span class="nf">_links_fromF</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Precompute values for the function</span>
+<span class="sd">		F_c(j) = |{(i&#39;,j&#39;)\in A | i&#39; =&lt; i}|</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">F_links</span> <span class="o">=</span> <span class="p">{}</span>
+		<span class="n">F_links</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">F_links</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+		<span class="n">F_links</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">([(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">alignment</span> <span class="k">if</span> <span class="n">j</span> <span class="o">==</span> <span class="mi">0</span><span class="p">])</span>
+		<span class="k">for</span> <span class="n">position</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">lengthT</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+			<span class="n">links_from_position</span> <span class="o">=</span> <span class="nb">len</span><span class="p">([(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">alignment</span> <span class="k">if</span> <span class="n">j</span> <span class="o">==</span> <span class="n">position</span><span class="p">])</span>
+			<span class="n">F_links</span><span class="p">[</span><span class="n">position</span><span class="p">]</span> <span class="o">=</span> <span class="n">F_links</span><span class="p">[</span><span class="n">position</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">links_from_position</span>
+		<span class="k">return</span> <span class="n">F_links</span>
+</div>
+<div class="viewcode-block" id="Alignments._minspan"><a class="viewcode-back" href="../alignments.html#alignments.Alignments._minspan">[docs]</a>	<span class="k">def</span> <span class="nf">_minspan</span><span class="p">(</span><span class="bp">self</span><span class="p">,(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Returns the minimum position on the target side</span>
+<span class="sd">		that are linked to positions [x,y]</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">alignment_links</span> <span class="o">=</span> <span class="p">[</span><span class="n">j</span> <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">alignment</span> <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">&gt;=</span> <span class="n">x</span> <span class="ow">and</span>  <span class="n">i</span> <span class="o">&lt;=</span> <span class="n">y</span><span class="p">)]</span>
+		<span class="k">if</span> <span class="n">alignment_links</span> <span class="o">==</span> <span class="p">[]:</span>
+			<span class="k">return</span> <span class="o">-</span><span class="mi">1</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="k">return</span> <span class="nb">min</span><span class="p">(</span><span class="n">alignment_links</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Alignments._maxspan"><a class="viewcode-back" href="../alignments.html#alignments.Alignments._maxspan">[docs]</a>	<span class="k">def</span> <span class="nf">_maxspan</span><span class="p">(</span><span class="bp">self</span><span class="p">,(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Returns the maximum position on the target side</span>
+<span class="sd">		that are linked to positions [x,y]</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">alignment_links</span> <span class="o">=</span> <span class="p">[</span><span class="n">j</span> <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">alignment</span> <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">&gt;=</span> <span class="n">x</span> <span class="ow">and</span>  <span class="n">i</span> <span class="o">&lt;=</span> <span class="n">y</span><span class="p">)]</span>
+		<span class="k">if</span> <span class="n">alignment_links</span> <span class="o">==</span> <span class="p">[]:</span>
+			<span class="k">return</span> <span class="o">-</span><span class="mi">1</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="n">alignment_links</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="Alignments.rules"><a class="viewcode-back" href="../alignments.html#alignments.Alignments.rules">[docs]</a>	<span class="k">def</span> <span class="nf">rules</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">span_relations</span> <span class="o">=</span> <span class="p">{},</span> <span class="n">labels</span> <span class="o">=</span> <span class="p">{}):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Creates a graph of all valid spans, and</span>
+<span class="sd">		calculates all paths between span endpoints.</span>
+
+<span class="sd">		A generator is returned for all the valid</span>
+<span class="sd">		rules in the permutation.</span>
+<span class="sd">		</span>
+<span class="sd">		If span_relations are specified, the rules</span>
+<span class="sd">		will be assigned probabilities according to</span>
+<span class="sd">		them. Otherwise, the rules will be asssigned</span>
+<span class="sd">		probabilities according to how many nodes</span>
+<span class="sd">		can be labelled according to the labels</span>
+<span class="sd">		provided.</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="c"># Create nodes for all positions between words</span>
+		<span class="n">nodes</span> <span class="o">=</span> <span class="p">[</span><span class="n">Node</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lengthS</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)]</span>
+		<span class="n">spans</span> <span class="o">=</span> <span class="p">[]</span>
+		
+		<span class="c"># Construct the graph by creating the edges</span>
+	<span class="c">#	print &#39;finding spans&#39;</span>
+		<span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">spans</span><span class="p">():</span>
+			<span class="n">nodes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">link_to</span><span class="p">(</span><span class="n">nodes</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+			<span class="n">spans</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">))</span>
+	<span class="c">#	print &#39;finding rules&#39;</span>
+		<span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)</span> <span class="ow">in</span> <span class="n">spans</span><span class="p">:</span>
+			<span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">paths_to</span><span class="p">(</span><span class="n">nodes</span><span class="p">[</span><span class="n">j</span><span class="p">]):</span>
+				<span class="k">if</span> <span class="ow">not</span> <span class="n">path</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+					<span class="c"># No rules possible, or path points to itself</span>
+					<span class="k">continue</span>
+				<span class="c"># set probability, if span_relations are specified</span>
+				<span class="c"># according to how many relations are made true,</span>
+				<span class="c"># otherwise, according to how many nodes can be</span>
+				<span class="c"># labelled </span>
+				<span class="n">rule</span> <span class="o">=</span> <span class="n">Rule</span><span class="p">((</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">),</span> <span class="n">path</span><span class="p">,</span><span class="n">span_relations</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
+				<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">span_relations</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+					<span class="n">prob</span> <span class="o">=</span> <span class="n">rule</span><span class="o">.</span><span class="n">probability_spanrels</span><span class="p">()</span>
+				<span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+					<span class="n">prob</span> <span class="o">=</span> <span class="n">rule</span><span class="o">.</span><span class="n">probability_labels</span><span class="p">()</span>
+				<span class="k">else</span><span class="p">:</span>
+					<span class="n">rule</span><span class="o">.</span><span class="n">probability</span> <span class="o">=</span> <span class="mi">1</span>
+				<span class="k">yield</span> <span class="n">rule</span>
+
+</div>
+<div class="viewcode-block" id="Alignments.hat_rules"><a class="viewcode-back" href="../alignments.html#alignments.Alignments.hat_rules">[docs]</a>	<span class="k">def</span> <span class="nf">hat_rules</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">span_relations</span> <span class="o">=</span> <span class="p">{},</span> <span class="n">labels</span> <span class="o">=</span> <span class="p">{}):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		A generator is returned for all the valid HAT-rules</span>
+<span class="sd">		If span_relations are specified, the rules will be </span>
+<span class="sd">		assigned probabilities according to	them. </span>
+<span class="sd">		Otherwise, the rules will be asssigned probabilities</span>
+<span class="sd">		according to how many nodes	can be labelled according</span>
+<span class="sd">		to the labels provided.</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="c"># Create nodes for all positions between words</span>
+		<span class="n">nodes</span> <span class="o">=</span> <span class="p">[</span><span class="n">Node</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lengthS</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)]</span>
+		<span class="n">spans</span> <span class="o">=</span> <span class="p">[]</span>
+		
+		<span class="c"># Construct the graph by creating the edges</span>
+		<span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">spans</span><span class="p">():</span>
+			<span class="n">nodes</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">link_to</span><span class="p">(</span><span class="n">nodes</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+			<span class="n">spans</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">))</span>
+		<span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)</span> <span class="ow">in</span> <span class="n">spans</span><span class="p">:</span>
+<span class="c">#			print &quot;find spans for (&quot;, i, j, &quot;)&quot;</span>
+			<span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">shortest_paths_to</span><span class="p">(</span><span class="n">nodes</span><span class="p">[</span><span class="n">j</span><span class="p">]):</span>
+<span class="c">#				print path</span>
+				<span class="k">if</span> <span class="ow">not</span> <span class="n">path</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+					<span class="c"># No rule possible, or path points to itself</span>
+					<span class="k">continue</span>
+				<span class="n">rule</span> <span class="o">=</span> <span class="n">Rule</span><span class="p">((</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">),</span><span class="n">path</span><span class="p">,</span><span class="n">span_relations</span><span class="p">,</span><span class="n">labels</span><span class="p">)</span>
+				<span class="c"># set probability, if span_relations are specified</span>
+				<span class="c"># according to how many relations are made true,</span>
+				<span class="c"># otherwise, according to how many nodes can be</span>
+				<span class="c"># labelled </span>
+				<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">span_relations</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+					<span class="n">prob</span> <span class="o">=</span> <span class="n">rule</span><span class="o">.</span><span class="n">probability_spanrels</span><span class="p">()</span>
+				<span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+					<span class="n">prob</span> <span class="o">=</span> <span class="n">rule</span><span class="o">.</span><span class="n">probability_labels</span><span class="p">()</span>
+				<span class="k">else</span><span class="p">:</span>
+					<span class="n">rule</span><span class="o">.</span><span class="n">probability</span> <span class="o">=</span> <span class="mi">1</span>
+				<span class="k">yield</span> <span class="n">rule</span>
+	
+</div>
+<div class="viewcode-block" id="Alignments.lexrules"><a class="viewcode-back" href="../alignments.html#alignments.Alignments.lexrules">[docs]</a>	<span class="k">def</span> <span class="nf">lexrules</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="p">{}):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Returns an iterator with the terminal rules</span>
+<span class="sd">		of the grammar (i.e. that tells you the span</span>
+<span class="sd">		corresponding to a word)</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="kn">from</span> <span class="nn">nltk</span> <span class="kn">import</span> <span class="n">tokenize</span>
+		<span class="n">sent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sentence</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>	<span class="c">#maybe use the tokenize function for this</span>
+		<span class="n">length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sent</span><span class="p">)</span>
+		<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">sent</span><span class="p">)):</span>
+			<span class="n">lhs_string</span> <span class="o">=</span> <span class="n">labels</span><span class="o">.</span><span class="n">get</span><span class="p">((</span><span class="n">i</span><span class="p">,</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;-&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
+			<span class="n">lhs</span> <span class="o">=</span> <span class="n">Nonterminal</span><span class="p">(</span><span class="n">lhs_string</span><span class="p">)</span>
+			<span class="n">rhs</span> <span class="o">=</span> <span class="p">[</span><span class="n">sent</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>
+			<span class="n">probability</span> <span class="o">=</span> <span class="mf">1.0</span>
+			<span class="k">yield</span> <span class="n">WeightedProduction</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">rhs</span><span class="p">,</span> <span class="n">prob</span><span class="o">=</span><span class="n">probability</span><span class="p">)</span>
+
+</div></div>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Testing functions for different kinds of alignments.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="test_rules"><a class="viewcode-back" href="../alignments.html#alignments.test_rules">[docs]</a><span class="k">def</span> <span class="nf">test_rules</span><span class="p">():</span>
+	<span class="n">alignment</span> <span class="o">=</span> <span class="s">&#39;0-0 1-1 2-2 2-3 3-5 4-4&#39;</span>
+	<span class="n">sentence</span> <span class="o">=</span> <span class="s">&#39;My dog likes eating sausages&#39;</span>
+	<span class="n">a1</span> <span class="o">=</span> <span class="n">Alignments</span><span class="p">(</span><span class="n">alignment</span><span class="p">,</span> <span class="n">sentence</span><span class="p">)</span>
+<span class="c">#	productions = a1.list_productions([])</span>
+	<span class="n">therules</span> <span class="o">=</span> <span class="p">[]</span>
+	<span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="n">a1</span><span class="o">.</span><span class="n">rules</span><span class="p">([]):</span>
+		<span class="n">therules</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">rule</span><span class="p">))</span>
+	<span class="n">rules_man</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;0-5 -&gt; 0-1 1-5&#39;</span><span class="p">,</span><span class="s">&#39;0-5 -&gt; 0-2 2-5&#39;</span><span class="p">,</span> <span class="s">&#39;0-5 -&gt; 0-3 3-5&#39;</span><span class="p">,</span> <span class="s">&#39;0-5 -&gt; 0-1 1-2 2-5&#39;</span><span class="p">,</span> <span class="s">&#39;0-5 -&gt; 0-1 1-3 3-5&#39;</span><span class="p">,</span> <span class="s">&#39;0-5 -&gt; 0-2 2-3 3-5&#39;</span><span class="p">,</span> <span class="s">&#39;0-5 -&gt; 0-3 3-4 4-5&#39;</span><span class="p">,</span> <span class="s">&#39;0-5 -&gt; 0-1 1-2 2-3 3-5&#39;</span><span class="p">,</span> <span class="s">&#39;0-5 -&gt; 0-1 1-3 3-4 4-5&#39;</span><span class="p">,</span> <span class="s">&#39;0-5 -&gt; 0-2 2-3 3-4 4-5&#39;</span><span class="p">,</span> <span class="s">&#39;0-5 -&gt; 0-1 1-2 2-3 3-4 4-5&#39;</span><span class="p">,</span> <span class="s">&#39;1-5 -&gt; 1-2 2-5&#39;</span><span class="p">,</span> <span class="s">&#39;1-5 -&gt; 1-3 3-5&#39;</span><span class="p">,</span> <span class="s">&#39;1-5 -&gt; 1-2 2-3 3-5&#39;</span><span class="p">,</span> <span class="s">&#39;1-5 -&gt; 1-3 3-4 4-5&#39;</span><span class="p">,</span> <span class="s">&#39;1-5 -&gt; 1-2 2-3 3-4 4-5&#39;</span><span class="p">,</span> <span class="s">&#39;2-5 -&gt; 2-3 3-5&#39;</span><span class="p">,</span> <span class="s">&#39;2-5 -&gt; 2-3 3-4 4-5&#39;</span><span class="p">,</span> <span class="s">&#39;0-3 -&gt; 0-1 1-3&#39;</span><span class="p">,</span> <span class="s">&#39;0-3 -&gt; 0-2 2-3&#39;</span><span class="p">,</span> <span class="s">&#39;0-3 -&gt; 0-1 1-2 2-3&#39;</span><span class="p">,</span> <span class="s">&#39;0-2 -&gt; 0-1 1-2&#39;</span><span class="p">,</span> <span class="s">&#39;1-3 -&gt; 1-2 2-3&#39;</span><span class="p">,</span> <span class="s">&#39;3-5 -&gt; 3-4 4-5&#39;</span><span class="p">]</span>
+	<span class="k">return</span> <span class="nb">set</span><span class="p">(</span><span class="n">rules_man</span><span class="p">)</span> <span class="o">==</span> <span class="nb">set</span><span class="p">(</span><span class="n">therules</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="test_hatrules"><a class="viewcode-back" href="../alignments.html#alignments.test_hatrules">[docs]</a><span class="k">def</span> <span class="nf">test_hatrules</span><span class="p">():</span>
+	<span class="n">alignment</span> <span class="o">=</span> <span class="s">&#39;0-0 1-1 2-2 2-3 3-5 4-4&#39;</span>
+	<span class="n">sentence</span> <span class="o">=</span> <span class="s">&#39;My dog likes eating sausages&#39;</span>
+	<span class="n">a1</span> <span class="o">=</span> <span class="n">Alignments</span><span class="p">(</span><span class="n">alignment</span><span class="p">,</span> <span class="n">sentence</span><span class="p">)</span>
+	<span class="n">therules</span> <span class="o">=</span> <span class="p">[]</span>
+	<span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="n">a1</span><span class="o">.</span><span class="n">hat_rules</span><span class="p">():</span>
+		<span class="n">therules</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">rule</span><span class="p">))</span>
+	<span class="n">rules_man</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;0-5 -&gt; 0-1 1-5&#39;</span><span class="p">,</span><span class="s">&#39;0-5 -&gt; 0-2 2-5&#39;</span><span class="p">,</span> <span class="s">&#39;0-5 -&gt; 0-3 3-5&#39;</span><span class="p">,</span> <span class="s">&#39;1-5 -&gt; 1-2 2-5&#39;</span><span class="p">,</span> <span class="s">&#39;1-5 -&gt; 1-3 3-5&#39;</span><span class="p">,</span> <span class="s">&#39;2-5 -&gt; 2-3 3-5&#39;</span><span class="p">,</span> <span class="s">&#39;0-3 -&gt; 0-1 1-3&#39;</span><span class="p">,</span> <span class="s">&#39;0-3 -&gt; 0-2 2-3&#39;</span><span class="p">,</span> <span class="s">&#39;0-2 -&gt; 0-1 1-2&#39;</span><span class="p">,</span> <span class="s">&#39;1-3 -&gt; 1-2 2-3&#39;</span><span class="p">,</span> <span class="s">&#39;3-5 -&gt; 3-4 4-5&#39;</span><span class="p">]</span>
+	<span class="k">return</span> <span class="nb">set</span><span class="p">(</span><span class="n">rules_man</span><span class="p">)</span> <span class="o">==</span> <span class="nb">set</span><span class="p">(</span><span class="n">therules</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="test1"><a class="viewcode-back" href="../alignments.html#alignments.test1">[docs]</a><span class="k">def</span> <span class="nf">test1</span><span class="p">():</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	Test for a monotone alignment with no</span>
+<span class="sd">	unaligned words</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">alignment</span> <span class="o">=</span> <span class="s">&#39;0-0 1-1 2-2 3-3 4-4&#39;</span>
+	<span class="n">spanlist_man</span> <span class="o">=</span> <span class="p">[(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">4</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">4</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">)]</span>
+	<span class="n">s</span> <span class="o">=</span> <span class="n">Alignments</span><span class="p">(</span><span class="n">alignment</span><span class="p">,</span> <span class="s">&#39;0 1 2 3 4&#39;</span><span class="p">)</span>
+	<span class="n">spans</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">spans</span><span class="p">()</span>
+	<span class="n">spanlist</span> <span class="o">=</span> <span class="p">[]</span>	
+	<span class="k">for</span> <span class="n">span</span> <span class="ow">in</span> <span class="n">spans</span><span class="p">:</span>
+		<span class="n">spanlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">span</span><span class="p">)</span>
+	<span class="n">spanlist</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+	<span class="k">return</span> <span class="n">spanlist</span> <span class="o">==</span> <span class="n">spanlist_man</span>
+</div>
+<div class="viewcode-block" id="test2"><a class="viewcode-back" href="../alignments.html#alignments.test2">[docs]</a><span class="k">def</span> <span class="nf">test2</span><span class="p">():</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	Test for a no monotone many-to-many alignment,</span>
+<span class="sd">	no unaligned words on source nor targetside.</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">alignment</span> <span class="o">=</span> <span class="s">&#39;0-5 1-4 1-6 2-3 3-0 3-2 4-1 5-0 5-2&#39;</span>
+	<span class="n">spanlist_man</span> <span class="o">=</span> <span class="p">[(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">6</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">6</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">6</span><span class="p">),</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">),(</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">)]</span>
+	<span class="n">spanlist_man</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+	<span class="n">s</span> <span class="o">=</span> <span class="n">Alignments</span><span class="p">(</span><span class="n">alignment</span><span class="p">,</span> <span class="s">&#39;0 1 2 3 4 5&#39;</span><span class="p">)</span>
+	<span class="n">spans</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">spans</span><span class="p">()</span>
+	<span class="n">spanlist</span> <span class="o">=</span> <span class="p">[]</span>	
+	<span class="k">for</span> <span class="n">span</span> <span class="ow">in</span> <span class="n">spans</span><span class="p">:</span>
+		<span class="n">spanlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">span</span><span class="p">)</span>
+	<span class="n">spanlist</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+	<span class="k">return</span> <span class="n">spanlist</span> <span class="o">==</span> <span class="n">spanlist_man</span>
+
+</div>
+<div class="viewcode-block" id="test3"><a class="viewcode-back" href="../alignments.html#alignments.test3">[docs]</a><span class="k">def</span> <span class="nf">test3</span><span class="p">():</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	Test for a one-to-one alignment with some</span>
+<span class="sd">	unaligned words</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">alignment</span> <span class="o">=</span> <span class="s">&#39;1-1 2-2 4-4&#39;</span>
+<span class="c">#	print &#39;alignment:&#39;, alignment</span>
+<span class="c">#	print &quot;\nManually constructed span list:&quot;	</span>
+	<span class="n">spanlist_man</span> <span class="o">=</span> <span class="p">[(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">4</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">4</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">)]</span>
+	<span class="n">spanlist_man</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+<span class="c">#	print spanlist_man</span>
+	<span class="n">s</span> <span class="o">=</span> <span class="n">Alignments</span><span class="p">(</span><span class="n">alignment</span><span class="p">,</span> <span class="s">&#39;0 1 2 3 4&#39;</span><span class="p">)</span>
+	<span class="n">spans</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">spans</span><span class="p">()</span>
+	<span class="n">spanlist</span> <span class="o">=</span> <span class="p">[]</span>	
+	<span class="k">for</span> <span class="n">span</span> <span class="ow">in</span> <span class="n">spans</span><span class="p">:</span>
+		<span class="n">spanlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">span</span><span class="p">)</span>
+	<span class="n">spanlist</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+	<span class="k">return</span> <span class="n">spanlist</span> <span class="o">==</span> <span class="n">spanlist_man</span>
+
+	</div>
+<div class="viewcode-block" id="test4"><a class="viewcode-back" href="../alignments.html#alignments.test4">[docs]</a><span class="k">def</span> <span class="nf">test4</span><span class="p">():</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	Test for a non monotone many-to-many alignment,</span>
+<span class="sd">	with aligned words on both and target side.</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">alignment</span> <span class="o">=</span> <span class="s">&#39;0-2 2-0 0-4 4-4 4-5&#39;</span>
+	<span class="n">spanlist_man</span> <span class="o">=</span> <span class="p">[(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">4</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">)]</span>
+	<span class="n">spanlist_man</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+	<span class="n">s</span> <span class="o">=</span> <span class="n">Alignments</span><span class="p">(</span><span class="n">alignment</span><span class="p">,</span> <span class="s">&#39;0 1 2 3 4&#39;</span><span class="p">)</span>
+	<span class="n">spans</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">spans</span><span class="p">()</span>
+	<span class="n">spanlist</span> <span class="o">=</span> <span class="p">[]</span>	
+	<span class="k">for</span> <span class="n">span</span> <span class="ow">in</span> <span class="n">spans</span><span class="p">:</span>
+		<span class="n">spanlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">span</span><span class="p">)</span>
+	<span class="n">spanlist</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+	<span class="k">return</span> <span class="n">spanlist</span> <span class="o">==</span> <span class="n">spanlist_man</span>
+	</div>
+<div class="viewcode-block" id="test5"><a class="viewcode-back" href="../alignments.html#alignments.test5">[docs]</a><span class="k">def</span> <span class="nf">test5</span><span class="p">():</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	test the workings of the probability</span>
+<span class="sd">	function</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">alignment</span> <span class="o">=</span> <span class="s">&#39;0-0 1-1 2-2 2-3 3-5 4-4&#39;</span>
+	<span class="n">sentence</span> <span class="o">=</span> <span class="s">&#39;My dog likes eating sausages&#39;</span>
+	<span class="n">a1</span> <span class="o">=</span> <span class="n">Alignments</span><span class="p">(</span><span class="n">alignment</span><span class="p">,</span> <span class="n">sentence</span><span class="p">)</span>
+<span class="c">#	productions = a1.list_productions([])</span>
+	<span class="n">therules</span> <span class="o">=</span> <span class="p">[]</span>
+	<span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="n">a1</span><span class="o">.</span><span class="n">rules</span><span class="p">([]):</span>
+		<span class="n">therules</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">rule</span><span class="p">))</span>
+	
+	
+	
+	
+</pre></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Implementation  documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Dieuwke Hupkes.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+  </body>
+</html>

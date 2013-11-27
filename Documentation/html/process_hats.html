@@ -1,0 +1,250 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>process_HATs Module &mdash; Implementation  documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Implementation  documentation" href="index.html" />
+    <link rel="next" title="scoring Module" href="scoring.html" />
+    <link rel="prev" title="labelling Module" href="labelling.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="scoring.html" title="scoring Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="labelling.html" title="labelling Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Implementation  documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-process_hats">
+<span id="process-hats-module"></span><h1>process_HATs Module<a class="headerlink" href="#module-process_hats" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="process_hats.HATGrammar">
+<em class="property">class </em><tt class="descclassname">process_hats.</tt><tt class="descname">HATGrammar</tt><big>(</big><em>HATdict</em>, <em>root</em><big>)</big><a class="reference internal" href="_modules/process_hats.html#HATGrammar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#process_hats.HATGrammar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class that represents a HAT grammar in a dictionary. Functions are
+provided to transform the grammar into a weighted grammar object, and
+to assign probabilities to the rules given an external PCFG.</p>
+<p>Initialise with a dictionary uniquely representing a HAT</p>
+<dl class="method">
+<dt id="process_hats.HATGrammar.normalise">
+<tt class="descname">normalise</tt><big>(</big><em>rule_dict</em><big>)</big><a class="headerlink" href="#process_hats.HATGrammar.normalise" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a nested dictionary that represent rules as follows:
+{lhs : {rhs1 : count, rhs2: count ...}, ....}, return a
+similar nested dictionary with normalised counts</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="process_hats.HATGrammar.plain_label">
+<tt class="descname">plain_label</tt><big>(</big><em>label</em><big>)</big><a class="reference internal" href="_modules/process_hats.html#HATGrammar.plain_label"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#process_hats.HATGrammar.plain_label" title="Permalink to this definition">¶</a></dt>
+<dd><p>strip the label from the part determining
+its span, to make it uniform</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="process_hats.HATGrammar.probmass">
+<tt class="descname">probmass</tt><big>(</big><em>head_node</em>, <em>children=()</em>, <em>external_pcfg={}</em>, <em>probs={}</em><big>)</big><a class="reference internal" href="_modules/process_hats.html#HATGrammar.probmass"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#process_hats.HATGrammar.probmass" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the probability mass of all subtrees headed by head_node with
+direct children children (possibly empty), given the input pcfg.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="process_hats.HATGrammar.to_WeightedGrammar">
+<tt class="descname">to_WeightedGrammar</tt><big>(</big><em>rule_dict</em>, <em>root</em>, <em>remove_old=False</em><big>)</big><a class="reference internal" href="_modules/process_hats.html#HATGrammar.to_WeightedGrammar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#process_hats.HATGrammar.to_WeightedGrammar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transforms a set of rules represented in a
+nested dictionary into a WeightedGrammar object.
+It is assumed that the startsymbol of the grammar is 
+TOP, if this is not the case, parsing with the grammar
+is not possible.
+If remove_old = True, remove the old grammar during the
+process to save memory.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="process_hats.HATGrammar.update">
+<tt class="descname">update</tt><big>(</big><em>external_pcfg</em>, <em>probs</em>, <em>grammar</em>, <em>p_cur</em>, <em>lhs</em><big>)</big><a class="reference internal" href="_modules/process_hats.html#HATGrammar.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#process_hats.HATGrammar.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the updated counts for a node, given its parent
+and how often this parent occurred in the forest.
+Does not return a grammar, but modifies it globally.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="process_hats.HATGrammar.update_weights">
+<tt class="descname">update_weights</tt><big>(</big><em>grammar</em>, <em>external_pcfg={}</em><big>)</big><a class="reference internal" href="_modules/process_hats.html#HATGrammar.update_weights"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#process_hats.HATGrammar.update_weights" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implicitly assign all HATs in the HATforest a probability,
+normalise, and compute the counts of the rules in them
+through relative frequency estimation.
+Update the inputted grammar with these counts.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="process_hats.ProcessHATs">
+<em class="property">class </em><tt class="descclassname">process_hats.</tt><tt class="descname">ProcessHATs</tt><big>(</big><em>HATfile</em><big>)</big><a class="reference internal" href="_modules/process_hats.html#ProcessHATs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#process_hats.ProcessHATs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class with functions that can be applied to a file
+containing pickled precomputed HATs.
+ProcessHATs has functional overlap with the class
+FileProcessing, but is more efficient as it avoids
+recomputing HATforests.</p>
+<p>Pass the name of the file containing the pickled
+HATs.</p>
+<dl class="method">
+<dt id="process_hats.ProcessHATs.em">
+<tt class="descname">em</tt><big>(</big><em>max_iter</em><big>)</big><a class="reference internal" href="_modules/process_hats.html#ProcessHATs.em"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#process_hats.ProcessHATs.em" title="Permalink to this definition">¶</a></dt>
+<dd><p>When passing a grammar represented by a dictionary,
+iteratively assign probabilities to all HATs of the
+corpus and recompute the counts of the grammar with
+relative frequency estimation until convergence or
+until a maximum number iterations is reached.
+Return the new grammar</p>
+<p>:param start_grammar    Grammar represented as a nested dictionary
+:param max_iter                 Maximum number of iterations
+:param max_length               Maximum sentence length considered</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="process_hats.ProcessHATs.em_iteration">
+<tt class="descname">em_iteration</tt><big>(</big><em>old_grammar</em>, <em>new_grammar</em><big>)</big><a class="reference internal" href="_modules/process_hats.html#ProcessHATs.em_iteration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#process_hats.ProcessHATs.em_iteration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Assign probabilities to all HATs in the corpus with the
+current grammar, recompute probabilities and return the
+new grammar.
+It is assumed that the HATs are precomputed and pickled into
+a file in the correct order. Every sentence under max_length should
+be represented in the file as: [sentence_nr, HAT_dict, root].</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="process_hats.ProcessHATs.initialise_grammar">
+<tt class="descname">initialise_grammar</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/process_hats.html#ProcessHATs.initialise_grammar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#process_hats.ProcessHATs.initialise_grammar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialise a grammar based on all HATs in the corpus</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="process_hats.ProcessHATs.next">
+<tt class="descname">next</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/process_hats.html#ProcessHATs.next"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#process_hats.ProcessHATs.next" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the next item in the file. If the last
+element of the file is reached. return None.</p>
+<p>:return [sentence_nr, HATdict, root]</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="process_hats.ProcessHATs.normalise">
+<tt class="descname">normalise</tt><big>(</big><em>rule_dict</em><big>)</big><a class="reference internal" href="_modules/process_hats.html#ProcessHATs.normalise"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#process_hats.ProcessHATs.normalise" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a nested dictionary that represent rules as follows:
+{lhs : {rhs1 : count, rhs2: count ...}, ....}, return a
+similar nested dictionary with normalised counts</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="process_hats.ProcessHATs.unique_rules">
+<tt class="descname">unique_rules</tt><big>(</big><em>stepsize</em><big>)</big><a class="reference internal" href="_modules/process_hats.html#ProcessHATs.unique_rules"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#process_hats.ProcessHATs.unique_rules" title="Permalink to this definition">¶</a></dt>
+<dd><p>Go through HATcorpus and keep track of the
+percentage of the rules that is unique.
+Store the number of rules and the number of unique
+rules if the number of HATs processed % stepsize is 0</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="process_hats.demo">
+<tt class="descclassname">process_hats.</tt><tt class="descname">demo</tt><big>(</big><big>)</big><a class="headerlink" href="#process_hats.demo" title="Permalink to this definition">¶</a></dt>
+<dd><p>A demonstration function showing the workings of the HATgrammar class.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="labelling.html"
+                        title="previous chapter">labelling Module</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="scoring.html"
+                        title="next chapter">scoring Module</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/process_hats.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="scoring.html" title="scoring Module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="labelling.html" title="labelling Module"
+             >previous</a> |</li>
+        <li><a href="index.html">Implementation  documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Dieuwke Hupkes.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+  </body>
+</html>

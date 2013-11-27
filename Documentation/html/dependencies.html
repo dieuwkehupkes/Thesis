@@ -1,0 +1,395 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>dependencies Module &mdash; Implementation  documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Implementation  documentation" href="index.html" />
+    <link rel="next" title="file_processing Module" href="file_processing.html" />
+    <link rel="prev" title="dependencies Module" href="constituencies.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="file_processing.html" title="file_processing Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="constituencies.html" title="dependencies Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Implementation  documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-dependencies">
+<span id="dependencies-module"></span><h1>dependencies Module<a class="headerlink" href="#module-dependencies" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="dependencies.Dependencies">
+<em class="property">class </em><tt class="descclassname">dependencies.</tt><tt class="descname">Dependencies</tt><big>(</big><em>dependency_list</em>, <em>sentence=False</em><big>)</big><a class="reference internal" href="_modules/dependencies.html#Dependencies"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dependencies.Dependencies" title="Permalink to this definition">¶</a></dt>
+<dd><p>A class representing the dependencies of a sentence in a dictionary.
+The dependencies are created from a list with dependencies formatted
+like the stanford dependency parses.</p>
+<p>Create a Dependencies object, based on the passed dependency list.
+If no sentence is passed, the sentence is reconstructed from the
+dependency list, leaving gaps for items that were not included.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dependency_list</strong> &#8211; A list with dependencies of the form 
+reltype(head-pos_head, dependent-pos_dependent)
+min(pos-dependent) = 1</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A dictionaries with entries of the form pos_head: [pos_dependent, reltype]</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="dependencies.Dependencies.POStag">
+<tt class="descname">POStag</tt><big>(</big><em>word</em><big>)</big><a class="headerlink" href="#dependencies.Dependencies.POStag" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find a postag for a word.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="dependencies.Dependencies.SAMT_labels">
+<tt class="descname">SAMT_labels</tt><big>(</big><big>)</big><a class="headerlink" href="#dependencies.Dependencies.SAMT_labels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create SAMT-style labels based on the basic dependency labels
+created in dependency_labels. The order if precedence is as follows:</p>
+<ul class="simple">
+<li>Basic labels</li>
+<li>labels A + B, where A and B are basic labels</li>
+<li>labels A/B or AB where A and B are basic labels</li>
+<li>labels A + B + C where A,B and C are basic labels</li>
+</ul>
+</dd></dl>
+
+<dl class="method">
+<dt id="dependencies.Dependencies.annotate_span">
+<tt class="descname">annotate_span</tt><big>(</big><em>labels</em><big>)</big><a class="headerlink" href="#dependencies.Dependencies.annotate_span" title="Permalink to this definition">¶</a></dt>
+<dd><p>Annotate labels with their span, to make the
+grammar unique.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="dependencies.Dependencies.argument_list">
+<tt class="descname">argument_list</tt><big>(</big><em>head_span</em><big>)</big><a class="headerlink" href="#dependencies.Dependencies.argument_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>return a list with spans of the head and
+its arguments</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="dependencies.Dependencies.branching_factor">
+<tt class="descname">branching_factor</tt><big>(</big><em>b_dict={}</em><big>)</big><a class="headerlink" href="#dependencies.Dependencies.branching_factor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the branching factor of all nodes in the
+dependency tree. If an input dictionary is given,
+update the branching factors in the dictionary with
+the newly found branching factors.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="dependencies.Dependencies.checkroot">
+<tt class="descname">checkroot</tt><big>(</big><big>)</big><a class="headerlink" href="#dependencies.Dependencies.checkroot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if dependencies form a tree by checking coverage
+of the rootnote.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="dependencies.Dependencies.comp_score">
+<tt class="descname">comp_score</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/dependencies.html#Dependencies.comp_score"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dependencies.Dependencies.comp_score" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the percentage of words that is head
+of another word, thereby giving a measure of
+the level of compositionality of the parse</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="dependencies.Dependencies.dependency_labels">
+<tt class="descname">dependency_labels</tt><big>(</big><big>)</big><a class="headerlink" href="#dependencies.Dependencies.dependency_labels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produces standard labels for spans according to the following scheme:</p>
+<ul class="simple">
+<li>label[(i,i+1)] = HEAD         iff word i+1 is the head of the sentence</li>
+<li>label[(i,j+1)] = rel          iff there is a dependency relation rel(x, y) and wordspan(y) = (i,j+1)</li>
+<li>label[(i,i+1)] = rel-head iff there is a dependency relation rel(x,i+1) and word i+1 was not labelled by one of the previous conditions</li>
+</ul>
+</dd></dl>
+
+<dl class="method">
+<dt id="dependencies.Dependencies.find_dependent">
+<tt class="descname">find_dependent</tt><big>(</big><em>relation</em><big>)</big><a class="headerlink" href="#dependencies.Dependencies.find_dependent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the depending word of a dependency relation using a regular
+expression.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="dependencies.Dependencies.find_dependent_pos">
+<tt class="descname">find_dependent_pos</tt><big>(</big><em>relation</em><big>)</big><a class="headerlink" href="#dependencies.Dependencies.find_dependent_pos" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the position of the dependent of a dependency relation
+using a regular expression.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="dependencies.Dependencies.find_head">
+<tt class="descname">find_head</tt><big>(</big><em>relation</em><big>)</big><a class="headerlink" href="#dependencies.Dependencies.find_head" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the head word of a dependency relation using a regular
+expression.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="dependencies.Dependencies.find_head_pos">
+<tt class="descname">find_head_pos</tt><big>(</big><em>relation</em><big>)</big><a class="headerlink" href="#dependencies.Dependencies.find_head_pos" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the position of the head of a dependency relation
+using a regular expression.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="dependencies.Dependencies.find_relationtype">
+<tt class="descname">find_relationtype</tt><big>(</big><em>relation</em><big>)</big><a class="headerlink" href="#dependencies.Dependencies.find_relationtype" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the type of a dependency relation using a
+regular expression.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="dependencies.Dependencies.get_comp_spanrels">
+<tt class="descname">get_comp_spanrels</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/dependencies.html#Dependencies.get_comp_spanrels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dependencies.Dependencies.get_comp_spanrels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a dictionary of dependencies between word positions
+and word spans. Go through the dependency dictionary, but
+select only the relations that display compositionality
+(i.e. no relations between words)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="dependencies.Dependencies.get_span">
+<tt class="descname">get_span</tt><big>(</big><em>key</em><big>)</big><a class="reference internal" href="_modules/dependencies.html#Dependencies.get_span"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dependencies.Dependencies.get_span" title="Permalink to this definition">¶</a></dt>
+<dd><p>Recursively compute the span of a word. 
+The span of a word is constituted by the minimum and
+maximum position that can be reached from the word by
+following the directed dependency arrows. The spans are
+left exclusive and right inclusive. I.e. if positions
+i and j are the minimum and maximum positions that can
+be reached from a word, its span will be [i-1,j]. Every
+word necessarily spans itself, a word at position i
+without dependents will thus have span [i-1,i].
+The dependency from root to head of the sentence is not
+considered.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="dependencies.Dependencies.label_all">
+<tt class="descname">label_all</tt><big>(</big><big>)</big><a class="headerlink" href="#dependencies.Dependencies.label_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Label all spans of the sentence.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="dependencies.Dependencies.labels">
+<tt class="descname">labels</tt><big>(</big><em>label_type='basic'</em><big>)</big><a class="reference internal" href="_modules/dependencies.html#Dependencies.labels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dependencies.Dependencies.labels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return labels of given type.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>type</strong> &#8211; describes which label_type should be used. Options: all, basic or SAMT.</td>
+</tr>
+</tbody>
+</table>
+<p>The default labeltype is basic.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="dependencies.Dependencies.percentage_SAMT">
+<tt class="descname">percentage_SAMT</tt><big>(</big><big>)</big><a class="headerlink" href="#dependencies.Dependencies.percentage_SAMT" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute how many spans were labelled by
+an SAMT label.
+:return:        number of spans, number of labelled spans</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="dependencies.Dependencies.print_deps">
+<tt class="descname">print_deps</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/dependencies.html#Dependencies.print_deps"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dependencies.Dependencies.print_deps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Displaying function. Print all the
+dependency relations in the dependency
+parse.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="dependencies.Dependencies.print_labels">
+<tt class="descname">print_labels</tt><big>(</big><em>labels</em><big>)</big><a class="reference internal" href="_modules/dependencies.html#Dependencies.print_labels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dependencies.Dependencies.print_labels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print out the contents of a dictionary
+in a nice format.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="dependencies.Dependencies.print_spans">
+<tt class="descname">print_spans</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/dependencies.html#Dependencies.print_spans"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dependencies.Dependencies.print_spans" title="Permalink to this definition">¶</a></dt>
+<dd><p>Displaying function. Print all
+word_spans of of the dependency parse.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="dependencies.Dependencies.reconstruct_sentence">
+<tt class="descname">reconstruct_sentence</tt><big>(</big><big>)</big><a class="headerlink" href="#dependencies.Dependencies.reconstruct_sentence" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reconstruct the sentence corresponding to the 
+dependency parse.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">a list with the words of the sentence.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="dependencies.Dependencies.set_dependencies">
+<tt class="descname">set_dependencies</tt><big>(</big><em>dependency_list</em><big>)</big><a class="reference internal" href="_modules/dependencies.html#Dependencies.set_dependencies"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dependencies.Dependencies.set_dependencies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read in a file and create a dictionary
+with its dependencies using regular expressions.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="dependencies.Dependencies.set_wordspans">
+<tt class="descname">set_wordspans</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/dependencies.html#Dependencies.set_wordspans"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dependencies.Dependencies.set_wordspans" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the span of each word and store it in a
+dictionary with word positions and a tuple that
+represents their span as key and value, respectively.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="dependencies.Dependencies.spanrelations">
+<tt class="descname">spanrelations</tt><big>(</big><em>rightbranching=False</em>, <em>leftbranching=False</em>, <em>interpunction=True</em><big>)</big><a class="headerlink" href="#dependencies.Dependencies.spanrelations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a dictionary with spanrelations that are &#8216;deeper&#8217; than the standard 
+relations in the dependency parse, such that stepwise combining head and
+arguments is allowed. Parameters rightbranching, leftbranching and interpunction
+describe how exactly arguments and heads are allowed to combine.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>rightbranching</strong> &#8211; allow an argument to combine with the arguments one by one,
+giving preference to arguments to the right.</li>
+<li><strong>leftbranching</strong> &#8211; allow an arguments to combine with the head one by one,
+giving preference to arguments to the left.</li>
+<li><strong>interpunction</strong> &#8211; Take gaps in the dependency parse into account, by adding
+extra relations in which the gap is already combined
+with one of its left or right adjacing units.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>If both left- and rightbranching are true, all combination orders are allowed.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="dependencies.Dependencies.textree">
+<tt class="descname">textree</tt><big>(</big><big>)</big><a class="headerlink" href="#dependencies.Dependencies.textree" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print string that will generate a dependency tree in
+pdf with package tikz-dependency.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="dependencies.Dependencies.update_labels">
+<tt class="descname">update_labels</tt><big>(</big><em>label_dict</em><big>)</big><a class="reference internal" href="_modules/dependencies.html#Dependencies.update_labels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dependencies.Dependencies.update_labels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update an inputted dictionary with
+the labels from dependency object.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="dependencies.demo">
+<tt class="descclassname">dependencies.</tt><tt class="descname">demo</tt><big>(</big><big>)</big><a class="headerlink" href="#dependencies.demo" title="Permalink to this definition">¶</a></dt>
+<dd><p>A demonstration of how the Dependencies class can be used.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="constituencies.html"
+                        title="previous chapter">dependencies Module</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="file_processing.html"
+                        title="next chapter">file_processing Module</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/dependencies.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="file_processing.html" title="file_processing Module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="constituencies.html" title="dependencies Module"
+             >previous</a> |</li>
+        <li><a href="index.html">Implementation  documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Dieuwke Hupkes.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+  </body>
+</html>

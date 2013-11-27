@@ -1,0 +1,452 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>graph_alignment &mdash; Implementation  documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Implementation  documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Implementation  documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for graph_alignment</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">nltk</span>
+<span class="kn">from</span> <span class="nn">nltk.grammar</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+
+<div class="viewcode-block" id="Waypoint"><a class="viewcode-back" href="../graph_alignment.html#graph_alignment.Waypoint">[docs]</a><span class="k">class</span> <span class="nc">Waypoint</span><span class="p">:</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	Defines a waypoint in a one-directional path. This</span>
+<span class="sd">	allows us to save memory by not having to copy path</span>
+<span class="sd">	arrays for every path.</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">link</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Creates a new waypoint, call with the</span>
+<span class="sd">		node it represents and a link to the</span>
+<span class="sd">		next waypoint.</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">node</span> <span class="o">=</span> <span class="n">node</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">link</span> <span class="o">=</span> <span class="n">link</span>
+		<span class="c"># We can statically calculate length from</span>
+		<span class="c"># existing link.</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">length</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">link</span> <span class="k">else</span> <span class="nb">len</span><span class="p">(</span><span class="n">link</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+
+	<span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">length</span>
+	
+	<span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="n">waypoint</span> <span class="o">=</span> <span class="bp">self</span>
+		<span class="n">path</span> <span class="o">=</span> <span class="p">[</span><span class="n">waypoint</span><span class="o">.</span><span class="n">node</span><span class="o">.</span><span class="n">value</span><span class="p">]</span>
+		<span class="k">while</span> <span class="n">waypoint</span><span class="o">.</span><span class="n">link</span><span class="p">:</span>
+			<span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">waypoint</span><span class="o">.</span><span class="n">link</span><span class="o">.</span><span class="n">node</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+			<span class="n">waypoint</span> <span class="o">=</span> <span class="n">waypoint</span><span class="o">.</span><span class="n">link</span>
+		<span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Node"><a class="viewcode-back" href="../graph_alignment.html#graph_alignment.Node">[docs]</a><span class="k">class</span> <span class="nc">Node</span><span class="p">:</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	Defines a node in a directed graph.</span>
+<span class="sd">	You can add edges from this node to</span>
+<span class="sd">	other nodes by using link_to. The</span>
+<span class="sd">	paths_to method calculates all paths</span>
+<span class="sd">	from this node to the given node.</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Initializes a new node; value</span>
+<span class="sd">		can be used for representation</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">links</span> <span class="o">=</span> <span class="p">[]</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">reachable</span> <span class="o">=</span> <span class="p">{}</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">shortest_paths</span> <span class="o">=</span> <span class="p">{}</span>
+
+<div class="viewcode-block" id="Node.link_to"><a class="viewcode-back" href="../graph_alignment.html#graph_alignment.Node.link_to">[docs]</a>	<span class="k">def</span> <span class="nf">link_to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Add a directed edge from this node to</span>
+<span class="sd">		the given node.</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">links</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+		</div>
+<div class="viewcode-block" id="Node.remove_link"><a class="viewcode-back" href="../graph_alignment.html#graph_alignment.Node.remove_link">[docs]</a>	<span class="k">def</span> <span class="nf">remove_link</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">node</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Remove the edge to this node, if</span>
+<span class="sd">		present</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="k">if</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">links</span><span class="p">:</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">links</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+		
+</div>
+<div class="viewcode-block" id="Node.paths_to"><a class="viewcode-back" href="../graph_alignment.html#graph_alignment.Node.paths_to">[docs]</a>	<span class="k">def</span> <span class="nf">paths_to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Returns a generator that calculates all</span>
+<span class="sd">		paths to the given node. These paths</span>
+<span class="sd">		are calculated recursively.</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="k">if</span> <span class="n">node</span> <span class="o">==</span> <span class="bp">self</span><span class="p">:</span>
+			<span class="c"># Reached our destination, stop searching.</span>
+			<span class="k">yield</span> <span class="n">Waypoint</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+			<span class="k">return</span>
+
+		<span class="n">nid</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+		<span class="k">if</span> <span class="n">nid</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">reachable</span><span class="p">:</span>
+			<span class="c"># Already tracked paths to this point once</span>
+			<span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">reachable</span><span class="p">[</span><span class="n">nid</span><span class="p">]:</span>
+				<span class="c"># We&#39;ve previously determined the node to be</span>
+				<span class="c"># unreachable from here; cancel search.	</span>
+				<span class="k">yield</span> <span class="bp">False</span>
+			<span class="k">else</span><span class="p">:</span>
+				<span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">reachable</span><span class="p">[</span><span class="n">nid</span><span class="p">]:</span>
+					<span class="k">yield</span> <span class="n">path</span>
+			<span class="k">return</span>
+		
+		<span class="c"># Create a list of paths to this node 	</span>
+		<span class="n">paths</span> <span class="o">=</span> <span class="p">[]</span>
+
+		<span class="c"># No use searching through links with a larger</span>
+		<span class="c"># value than the one we&#39;re looking for</span>
+		<span class="c"># Important note: this is specific to this algorithm,</span>
+		<span class="c"># NOT generic graph search.</span>
+		<span class="k">for</span> <span class="n">link</span> <span class="ow">in</span> <span class="p">(</span><span class="n">l</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">links</span> <span class="k">if</span> <span class="n">l</span><span class="o">.</span><span class="n">value</span> <span class="o">&lt;=</span> <span class="n">node</span><span class="o">.</span><span class="n">value</span><span class="p">):</span>
+			<span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">link</span><span class="o">.</span><span class="n">paths_to</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+				<span class="k">if</span> <span class="n">path</span><span class="p">:</span>
+					<span class="c"># Yay, we found a path :)</span>
+					<span class="c"># Add to known paths and return</span>
+					<span class="n">full_path</span> <span class="o">=</span> <span class="n">Waypoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+					<span class="n">paths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">full_path</span><span class="p">)</span>	
+					<span class="k">yield</span> <span class="n">full_path</span>
+					
+		<span class="k">if</span> <span class="n">paths</span><span class="p">:</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">reachable</span><span class="p">[</span><span class="n">nid</span><span class="p">]</span> <span class="o">=</span> <span class="n">paths</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">reachable</span><span class="p">[</span><span class="n">nid</span><span class="p">]</span> <span class="o">=</span> <span class="bp">False</span>
+			<span class="k">yield</span> <span class="bp">False</span>
+</div>
+<div class="viewcode-block" id="Node.shortest_paths_to"><a class="viewcode-back" href="../graph_alignment.html#graph_alignment.Node.shortest_paths_to">[docs]</a>	<span class="k">def</span> <span class="nf">shortest_paths_to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">node</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Finds all shortest paths from current node</span>
+<span class="sd">		to node using an adapted Dijkstra algorithm</span>
+<span class="sd">		starting from the end.</span>
+<span class="sd">		The function also stores paths that can be</span>
+<span class="sd">		used for later use (i.e paths longer than 1</span>
+<span class="sd">		from self to intermediate nodes.</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		
+<span class="c">#		print &#39;find shortest paths from&#39;, self, &#39;to&#39;, node</span>
+		
+		<span class="k">if</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">shortest_paths</span><span class="p">:</span>
+			<span class="c"># already computed the shortest path to this node</span>
+			<span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">shortest_paths</span><span class="p">[</span><span class="n">node</span><span class="p">]:</span>
+				<span class="k">yield</span> <span class="n">path</span>
+			<span class="k">return</span>
+		
+		<span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">value</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+			<span class="c">#return trivial path</span>
+			<span class="n">path</span> <span class="o">=</span> <span class="n">Waypoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">Waypoint</span><span class="p">(</span><span class="n">node</span><span class="p">))</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">shortest_paths</span><span class="p">[</span><span class="n">node</span><span class="p">]</span> <span class="o">=</span> <span class="n">path</span>
+			<span class="k">yield</span> <span class="n">path</span>
+			<span class="k">return</span>
+		
+		<span class="c">#initialize</span>
+		<span class="n">visited</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([])</span>
+		<span class="n">depth</span> <span class="o">=</span> <span class="mi">0</span>
+		<span class="n">reachable</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span><span class="nb">set</span><span class="p">([</span><span class="n">node</span><span class="p">])}</span>
+		<span class="n">depth_finished</span> <span class="o">=</span> <span class="bp">False</span>
+		<span class="n">current_paths</span> <span class="o">=</span> <span class="p">{</span><span class="n">node</span><span class="p">:</span> <span class="p">[</span><span class="n">Waypoint</span><span class="p">(</span><span class="n">node</span><span class="p">)]}</span>
+		
+		<span class="k">while</span> <span class="p">(</span><span class="ow">not</span> <span class="n">depth_finished</span> <span class="ow">or</span> <span class="bp">self</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">visited</span><span class="p">):</span>
+			<span class="c"># search until there are no more nodes at</span>
+			<span class="c"># current depth, then move to next deptht</span>
+			<span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">reachable</span><span class="p">[</span><span class="n">depth</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+				<span class="c"># We start with exploring this distance</span>
+				<span class="n">depth_finished</span> <span class="o">=</span> <span class="bp">False</span>
+				<span class="c"># explore the first closest node</span>
+				<span class="n">current_node</span> <span class="o">=</span> <span class="n">reachable</span><span class="p">[</span><span class="n">depth</span><span class="p">]</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+				<span class="c"># add nodes reachable from current node to</span>
+				<span class="c"># next-depth reachable nodes</span>
+				<span class="n">reachable</span><span class="p">[</span><span class="n">depth</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">reachable</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">depth</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="nb">set</span><span class="p">([]))</span>
+				<span class="k">for</span> <span class="n">link</span> <span class="ow">in</span> <span class="p">(</span><span class="n">l</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">current_node</span><span class="o">.</span><span class="n">links</span> <span class="k">if</span> <span class="n">l</span><span class="o">.</span><span class="n">value</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">):</span>
+					<span class="k">if</span> <span class="n">link</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">visited</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">reachable</span><span class="p">[</span><span class="n">depth</span><span class="p">]):</span>
+						<span class="c"># this is the shortest path to link</span>
+						<span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">depth</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">link</span> <span class="o">==</span> <span class="bp">self</span><span class="p">):</span>
+							<span class="c"># path is not the trivial path</span>
+							<span class="c"># add to reachable depth+1 if not already there</span>
+							<span class="n">reachable</span><span class="p">[</span><span class="n">depth</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">link</span><span class="p">)</span>
+							<span class="n">new_path</span> <span class="o">=</span> <span class="n">current_paths</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">link</span><span class="p">,[])</span>
+							<span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">current_paths</span><span class="p">[</span><span class="n">current_node</span><span class="p">]:</span>
+								<span class="n">new_waypoint</span> <span class="o">=</span> <span class="n">Waypoint</span><span class="p">(</span><span class="n">link</span><span class="p">,</span><span class="n">path</span><span class="p">)</span>
+								<span class="n">new_path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_waypoint</span><span class="p">)</span>
+							<span class="n">current_paths</span><span class="p">[</span><span class="n">link</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_path</span>
+							<span class="c"># store for later use if path is not trivial</span>
+							<span class="k">if</span> <span class="n">depth</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+								<span class="n">link</span><span class="o">.</span><span class="n">shortest_paths</span><span class="p">[</span><span class="n">node</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_path</span>
+				<span class="n">visited</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">current_node</span><span class="p">)</span>
+			<span class="n">depth_finished</span> <span class="o">=</span> <span class="bp">True</span>
+			<span class="n">depth</span> <span class="o">+=</span> <span class="mi">1</span>
+		<span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">current_paths</span><span class="p">[</span><span class="bp">self</span><span class="p">]:</span>
+			<span class="k">yield</span> <span class="n">path</span>
+</div>
+	<span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__str__</span><span class="p">()</span>
+		
+	<span class="k">def</span> <span class="nf">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span>
+		
+	<span class="k">def</span> <span class="nf">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+		<span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Node</span><span class="p">):</span>
+			<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">value</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="k">return</span> <span class="bp">False</span>
+		
+	<span class="k">def</span> <span class="nf">__neq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+		<span class="k">return</span> <span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__eq__</span><span class="p">(</span><span class="n">other</span><span class="p">))</span>
+
+	<span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Rule"><a class="viewcode-back" href="../graph_alignment.html#graph_alignment.Rule">[docs]</a><span class="k">class</span> <span class="nc">Rule</span><span class="p">:</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	Defines a rule from one span to a set</span>
+<span class="sd">	of consecutive spans which&#39;s union</span>
+<span class="sd">	forms it. This is mostly for convenient</span>
+<span class="sd">	displaying, but in this class also the</span>
+<span class="sd">	&#39;probabilities&#39; to the rules are assigned.</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span><span class="n">span_relations</span> <span class="o">=</span> <span class="p">{},</span> <span class="n">labels</span> <span class="o">=</span> <span class="p">{}):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Initialize a new rule as its root span</span>
+<span class="sd">		and the path in the graph (consisting</span>
+<span class="sd">		of an array of nodes) that forms its</span>
+<span class="sd">		rule.</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">root</span> <span class="o">=</span> <span class="n">root</span>
+		<span class="n">spans</span> <span class="o">=</span> <span class="p">[]</span>
+			
+		<span class="n">waypoint</span> <span class="o">=</span> <span class="n">path</span>
+		<span class="k">while</span> <span class="n">waypoint</span><span class="o">.</span><span class="n">link</span><span class="p">:</span>
+			<span class="n">spans</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">waypoint</span><span class="o">.</span><span class="n">node</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> 
+				<span class="n">waypoint</span><span class="o">.</span><span class="n">link</span><span class="o">.</span><span class="n">node</span><span class="o">.</span><span class="n">value</span><span class="p">))</span>
+			<span class="n">waypoint</span> <span class="o">=</span> <span class="n">waypoint</span><span class="o">.</span><span class="n">link</span>
+
+		<span class="bp">self</span><span class="o">.</span><span class="n">spans</span> <span class="o">=</span> <span class="n">spans</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">labels</span> <span class="o">=</span> <span class="n">labels</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">span_relations</span> <span class="o">=</span> <span class="n">span_relations</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">rhs</span><span class="p">()</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">lhs</span><span class="p">()</span>
+		
+<div class="viewcode-block" id="Rule.probability_spanrels"><a class="viewcode-back" href="../graph_alignment.html#graph_alignment.Rule.probability_spanrels">[docs]</a>	<span class="k">def</span> <span class="nf">probability_spanrels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Compute the probability of a rule given</span>
+<span class="sd">		the span relations we want to have in</span>
+<span class="sd">		the rule.</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">probability</span> <span class="o">=</span> <span class="mi">1</span>
+		<span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">span_relations</span><span class="p">:</span>
+			<span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">spans</span><span class="p">:</span>
+				<span class="k">for</span> <span class="n">dependent</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">span_relations</span><span class="p">[</span><span class="n">key</span><span class="p">]:</span>
+					<span class="k">if</span> <span class="n">dependent</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">spans</span><span class="p">:</span>
+						<span class="n">probability</span> <span class="o">=</span> <span class="n">probability</span> <span class="o">*</span> <span class="mi">2</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">probability</span> <span class="o">=</span> <span class="n">probability</span>
+	</div>
+<div class="viewcode-block" id="Rule.probability_labels"><a class="viewcode-back" href="../graph_alignment.html#graph_alignment.Rule.probability_labels">[docs]</a>	<span class="k">def</span> <span class="nf">probability_labels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Compute the probability of a rule according</span>
+<span class="sd">		to how many of the nodes it generates can</span>
+<span class="sd">		be labelled according to a set of given</span>
+<span class="sd">		labels.</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">probability</span> <span class="o">=</span> <span class="mi">1</span>
+		<span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">spans</span><span class="p">:</span>
+			<span class="k">if</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">:</span>
+				<span class="k">continue</span>
+			<span class="k">else</span><span class="p">:</span>
+				<span class="n">probability</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">probability</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">probability</span> <span class="o">=</span> <span class="n">probability</span>
+	</div>
+<div class="viewcode-block" id="Rule.uniform_probability"><a class="viewcode-back" href="../graph_alignment.html#graph_alignment.Rule.uniform_probability">[docs]</a>	<span class="k">def</span> <span class="nf">uniform_probability</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Set uniform probability</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">probability</span> <span class="o">=</span> <span class="mi">1</span>
+	</div>
+<div class="viewcode-block" id="Rule.lhs"><a class="viewcode-back" href="../graph_alignment.html#graph_alignment.Rule.lhs">[docs]</a>	<span class="k">def</span> <span class="nf">lhs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="n">lhs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="o">.</span><span class="n">get</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">-</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+<span class="c">#		self.lhs = Nonterminal(lhs)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">lhs</span> <span class="o">=</span> <span class="n">lhs</span>
+		</div>
+<div class="viewcode-block" id="Rule.rhs"><a class="viewcode-back" href="../graph_alignment.html#graph_alignment.Rule.rhs">[docs]</a>	<span class="k">def</span> <span class="nf">rhs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="n">rhs_list</span> <span class="o">=</span> <span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="o">.</span><span class="n">get</span><span class="p">((</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">),</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">-</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">))</span> <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">spans</span><span class="p">])</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">rhs</span> <span class="o">=</span> <span class="n">rhs_list</span>
+</div>
+	<span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__str__</span><span class="p">()</span>
+
+	<span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="k">return</span> <span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> -&gt; </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> 
+			<span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lhs</span><span class="p">,</span> <span class="s">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rhs</span><span class="p">)))</span>
+			
+
+
+<span class="c">#############################################################################################</span>
+<span class="c">#Testing</span>
+</div>
+<div class="viewcode-block" id="test1"><a class="viewcode-back" href="../graph_alignment.html#graph_alignment.test1">[docs]</a><span class="k">def</span> <span class="nf">test1</span><span class="p">():</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	Test if all paths are found in a manually</span>
+<span class="sd">	constructed graph with t nodes</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="c">#create sample graph</span>
+	<span class="n">nodes</span> <span class="o">=</span> <span class="p">[</span><span class="n">Node</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">5</span><span class="p">)]</span>
+	<span class="n">links</span> <span class="o">=</span> <span class="p">[(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">),(</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">),(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">),(</span><span class="mi">1</span><span class="p">,</span><span class="mi">4</span><span class="p">),(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">),(</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">),(</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">),(</span><span class="mi">0</span><span class="p">,</span><span class="mi">4</span><span class="p">)]</span>
+	<span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)</span> <span class="ow">in</span> <span class="n">links</span><span class="p">:</span>
+		<span class="n">nodes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">link_to</span><span class="p">(</span><span class="n">nodes</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+	<span class="c">#find all paths</span>
+	<span class="n">path_list</span> <span class="o">=</span> <span class="p">[]</span>
+	<span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)</span> <span class="ow">in</span> <span class="n">links</span><span class="p">:</span>
+		<span class="n">paths</span> <span class="o">=</span> <span class="n">nodes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">paths_to</span><span class="p">(</span><span class="n">nodes</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+		<span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">:</span>
+			<span class="n">path_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>
+	<span class="n">man_paths</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">4</span><span class="p">],[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">],[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">],[</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">],[</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">],[</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">],[</span><span class="mi">1</span><span class="p">,</span><span class="mi">4</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span><span class="mi">4</span><span class="p">]]</span>
+	<span class="n">man_pathlist</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">man_paths</span><span class="p">]</span>
+	<span class="k">return</span> <span class="nb">set</span><span class="p">(</span><span class="n">path_list</span><span class="p">)</span> <span class="o">==</span> <span class="nb">set</span><span class="p">(</span><span class="n">man_pathlist</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="test2"><a class="viewcode-back" href="../graph_alignment.html#graph_alignment.test2">[docs]</a><span class="k">def</span> <span class="nf">test2</span><span class="p">():</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	Test if all shortest paths are found in a</span>
+<span class="sd">	manually constructed graph with 5 nodes</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="c">#create sample graph</span>
+	<span class="n">nodes</span> <span class="o">=</span> <span class="p">[</span><span class="n">Node</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">5</span><span class="p">)]</span>
+	<span class="n">links</span> <span class="o">=</span> <span class="p">[(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">),(</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">),(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">),(</span><span class="mi">1</span><span class="p">,</span><span class="mi">4</span><span class="p">),(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">),(</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">),(</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">),(</span><span class="mi">0</span><span class="p">,</span><span class="mi">4</span><span class="p">)]</span>
+	<span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)</span> <span class="ow">in</span> <span class="n">links</span><span class="p">:</span>
+		<span class="n">nodes</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">link_to</span><span class="p">(</span><span class="n">nodes</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+	<span class="c">#find all paths</span>
+	<span class="n">path_list</span> <span class="o">=</span> <span class="p">[]</span>
+	<span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)</span> <span class="ow">in</span> <span class="n">links</span><span class="p">:</span>
+		<span class="n">paths</span> <span class="o">=</span> <span class="n">nodes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">shortest_paths_to</span><span class="p">(</span><span class="n">nodes</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+		<span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">:</span>
+			<span class="n">path_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>
+	<span class="n">man_paths</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">],[</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">],[</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">],[</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">]]</span>
+	<span class="n">man_pathlist</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">man_paths</span><span class="p">]</span>
+	<span class="k">return</span> <span class="nb">set</span><span class="p">(</span><span class="n">path_list</span><span class="p">)</span> <span class="o">==</span> <span class="nb">set</span><span class="p">(</span><span class="n">man_pathlist</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="test3"><a class="viewcode-back" href="../graph_alignment.html#graph_alignment.test3">[docs]</a><span class="k">def</span> <span class="nf">test3</span><span class="p">():</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	Test if all shortest paths are found</span>
+<span class="sd">	in a fully conected constructed graph</span>
+<span class="sd">	with 5 nodes</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">nodes</span> <span class="o">=</span> <span class="p">[</span><span class="n">Node</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">5</span><span class="p">)]</span>
+	<span class="n">links</span> <span class="o">=</span> <span class="p">[(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">),(</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">),(</span><span class="mi">0</span><span class="p">,</span><span class="mi">3</span><span class="p">),(</span><span class="mi">0</span><span class="p">,</span><span class="mi">4</span><span class="p">),(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">),(</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">),(</span><span class="mi">1</span><span class="p">,</span><span class="mi">4</span><span class="p">),(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">),(</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">),(</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">)]</span>
+	<span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)</span> <span class="ow">in</span> <span class="n">links</span><span class="p">:</span>
+		<span class="n">nodes</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">link_to</span><span class="p">(</span><span class="n">nodes</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+	<span class="c">#find all paths</span>
+	<span class="n">path_list</span> <span class="o">=</span> <span class="p">[]</span>
+	<span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)</span> <span class="ow">in</span> <span class="n">links</span><span class="p">:</span>
+		<span class="n">paths</span> <span class="o">=</span> <span class="n">nodes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">shortest_paths_to</span><span class="p">(</span><span class="n">nodes</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+		<span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">:</span>
+			<span class="n">path_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>
+	<span class="n">man_paths</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">],[</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">],[</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">4</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">],[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">],[</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">],[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">],[</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">]]</span>
+	<span class="n">man_pathlist</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">man_paths</span><span class="p">]</span>
+	<span class="k">return</span> <span class="nb">set</span><span class="p">(</span><span class="n">path_list</span><span class="p">)</span> <span class="o">==</span> <span class="nb">set</span><span class="p">(</span><span class="n">man_pathlist</span><span class="p">)</span>
+	</div>
+<div class="viewcode-block" id="worst_case_test"><a class="viewcode-back" href="../graph_alignment.html#graph_alignment.worst_case_test">[docs]</a><span class="k">def</span> <span class="nf">worst_case_test</span><span class="p">(</span><span class="n">nr_of_nodes</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	Test the worst case running time for</span>
+<span class="sd">	a graph with n nodes</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="kn">import</span> <span class="nn">time</span>
+	<span class="n">t1</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+	<span class="n">nodes</span> <span class="o">=</span> <span class="p">[</span><span class="n">Node</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">nr_of_nodes</span><span class="p">)]</span>
+	<span class="n">links</span> <span class="o">=</span> <span class="p">[(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">nr_of_nodes</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">nr_of_nodes</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span><span class="o">&lt;</span> <span class="n">j</span><span class="p">]</span>
+	<span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)</span> <span class="ow">in</span> <span class="n">links</span><span class="p">:</span>
+		<span class="n">nodes</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">link_to</span><span class="p">(</span><span class="n">nodes</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+	<span class="n">path_list</span> <span class="o">=</span> <span class="p">[]</span>
+	<span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)</span> <span class="ow">in</span> <span class="n">links</span><span class="p">:</span>
+		<span class="n">paths</span> <span class="o">=</span> <span class="n">nodes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">shortest_paths_to</span><span class="p">(</span><span class="n">nodes</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+		<span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">:</span>
+			<span class="n">path_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>
+	<span class="n">t2</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+	<span class="n">running_time</span> <span class="o">=</span> <span class="n">t2</span> <span class="o">-</span> <span class="n">t1</span>
+	<span class="k">print</span> <span class="s">&#39;running time &#39;</span><span class="p">,</span> <span class="n">running_time</span>
+</pre></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Implementation  documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Dieuwke Hupkes.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+  </body>
+</html>

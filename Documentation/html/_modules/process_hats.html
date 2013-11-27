@@ -1,0 +1,369 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>process_hats &mdash; Implementation  documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Implementation  documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Implementation  documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for process_hats</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">pickle</span>
+<span class="kn">import</span> <span class="nn">nltk.grammar</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+
+<div class="viewcode-block" id="ProcessHATs"><a class="viewcode-back" href="../process_hats.html#process_hats.ProcessHATs">[docs]</a><span class="k">class</span> <span class="nc">ProcessHATs</span><span class="p">():</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	Class with functions that can be applied to a file</span>
+<span class="sd">	containing pickled precomputed HATs.</span>
+<span class="sd">	ProcessHATs has functional overlap with the class</span>
+<span class="sd">	FileProcessing, but is more efficient as it avoids</span>
+<span class="sd">	recomputing HATforests.</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">HATfile</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Pass the name of the file containing the pickled</span>
+<span class="sd">		HATs.</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">HATfile</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">HATfile</span><span class="p">,</span> <span class="s">&#39;r&#39;</span><span class="p">)</span>
+	
+<div class="viewcode-block" id="ProcessHATs.next"><a class="viewcode-back" href="../process_hats.html#process_hats.ProcessHATs.next">[docs]</a>	<span class="k">def</span> <span class="nf">next</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Return the next item in the file. If no </span>
+<span class="sd">		:return [sentence_nr, HATdict, root]</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="k">try</span><span class="p">:</span>
+			<span class="c">#return sentence_nr, root, new_HAT</span>
+			<span class="k">return</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">HATfile</span><span class="p">)</span>
+		<span class="k">except</span> <span class="ne">EOFError</span><span class="p">:</span>
+			<span class="k">return</span> <span class="bp">None</span>
+			</div>
+	<span class="k">def</span> <span class="nf">_reset_pointer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Reset the pointer of self.HATfile such that</span>
+<span class="sd">		the next line to read is the first line.</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">HATfile</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+	
+<div class="viewcode-block" id="ProcessHATs.normalise"><a class="viewcode-back" href="../process_hats.html#process_hats.ProcessHATs.normalise">[docs]</a>	<span class="k">def</span> <span class="nf">normalise</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">rule_dict</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Given a nested dictionary that represent rules as follows:</span>
+<span class="sd">		{lhs : {rhs1 : count, rhs2: count ...}, ....}, return a</span>
+<span class="sd">		similar nested dictionary with normalised counts</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">normalised_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">({})</span>
+		<span class="n">total_lhs</span> <span class="o">=</span> <span class="mi">0</span>
+		<span class="k">for</span> <span class="n">lhs</span> <span class="ow">in</span> <span class="n">rule_dict</span><span class="p">:</span>
+			<span class="n">normalised_dict</span><span class="p">[</span><span class="n">lhs</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+			<span class="n">total</span> <span class="o">=</span> <span class="mi">0</span>
+			<span class="c">#loop twice through dictionary</span>
+			<span class="c">#first to obtain total counts</span>
+			<span class="k">for</span> <span class="n">rhs</span> <span class="ow">in</span> <span class="n">rule_dict</span><span class="p">[</span><span class="n">lhs</span><span class="p">]:</span>
+				<span class="n">total</span> <span class="o">+=</span> <span class="n">rule_dict</span><span class="p">[</span><span class="n">lhs</span><span class="p">][</span><span class="n">rhs</span><span class="p">]</span>
+			<span class="c"># then to adjuct the counts in the</span>
+			<span class="c"># new dictionary</span>
+			<span class="k">for</span> <span class="n">rhs</span> <span class="ow">in</span> <span class="n">rule_dict</span><span class="p">[</span><span class="n">lhs</span><span class="p">]:</span>
+				<span class="n">normalised_dict</span><span class="p">[</span><span class="n">lhs</span><span class="p">][</span><span class="n">rhs</span><span class="p">]</span> <span class="o">=</span> <span class="n">rule_dict</span><span class="p">[</span><span class="n">lhs</span><span class="p">][</span><span class="n">rhs</span><span class="p">]</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="n">total</span><span class="p">)</span>
+		<span class="k">return</span> <span class="n">normalised_dict</span>
+</div>
+<div class="viewcode-block" id="ProcessHATs.unique_rules"><a class="viewcode-back" href="../process_hats.html#process_hats.ProcessHATs.unique_rules">[docs]</a>	<span class="k">def</span> <span class="nf">unique_rules</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stepsize</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Go through HATcorpus and keep track of the</span>
+<span class="sd">		percentage of the rules that is unique.</span>
+<span class="sd">		Store the number of rules and the number of unique</span>
+<span class="sd">		rules if the number of HATs processed % stepsize is 0</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">unique_dict</span> <span class="o">=</span> <span class="p">{}</span>
+		<span class="n">unique_rules</span><span class="p">,</span> <span class="n">unique_total</span> <span class="o">=</span> <span class="p">{},</span> <span class="mi">0</span>
+		<span class="n">all_rules</span><span class="p">,</span> <span class="n">all_total</span> <span class="o">=</span> <span class="p">{},</span> <span class="mi">0</span>
+		<span class="n">sentences</span> <span class="o">=</span> <span class="mi">0</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_reset_pointer</span><span class="p">()</span>
+		<span class="n">new</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+		<span class="k">while</span> <span class="n">new</span><span class="p">:</span>
+			<span class="n">H</span> <span class="o">=</span> <span class="n">HATGrammar</span><span class="p">(</span><span class="n">new</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="n">new</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+			<span class="n">HATs</span> <span class="o">=</span> <span class="n">H</span><span class="o">.</span><span class="n">HATs</span>
+			<span class="n">sentences</span><span class="o">+=</span> <span class="mi">1</span>
+			<span class="c">#go through lhs</span>
+			<span class="k">for</span> <span class="n">lhs</span> <span class="ow">in</span> <span class="n">HATs</span><span class="p">:</span>
+				<span class="n">lhs_plain</span> <span class="o">=</span> <span class="n">H</span><span class="o">.</span><span class="n">plain_label</span><span class="p">(</span><span class="n">lhs</span><span class="p">)</span>
+				<span class="n">unique_rules</span><span class="p">[</span><span class="n">lhs_plain</span><span class="p">],</span> <span class="n">all_rules</span><span class="p">[</span><span class="n">lhs_plain</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([]),</span> <span class="p">{}</span>
+				<span class="k">for</span> <span class="n">rhs</span> <span class="ow">in</span> <span class="n">HATs</span><span class="p">[</span><span class="n">lhs</span><span class="p">]:</span>
+					<span class="n">rhs_plain</span> <span class="o">=</span> <span class="n">H</span><span class="o">.</span><span class="n">plain_label</span><span class="p">(</span><span class="n">rhs</span><span class="p">)</span>
+					<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">rhs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+						<span class="c">#don&#39;t take into account lexical rules</span>
+						<span class="k">continue</span>
+					<span class="k">print</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s"> --&gt; </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span><span class="p">(</span><span class="n">lhs_plain</span><span class="p">,</span> <span class="n">rhs_plain</span><span class="p">)</span>
+					<span class="k">if</span> <span class="n">rhs_plain</span> <span class="ow">in</span> <span class="n">all_rules</span><span class="p">[</span><span class="n">lhs_plain</span><span class="p">]:</span>
+						<span class="s">&quot;rule seen twice&quot;</span>
+						<span class="c">#rule was seen already, increase counter</span>
+						<span class="n">all_rules</span><span class="p">[</span><span class="n">lhs_plain</span><span class="p">][</span><span class="n">rhs_plain</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+						<span class="n">all_total</span> <span class="o">+=</span> <span class="mi">1</span>
+					<span class="k">elif</span> <span class="n">rhs_plain</span> <span class="ow">in</span> <span class="n">unique_rules</span><span class="p">[</span><span class="n">lhs_plain</span><span class="p">]:</span>
+						<span class="s">&quot;rule seen once&quot;</span>
+						<span class="c"># rule was seen one before, move from</span>
+						<span class="c"># unique-rules to all_rules, decrease counter</span>
+						<span class="c"># unique rules, add to all rules</span>
+						<span class="n">unique_total</span> <span class="o">-=</span> <span class="mi">1</span>
+						<span class="n">unique_rules</span><span class="p">[</span><span class="n">lhs_plain</span><span class="p">]</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">rhs_plain</span><span class="p">)</span>
+						<span class="n">all_rules</span><span class="p">[</span><span class="n">lhs_plain</span><span class="p">][</span><span class="n">rhs_plain</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span>
+					<span class="k">else</span><span class="p">:</span>
+						<span class="c">#rule was not seen before, add to unique_rules</span>
+						<span class="n">unique_total</span> <span class="o">+=</span> <span class="mi">1</span>
+						<span class="n">all_total</span> <span class="o">+=</span><span class="mi">1</span>
+						<span class="n">unique_rules</span><span class="p">[</span><span class="n">lhs_plain</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">rhs_plain</span><span class="p">)</span>
+			<span class="k">if</span> <span class="n">sentences</span> <span class="o">%</span> <span class="n">stepsize</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+				<span class="n">update</span> <span class="o">=</span> <span class="p">[</span><span class="n">all_total</span><span class="p">,</span> <span class="n">unique_total</span><span class="p">,</span><span class="nb">float</span><span class="p">(</span><span class="n">unique_total</span><span class="p">)</span><span class="o">/</span><span class="n">all_total</span><span class="p">]</span>
+				<span class="n">unique_dict</span><span class="p">[</span><span class="n">sentences</span><span class="p">]</span> <span class="o">=</span> <span class="n">update</span>
+				<span class="k">print</span> <span class="s">&#39;A</span><span class="si">%i</span><span class="se">\t</span><span class="s">All: </span><span class="si">%i</span><span class="se">\t</span><span class="s">Unique: </span><span class="si">%i</span><span class="se">\t</span><span class="s">Percentage unique:</span><span class="si">%f</span><span class="s">&#39;</span> <span class="o">%</span><span class="p">(</span><span class="n">sentences</span><span class="p">,</span> <span class="n">update</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">update</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">update</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+			<span class="n">new</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+		<span class="k">return</span> <span class="n">unique_dict</span>
+</div>
+<div class="viewcode-block" id="ProcessHATs.em"><a class="viewcode-back" href="../process_hats.html#process_hats.ProcessHATs.em">[docs]</a>	<span class="k">def</span> <span class="nf">em</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_iter</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		When passing a grammar represented by a dictionary,</span>
+<span class="sd">		iteratively assign probabilities to all HATs of the</span>
+<span class="sd">		corpus and recompute the counts of the grammar with</span>
+<span class="sd">		relative frequency estimation until convergence or</span>
+<span class="sd">		until a maximum number iterations is reached.</span>
+<span class="sd">		Return the new grammar</span>
+<span class="sd">		:param start_grammar	Grammar represented as a nested dictionary</span>
+<span class="sd">		:param max_iter			Maximum number of iterations</span>
+<span class="sd">		:param max_length		Maximum sentence length considered</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="c">#Build in some method for measuring the change of two grammars</span>
+		<span class="k">print</span> <span class="s">&#39;run EM with a maximum of </span><span class="si">%i</span><span class="s"> iterations&#39;</span> <span class="o">%</span><span class="n">max_iter</span>
+		<span class="n">i</span> <span class="o">=</span> <span class="mi">1</span>
+		<span class="n">grammar</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initialise_grammar</span><span class="p">()</span>
+		<span class="n">old_grammar</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">grammar</span><span class="p">)</span>
+		<span class="k">while</span> <span class="n">i</span> <span class="o">&lt;=</span> <span class="n">max_iter</span><span class="p">:</span>
+			<span class="n">new_grammar</span> <span class="o">=</span> <span class="p">{}</span>
+			<span class="k">print</span> <span class="s">&quot;iteration </span><span class="si">%i</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">i</span>
+			<span class="n">new_grammar</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">em_iteration</span><span class="p">(</span><span class="n">old_grammar</span><span class="p">,</span> <span class="n">new_grammar</span><span class="p">)</span>
+			<span class="n">i</span> <span class="o">+=</span><span class="mi">1</span>
+			<span class="n">old_grammar</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">new_grammar</span><span class="p">)</span>
+		<span class="k">return</span> <span class="n">new_grammar</span>
+</div>
+<div class="viewcode-block" id="ProcessHATs.initialise_grammar"><a class="viewcode-back" href="../process_hats.html#process_hats.ProcessHATs.initialise_grammar">[docs]</a>	<span class="k">def</span> <span class="nf">initialise_grammar</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Initialise a grammar based on all HATs in the corpus</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">init_grammar</span> <span class="o">=</span> <span class="p">{}</span>
+		<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">em_iteration</span><span class="p">(</span><span class="n">init_grammar</span><span class="p">,</span> <span class="p">{})</span>
+</div>
+<div class="viewcode-block" id="ProcessHATs.em_iteration"><a class="viewcode-back" href="../process_hats.html#process_hats.ProcessHATs.em_iteration">[docs]</a>	<span class="k">def</span> <span class="nf">em_iteration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">old_grammar</span><span class="p">,</span> <span class="n">new_grammar</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Assign probabilities to all HATs in the corpus with the</span>
+<span class="sd">		current grammar, recompute probabilities and return the</span>
+<span class="sd">		new grammar.</span>
+<span class="sd">		It is assumed that the HATs are precomputed and pickled into</span>
+<span class="sd">		a file in the correct order. Every sentence under max_length should</span>
+<span class="sd">		be represented in the file as: [sentence_nr, HAT_dict, root].</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">new_grammar</span> <span class="o">=</span> <span class="p">{}</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_reset_pointer</span><span class="p">()</span>
+		<span class="n">new</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+		<span class="n">sentence_nr</span> <span class="o">=</span> <span class="mi">0</span>
+		<span class="k">while</span> <span class="n">new</span><span class="p">:</span>
+			<span class="n">sentence_nr</span> <span class="o">+=</span> <span class="mi">1</span>
+			<span class="k">print</span> <span class="s">&#39;update grammar for alignment </span><span class="si">%i</span><span class="s">&#39;</span> <span class="o">%</span><span class="n">sentence_nr</span>
+			<span class="n">H</span> <span class="o">=</span> <span class="n">HATGrammar</span><span class="p">(</span><span class="n">new</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="n">new</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+			<span class="n">grammar</span> <span class="o">=</span> <span class="n">H</span><span class="o">.</span><span class="n">update_weights</span><span class="p">(</span><span class="n">new_grammar</span><span class="p">,</span> <span class="n">old_grammar</span><span class="p">)</span>
+			<span class="n">new</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+		<span class="n">grammar_norm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalise</span><span class="p">(</span><span class="n">new_grammar</span><span class="p">)</span>
+		<span class="k">return</span> <span class="n">grammar_norm</span>
+
+</div></div>
+<div class="viewcode-block" id="HATGrammar"><a class="viewcode-back" href="../process_hats.html#process_hats.HATGrammar">[docs]</a><span class="k">class</span> <span class="nc">HATGrammar</span><span class="p">():</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	Class that </span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">HATdict</span><span class="p">,</span><span class="n">root</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Initialise with a dictionary uniquely representing a HAT</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">HATs</span> <span class="o">=</span> <span class="n">HATdict</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">root</span> <span class="o">=</span> <span class="n">root</span>
+	
+<div class="viewcode-block" id="HATGrammar.update_weights"><a class="viewcode-back" href="../process_hats.html#process_hats.HATGrammar.update_weights">[docs]</a>	<span class="k">def</span> <span class="nf">update_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grammar</span><span class="p">,</span> <span class="n">external_pcfg</span> <span class="o">=</span> <span class="p">{}):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Implicitly assign all HATs in the HATforest a probability,</span>
+<span class="sd">		normalise, and compute the counts of the rules in them</span>
+<span class="sd">		through relative frequency estimation.</span>
+<span class="sd">		Update the inputted grammar with these counts.</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">probabilities</span> <span class="o">=</span> <span class="p">{}</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">probmass</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="n">external_pcfg</span> <span class="o">=</span> <span class="n">external_pcfg</span><span class="p">,</span> <span class="n">probs</span> <span class="o">=</span> <span class="n">probabilities</span><span class="p">)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">external_pcfg</span><span class="p">,</span> <span class="n">probabilities</span><span class="p">,</span> <span class="n">grammar</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,)</span>
+		<span class="k">return</span> <span class="n">grammar</span>
+	</div>
+<div class="viewcode-block" id="HATGrammar.probmass"><a class="viewcode-back" href="../process_hats.html#process_hats.HATGrammar.probmass">[docs]</a>	<span class="k">def</span> <span class="nf">probmass</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">head_node</span><span class="p">,</span> <span class="n">children</span> <span class="o">=</span> <span class="p">(),</span> <span class="n">external_pcfg</span> <span class="o">=</span> <span class="p">{},</span> <span class="n">probs</span> <span class="o">=</span> <span class="p">{}):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Compute the probability mass of all subtrees headed by head_node with</span>
+<span class="sd">		direct children children (possibly empty), given the input pcfg.</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">nodes</span> <span class="o">=</span> <span class="p">(</span><span class="n">head_node</span><span class="p">,)</span><span class="o">+</span><span class="n">children</span>
+		<span class="n">plain_head</span><span class="p">,</span> <span class="n">plain_children</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plain_label</span><span class="p">(</span><span class="n">head_node</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">plain_label</span><span class="p">(</span><span class="n">children</span><span class="p">)</span>
+		<span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">children</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">children</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">HATs</span><span class="p">[</span><span class="n">head_node</span><span class="p">],</span> <span class="s">&#39;Head node </span><span class="si">%s</span><span class="s"> does not have children </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">head_node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span>
+		<span class="c">#We already computed the value before</span>
+		<span class="k">if</span> <span class="n">nodes</span> <span class="ow">in</span> <span class="n">probs</span><span class="p">:</span>
+			<span class="k">return</span> <span class="n">probs</span><span class="p">[</span><span class="n">nodes</span><span class="p">]</span>
+		<span class="c">#node is a leaf node</span>
+		<span class="k">elif</span> <span class="n">head_node</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">HATs</span><span class="p">:</span>
+			<span class="n">prob</span> <span class="o">=</span> <span class="mi">1</span>
+		<span class="c">#compute prob mass of trees headed by head_node children</span>
+		<span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">nodes</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+			<span class="n">prob</span> <span class="o">=</span> <span class="n">external_pcfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">plain_head</span><span class="p">,{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">plain_children</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+			<span class="k">assert</span> <span class="n">external_pcfg</span> <span class="o">==</span> <span class="p">{}</span> <span class="ow">or</span> <span class="n">plain_children</span> <span class="ow">in</span> <span class="n">external_pcfg</span><span class="p">[</span><span class="n">plain_head</span><span class="p">],</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s"> --&gt; </span><span class="si">%s</span><span class="s">    not in external pcfg&#39;</span> <span class="o">%</span><span class="p">(</span><span class="n">plain_head</span><span class="p">,</span> <span class="s">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">plain_children</span><span class="p">))</span>
+			<span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">children</span><span class="p">:</span>
+				<span class="n">prob</span> <span class="o">=</span> <span class="n">prob</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">probmass</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">external_pcfg</span> <span class="o">=</span> <span class="n">external_pcfg</span><span class="p">,</span> <span class="n">probs</span> <span class="o">=</span><span class="n">probs</span><span class="p">)</span>
+			<span class="n">probs</span><span class="p">[</span><span class="n">nodes</span><span class="p">]</span> <span class="o">=</span> <span class="n">prob</span>
+		<span class="c">#compute prob mass of trees headed by head_node</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">nodes</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+			<span class="n">prob</span> <span class="o">=</span> <span class="mi">0</span>
+			<span class="k">for</span> <span class="n">rhs</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">HATs</span><span class="p">[</span><span class="n">head_node</span><span class="p">]:</span>
+				<span class="n">prob</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">probmass</span><span class="p">(</span><span class="n">head_node</span><span class="p">,</span> <span class="n">rhs</span><span class="p">,</span> <span class="n">external_pcfg</span><span class="p">,</span> <span class="n">probs</span><span class="p">)</span>
+				<span class="n">probs</span><span class="p">[</span><span class="n">nodes</span><span class="p">]</span> <span class="o">=</span> <span class="n">prob</span>
+		<span class="k">assert</span> <span class="n">prob</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#39;probability mass of subtrees headed by </span><span class="si">%s</span><span class="s"> cannot be 0&#39;</span> <span class="o">%</span><span class="n">head_node</span>
+		<span class="k">return</span> <span class="n">prob</span>
+
+</div>
+<div class="viewcode-block" id="HATGrammar.update"><a class="viewcode-back" href="../process_hats.html#process_hats.HATGrammar.update">[docs]</a>	<span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">external_pcfg</span><span class="p">,</span> <span class="n">probs</span><span class="p">,</span> <span class="n">grammar</span><span class="p">,</span> <span class="n">p_cur</span><span class="p">,</span> <span class="n">lhs</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Compute the updated counts for a node, given its parent</span>
+<span class="sd">		and how often this parent occurred in the forest.</span>
+<span class="sd">		Does not return a grammar, but modifies it globally.</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="k">if</span> <span class="n">lhs</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">HATs</span><span class="p">:</span>
+			<span class="k">return</span>
+		<span class="n">lhs_plain</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plain_label</span><span class="p">(</span><span class="n">lhs</span><span class="p">)</span>
+		<span class="n">grammar</span><span class="p">[</span><span class="n">lhs_plain</span><span class="p">]</span> <span class="o">=</span> <span class="n">grammar</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">lhs_plain</span><span class="p">,{})</span>
+		<span class="k">for</span> <span class="n">rhs</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">HATs</span><span class="p">[</span><span class="n">lhs</span><span class="p">]:</span>
+			<span class="n">rhs_plain</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plain_label</span><span class="p">(</span><span class="n">rhs</span><span class="p">)</span>
+			<span class="n">tup</span> <span class="o">=</span> <span class="p">(</span><span class="n">lhs</span><span class="p">,)</span> <span class="o">+</span> <span class="n">rhs</span>
+			<span class="n">c_new</span> <span class="o">=</span> <span class="n">p_cur</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="n">probs</span><span class="p">[</span><span class="n">tup</span><span class="p">])</span><span class="o">/</span><span class="n">probs</span><span class="p">[(</span><span class="n">lhs</span><span class="p">,)]</span>
+			<span class="n">grammar</span><span class="p">[</span><span class="n">lhs_plain</span><span class="p">][</span><span class="n">rhs_plain</span><span class="p">]</span> <span class="o">=</span> <span class="n">grammar</span><span class="p">[</span><span class="n">lhs_plain</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">rhs_plain</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="n">c_new</span>
+			<span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">rhs</span><span class="p">:</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">external_pcfg</span><span class="p">,</span> <span class="n">probs</span><span class="p">,</span> <span class="n">grammar</span><span class="p">,</span> <span class="n">c_new</span><span class="p">,</span> <span class="n">child</span><span class="p">)</span>
+		<span class="k">return</span>
+</div>
+<div class="viewcode-block" id="HATGrammar.plain_label"><a class="viewcode-back" href="../process_hats.html#process_hats.HATGrammar.plain_label">[docs]</a>	<span class="k">def</span> <span class="nf">plain_label</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">label</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		strip the label from the part determining</span>
+<span class="sd">		its span, to make it uniform</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+			<span class="k">return</span> <span class="n">label</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;-[&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+		<span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">label</span><span class="p">,</span><span class="nb">tuple</span><span class="p">):</span>
+			<span class="k">return</span> <span class="nb">tuple</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">plain_label</span><span class="p">(</span><span class="n">l</span><span class="p">)</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">label</span><span class="p">])</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;unexpected label-type </span><span class="si">%s</span><span class="s">: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">label</span><span class="p">)))</span>
+
+</div>
+<div class="viewcode-block" id="HATGrammar.to_WeightedGrammar"><a class="viewcode-back" href="../process_hats.html#process_hats.HATGrammar.to_WeightedGrammar">[docs]</a>	<span class="k">def</span> <span class="nf">to_WeightedGrammar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">rule_dict</span><span class="p">,</span> <span class="n">remove_old</span> <span class="o">=</span> <span class="bp">False</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Transforms a set of rules represented in a</span>
+<span class="sd">		nested dictionary into a WeightedGrammar object.</span>
+<span class="sd">		It is assumed that the startsymbol of the grammar is </span>
+<span class="sd">		TOP, if this is not the case, parsing with the grammar</span>
+<span class="sd">		is not possible.</span>
+<span class="sd">		If remove_old = True, remove the old grammar during the</span>
+<span class="sd">		process to save memory.</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="c">#create grammar</span>
+		<span class="n">productions</span> <span class="o">=</span> <span class="p">[]</span>
+		<span class="k">for</span> <span class="n">lhs</span> <span class="ow">in</span> <span class="n">rule_dict</span><span class="p">:</span>
+			<span class="n">total</span> <span class="o">=</span> <span class="mi">0</span>
+			<span class="k">for</span> <span class="n">rhs</span> <span class="ow">in</span> <span class="n">rule_dict</span><span class="p">[</span><span class="n">lhs</span><span class="p">]:</span>
+				<span class="n">probability</span> <span class="o">=</span> <span class="n">rule_dict</span><span class="p">[</span><span class="n">lhs</span><span class="p">][</span><span class="n">rhs</span><span class="p">]</span>
+				<span class="n">total</span> <span class="o">+=</span> <span class="n">probability</span>
+				<span class="n">rhs_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">rhs</span><span class="p">)</span>
+				<span class="n">new_production</span> <span class="o">=</span> <span class="n">nltk</span><span class="o">.</span><span class="n">WeightedProduction</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span><span class="n">rhs_list</span><span class="p">,</span><span class="n">prob</span><span class="o">=</span><span class="n">probability</span><span class="p">)</span>
+				<span class="n">productions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_production</span><span class="p">)</span>
+				<span class="k">if</span> <span class="ow">not</span> <span class="n">remove_old</span><span class="p">:</span> <span class="k">del</span> <span class="n">rule_dict</span><span class="p">[</span><span class="n">lhs</span><span class="p">][</span><span class="n">rhs</span><span class="p">]</span>
+			<span class="k">assert</span> <span class="n">total</span> <span class="o">==</span> <span class="mf">1.0</span>
+			<span class="k">if</span> <span class="ow">not</span> <span class="n">remove_old</span><span class="p">:</span> <span class="k">del</span> <span class="n">rule_dict</span><span class="p">[</span><span class="n">lhs</span><span class="p">]</span>
+		<span class="n">start</span> <span class="o">=</span> <span class="n">nltk</span><span class="o">.</span><span class="n">Nonterminal</span><span class="p">(</span><span class="s">&#39;TOP&#39;</span><span class="p">)</span>
+		<span class="k">return</span> <span class="n">nltk</span><span class="o">.</span><span class="n">WeightedGrammar</span><span class="p">(</span><span class="n">start</span><span class="p">,</span><span class="n">productions</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Implementation  documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Dieuwke Hupkes.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+  </body>
+</html>

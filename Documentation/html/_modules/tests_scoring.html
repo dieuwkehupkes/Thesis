@@ -1,0 +1,260 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tests_scoring &mdash; Implementation  documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Implementation  documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Implementation  documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for tests_scoring</h1><div class="highlight"><pre>
+<span class="kn">from</span> <span class="nn">scoring</span> <span class="kn">import</span> <span class="o">*</span>
+
+<div class="viewcode-block" id="ScoreTests"><a class="viewcode-back" href="../tests.html#tests_scoring.ScoreTests">[docs]</a><span class="k">class</span> <span class="nc">ScoreTests</span><span class="p">():</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	Test Scoring Class</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="ScoreTests.score_test_all"><a class="viewcode-back" href="../tests.html#tests_scoring.ScoreTests.score_test_all">[docs]</a>	<span class="k">def</span> <span class="nf">score_test_all</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">score_test1</span><span class="p">()</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">score_test2</span><span class="p">()</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">score_test3</span><span class="p">()</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">score_test4</span><span class="p">()</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">score_test7</span><span class="p">()</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">score_test8</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="ScoreTests.score_test1"><a class="viewcode-back" href="../tests.html#tests_scoring.ScoreTests.score_test1">[docs]</a>	<span class="k">def</span> <span class="nf">score_test1</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Sentence: &#39;my dog likes eating sausage&#39;</span>
+<span class="sd">		Alignment: &#39;0-0 1-1 2-2 2-3 3-5 4-4&#39;</span>
+<span class="sd">		Dependencies: &#39;nsubj(likes-3, dog-2)&#39;, &#39;root(ROOT-0, likes-3)&#39;,</span>
+<span class="sd">		&#39;xcomp(likes-3, eating-4)&#39; and &#39;dobj(eating-4, sausages-5)&#39;.</span>
+<span class="sd">	</span>
+<span class="sd">		Manual score normal rules spanrels: 1.0</span>
+<span class="sd">		Manual score hatrules spanrels: 0.75</span>
+<span class="sd">		Manual score hatrules spanrels deep: 1.0</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">sentence</span> <span class="o">=</span> <span class="s">&#39;my dog likes eating sausage&#39;</span>
+		<span class="n">alignment</span> <span class="o">=</span> <span class="s">&#39;0-0 1-1 2-2 2-3 3-5 4-4&#39;</span>
+		<span class="n">dependencies</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;poss(dog-2, My-1)&#39;</span><span class="p">,</span><span class="s">&#39;nsubj(likes-3, dog-2)&#39;</span><span class="p">,</span><span class="s">&#39;root(ROOT-0, likes-3)&#39;</span><span class="p">,</span><span class="s">&#39;xcomp(likes-3, eating-4)&#39;</span><span class="p">,</span><span class="s">&#39;dobj(eating-4, sausages-5)&#39;</span><span class="p">]</span>
+		<span class="n">deps</span> <span class="o">=</span> <span class="n">Dependencies</span><span class="p">(</span><span class="n">dependencies</span><span class="p">)</span>
+		<span class="n">nr_of_deps</span> <span class="o">=</span> <span class="n">deps</span><span class="o">.</span><span class="n">nr_of_deps</span>
+		<span class="n">relations</span> <span class="o">=</span> <span class="n">deps</span><span class="o">.</span><span class="n">spanrelations</span><span class="p">()</span>
+		<span class="n">scoring</span> <span class="o">=</span> <span class="n">Scoring</span><span class="p">(</span><span class="n">alignment</span><span class="p">,</span> <span class="n">sentence</span><span class="p">,</span> <span class="p">{})</span>
+		<span class="n">tree1</span><span class="p">,</span> <span class="n">score1</span> <span class="o">=</span> <span class="n">scoring</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">Alignments</span><span class="o">.</span><span class="n">rules</span><span class="p">,</span> <span class="n">Rule</span><span class="o">.</span><span class="n">probability_spanrels</span><span class="p">,</span> <span class="p">[</span><span class="n">relations</span><span class="p">,</span> <span class="n">nr_of_deps</span><span class="p">])</span>
+		<span class="n">tree2</span><span class="p">,</span> <span class="n">score2</span> <span class="o">=</span> <span class="n">scoring</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">Alignments</span><span class="o">.</span><span class="n">hat_rules</span><span class="p">,</span> <span class="n">Rule</span><span class="o">.</span><span class="n">probability_spanrels</span><span class="p">,</span> <span class="p">[</span><span class="n">relations</span><span class="p">,</span> <span class="n">nr_of_deps</span><span class="p">])</span>
+		<span class="n">relations</span> <span class="o">=</span> <span class="n">deps</span><span class="o">.</span><span class="n">spanrelations</span><span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+		<span class="n">tree3</span><span class="p">,</span> <span class="n">score3</span> <span class="o">=</span> <span class="n">scoring</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">Alignments</span><span class="o">.</span><span class="n">hat_rules</span><span class="p">,</span> <span class="n">Rule</span><span class="o">.</span><span class="n">probability_spanrels</span><span class="p">,</span> <span class="p">[</span><span class="n">relations</span><span class="p">,</span> <span class="n">nr_of_deps</span><span class="p">])</span>
+		<span class="k">return</span> <span class="n">score1</span> <span class="o">==</span> <span class="mf">1.0</span> <span class="ow">and</span> <span class="n">score2</span> <span class="o">==</span> <span class="mf">0.75</span> <span class="ow">and</span> <span class="n">score3</span> <span class="o">==</span> <span class="mf">1.0</span>
+
+</div>
+<div class="viewcode-block" id="ScoreTests.score_test2"><a class="viewcode-back" href="../tests.html#tests_scoring.ScoreTests.score_test2">[docs]</a>	<span class="k">def</span> <span class="nf">score_test2</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Sentence: &#39;european growth is inconceivable without solidarity .&#39;</span>
+<span class="sd">		Alignment: &#39;0-0 1-1 2-2 3-3 4-4 5-5 6-6&#39;</span>
+<span class="sd">		Dependencies: &#39;nn(growth-2, european-1)&#39;, &#39;nsubj(inconceivable-4, growth-2)&#39;,</span>
+<span class="sd">		&#39;cop(inconceivable-4, is-3)&#39;, &#39;root(ROOT-0, inconceivable-4)&#39;, </span>
+<span class="sd">		&#39;prep(inconceivable-4, without-5)&#39; and &#39;pobj(without-5, solidarity-6)&#39;</span>
+<span class="sd">	</span>
+<span class="sd">		Manual score all rules spanrels: 1.0</span>
+<span class="sd">		Manual score hat rules spanrels: 0.6</span>
+<span class="sd">		Manual score hat rules spanrels deep: 1.0</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">sentence</span> <span class="o">=</span> <span class="s">&quot;european growth is inconceivable without solidarity .&quot;</span>
+		<span class="n">alignment</span> <span class="o">=</span> <span class="s">&quot;0-0 1-1 2-2 3-3 4-4 5-5 6-6&quot;</span>
+		<span class="n">dependencies</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;nn(growth-2, european-1)&#39;</span><span class="p">,</span><span class="s">&#39;nsubj(inconceivable-4, growth-2)&#39;</span><span class="p">,</span><span class="s">&#39;cop(inconceivable-4, is-3)&#39;</span><span class="p">,</span><span class="s">&#39;root(ROOT-0, inconceivable-4)&#39;</span><span class="p">,</span><span class="s">&#39;prep(inconceivable-4, without-5)&#39;</span><span class="p">,</span><span class="s">&#39;pobj(without-5, solidarity-6)&#39;</span><span class="p">]</span>
+		<span class="n">deps</span> <span class="o">=</span> <span class="n">Dependencies</span><span class="p">(</span><span class="n">dependencies</span><span class="p">)</span>
+		<span class="n">nr_of_deps</span> <span class="o">=</span> <span class="n">deps</span><span class="o">.</span><span class="n">nr_of_deps</span>
+		<span class="n">relations</span> <span class="o">=</span> <span class="n">deps</span><span class="o">.</span><span class="n">spanrelations</span><span class="p">()</span>
+		<span class="n">scoring</span> <span class="o">=</span> <span class="n">Scoring</span><span class="p">(</span><span class="n">alignment</span><span class="p">,</span> <span class="n">sentence</span><span class="p">,</span> <span class="p">{})</span>
+		<span class="n">tree1</span><span class="p">,</span> <span class="n">score1</span> <span class="o">=</span> <span class="n">scoring</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">Alignments</span><span class="o">.</span><span class="n">rules</span><span class="p">,</span> <span class="n">Rule</span><span class="o">.</span><span class="n">probability_spanrels</span><span class="p">,</span> <span class="p">[</span><span class="n">relations</span><span class="p">,</span> <span class="n">nr_of_deps</span><span class="p">])</span>
+		<span class="n">tree2</span><span class="p">,</span> <span class="n">score2</span> <span class="o">=</span> <span class="n">scoring</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">Alignments</span><span class="o">.</span><span class="n">hat_rules</span><span class="p">,</span> <span class="n">Rule</span><span class="o">.</span><span class="n">probability_spanrels</span><span class="p">,</span> <span class="p">[</span><span class="n">relations</span><span class="p">,</span> <span class="n">nr_of_deps</span><span class="p">])</span>
+		<span class="n">relations</span> <span class="o">=</span> <span class="n">deps</span><span class="o">.</span><span class="n">spanrelations</span><span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+		<span class="n">tree3</span><span class="p">,</span> <span class="n">score3</span> <span class="o">=</span> <span class="n">scoring</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">Alignments</span><span class="o">.</span><span class="n">hat_rules</span><span class="p">,</span> <span class="n">Rule</span><span class="o">.</span><span class="n">probability_spanrels</span><span class="p">,</span> <span class="p">[</span><span class="n">relations</span><span class="p">,</span> <span class="n">nr_of_deps</span><span class="p">])</span>
+		<span class="k">return</span> <span class="n">score1</span> <span class="o">==</span> <span class="mf">1.0</span> <span class="ow">and</span> <span class="n">score2</span> <span class="o">==</span> <span class="mf">0.6</span> <span class="ow">and</span> <span class="n">score3</span> <span class="o">==</span> <span class="mf">1.0</span>
+</div>
+<div class="viewcode-block" id="ScoreTests.score_test3"><a class="viewcode-back" href="../tests.html#tests_scoring.ScoreTests.score_test3">[docs]</a>	<span class="k">def</span> <span class="nf">score_test3</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Sentence: &#39;approval of the minutes of the previous sitting&#39;</span>
+<span class="sd">		Alignment: &#39;5-6 4-5 3-4 3-2 2-1 6-8 3-3 1-1 0-0 7-7&#39;</span>
+<span class="sd">		Dependencies: &#39;root(ROOT-0, approval-1)&#39;,&#39;prep(approval-1, of-2)&#39;, &#39;det(minutes-4, the-3)&#39;,&#39;pobj(of-2, minutes-4)&#39;,&#39;prep(approval-1, of-5)&#39;,&#39;det(sitting-8, the-6)&#39;,&#39;amod(sitting-8, previous-7)&#39;,&#39;pobj(of-5, sitting-8)&#39;</span>
+
+<span class="sd">		Manual score all rules spanrels: 0.59</span>
+<span class="sd">		Manual score hat rules spanrels: 0.57</span>
+<span class="sd">		Manual score hat rules spanrels deep: 1.0</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">sentence</span> <span class="o">=</span> <span class="s">&#39;approval of the minutes of the previous sitting&#39;</span>
+		<span class="n">alignment</span> <span class="o">=</span> <span class="s">&#39;5-6 4-5 3-4 3-2 2-1 6-8 3-3 1-1 0-0 7-7&#39;</span>
+		<span class="n">dependencies</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;root(ROOT-0, approval-1)&#39;</span><span class="p">,</span><span class="s">&#39;prep(approval-1, of-2)&#39;</span><span class="p">,</span> <span class="s">&#39;det(minutes-4, the-3)&#39;</span><span class="p">,</span><span class="s">&#39;pobj(of-2, minutes-4)&#39;</span><span class="p">,</span><span class="s">&#39;prep(approval-1, of-5)&#39;</span><span class="p">,</span><span class="s">&#39;det(sitting-8, the-6)&#39;</span><span class="p">,</span><span class="s">&#39;amod(sitting-8, previous-7)&#39;</span><span class="p">,</span><span class="s">&#39;pobj(of-5, sitting-8)&#39;</span><span class="p">]</span>
+		<span class="n">deps</span> <span class="o">=</span> <span class="n">Dependencies</span><span class="p">(</span><span class="n">dependencies</span><span class="p">)</span>
+		<span class="n">nr_of_deps</span> <span class="o">=</span> <span class="n">deps</span><span class="o">.</span><span class="n">nr_of_deps</span>
+		<span class="n">relations</span> <span class="o">=</span> <span class="n">deps</span><span class="o">.</span><span class="n">spanrelations</span><span class="p">()</span>
+		<span class="n">scoring</span> <span class="o">=</span> <span class="n">Scoring</span><span class="p">(</span><span class="n">alignment</span><span class="p">,</span> <span class="n">sentence</span><span class="p">,</span> <span class="p">{})</span>
+		<span class="n">tree1</span><span class="p">,</span> <span class="n">score1</span> <span class="o">=</span> <span class="n">scoring</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">Alignments</span><span class="o">.</span><span class="n">rules</span><span class="p">,</span> <span class="n">Rule</span><span class="o">.</span><span class="n">probability_spanrels</span><span class="p">,</span> <span class="p">[</span><span class="n">relations</span><span class="p">,</span> <span class="n">nr_of_deps</span><span class="p">])</span>
+		<span class="n">tree2</span><span class="p">,</span> <span class="n">score2</span> <span class="o">=</span> <span class="n">scoring</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">Alignments</span><span class="o">.</span><span class="n">hat_rules</span><span class="p">,</span> <span class="n">Rule</span><span class="o">.</span><span class="n">probability_spanrels</span><span class="p">,</span> <span class="p">[</span><span class="n">relations</span><span class="p">,</span> <span class="n">nr_of_deps</span><span class="p">])</span>
+		<span class="n">relations</span> <span class="o">=</span> <span class="n">deps</span><span class="o">.</span><span class="n">spanrelations</span><span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+		<span class="n">tree3</span><span class="p">,</span> <span class="n">score3</span> <span class="o">=</span> <span class="n">scoring</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">Alignments</span><span class="o">.</span><span class="n">hat_rules</span><span class="p">,</span> <span class="n">Rule</span><span class="o">.</span><span class="n">probability_spanrels</span><span class="p">,</span> <span class="p">[</span><span class="n">relations</span><span class="p">,</span> <span class="n">nr_of_deps</span><span class="p">])</span>
+		<span class="k">return</span> <span class="n">score1</span> <span class="o">==</span> <span class="nb">float</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span><span class="o">/</span><span class="mi">7</span> <span class="ow">and</span> <span class="n">score2</span> <span class="o">==</span> <span class="nb">float</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">/</span><span class="mi">7</span> <span class="ow">and</span> <span class="n">score3</span> <span class="o">==</span> <span class="nb">float</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="o">/</span><span class="mi">7</span>
+
+</div>
+<div class="viewcode-block" id="ScoreTests.score_test4"><a class="viewcode-back" href="../tests.html#tests_scoring.ScoreTests.score_test4">[docs]</a>	<span class="k">def</span> <span class="nf">score_test4</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Sentence: &#39;resumption of the session&#39;</span>
+<span class="sd">		Alignment: &#39;3-3 2-2 1-1 0-0&#39;</span>
+<span class="sd">		Dependencies: &#39;root(ROOT-0, resumption-1)&#39;,&#39;prep(resumption-1, of-2)&#39;,&#39;det(session-4, the-3)&#39;,&#39;pobj(of-2, session-4)&#39;</span>
+<span class="sd">	</span>
+<span class="sd">		Manual score all rules spanrels: 1.0</span>
+<span class="sd">		Manual score hat rules spanrels: 1.0</span>
+<span class="sd">		Manual score hat rules spanrels deep: 1.0	</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">sentence</span> <span class="o">=</span> <span class="s">&#39;resumption of the session&#39;</span>
+		<span class="n">alignment</span> <span class="o">=</span> <span class="s">&#39;3-3 2-2 1-1 0-0&#39;</span>
+		<span class="n">dependencies</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;root(ROOT-0, resumption-1)&#39;</span><span class="p">,</span><span class="s">&#39;prep(resumption-1, of-2)&#39;</span><span class="p">,</span><span class="s">&#39;det(session-4, the-3)&#39;</span><span class="p">,</span><span class="s">&#39;pobj(of-2, session-4)&#39;</span><span class="p">]</span>
+		<span class="n">deps</span> <span class="o">=</span> <span class="n">Dependencies</span><span class="p">(</span><span class="n">dependencies</span><span class="p">)</span>
+		<span class="n">nr_of_deps</span> <span class="o">=</span> <span class="n">deps</span><span class="o">.</span><span class="n">nr_of_deps</span>
+		<span class="n">relations</span> <span class="o">=</span> <span class="n">deps</span><span class="o">.</span><span class="n">spanrelations</span><span class="p">()</span>
+		<span class="n">scoring</span> <span class="o">=</span> <span class="n">Scoring</span><span class="p">(</span><span class="n">alignment</span><span class="p">,</span> <span class="n">sentence</span><span class="p">,</span> <span class="p">{})</span>
+		<span class="n">tree1</span><span class="p">,</span> <span class="n">score1</span> <span class="o">=</span> <span class="n">scoring</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">Alignments</span><span class="o">.</span><span class="n">rules</span><span class="p">,</span> <span class="n">Rule</span><span class="o">.</span><span class="n">probability_spanrels</span><span class="p">,</span> <span class="p">[</span><span class="n">relations</span><span class="p">,</span> <span class="n">nr_of_deps</span><span class="p">])</span>
+		<span class="n">tree2</span><span class="p">,</span> <span class="n">score2</span> <span class="o">=</span> <span class="n">scoring</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">Alignments</span><span class="o">.</span><span class="n">hat_rules</span><span class="p">,</span> <span class="n">Rule</span><span class="o">.</span><span class="n">probability_spanrels</span><span class="p">,</span> <span class="p">[</span><span class="n">relations</span><span class="p">,</span> <span class="n">nr_of_deps</span><span class="p">])</span>
+		<span class="n">relations</span> <span class="o">=</span> <span class="n">deps</span><span class="o">.</span><span class="n">spanrelations</span><span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+		<span class="n">tree3</span><span class="p">,</span> <span class="n">score3</span> <span class="o">=</span> <span class="n">scoring</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">Alignments</span><span class="o">.</span><span class="n">hat_rules</span><span class="p">,</span> <span class="n">Rule</span><span class="o">.</span><span class="n">probability_spanrels</span><span class="p">,</span> <span class="p">[</span><span class="n">relations</span><span class="p">,</span> <span class="n">nr_of_deps</span><span class="p">])</span>
+		<span class="k">return</span> <span class="n">score1</span> <span class="o">==</span> <span class="mf">1.0</span> <span class="ow">and</span> <span class="n">score2</span> <span class="o">==</span> <span class="mf">1.0</span> <span class="ow">and</span> <span class="n">score3</span> <span class="o">==</span> <span class="mf">1.0</span>
+</div>
+<div class="viewcode-block" id="ScoreTests.score_test5"><a class="viewcode-back" href="../tests.html#tests_scoring.ScoreTests.score_test5">[docs]</a>	<span class="k">def</span> <span class="nf">score_test5</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		no dependencies</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">sentence</span> <span class="o">=</span> <span class="s">&#39;( 2 ) -do-&#39;</span>
+		<span class="n">alignment</span> <span class="o">=</span> <span class="s">&#39;0-0&#39;</span>
+		<span class="n">dependencies</span> <span class="o">=</span> <span class="p">[]</span>
+		<span class="n">deps</span> <span class="o">=</span> <span class="n">Dependencies</span><span class="p">(</span><span class="n">dependencies</span><span class="p">)</span>
+		<span class="k">print</span> <span class="n">deps</span><span class="o">.</span><span class="n">checkroot</span><span class="p">()</span>
+		<span class="n">labels</span> <span class="o">=</span> <span class="n">deps</span><span class="o">.</span><span class="n">labels</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
+		<span class="k">print</span> <span class="n">labels</span>
+		<span class="n">scoring</span> <span class="o">=</span> <span class="n">Scoring</span><span class="p">(</span><span class="n">alignment</span><span class="p">,</span> <span class="n">sentence</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
+		<span class="n">tree</span><span class="p">,</span> <span class="n">score</span> <span class="o">=</span> <span class="n">scoring</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">Alignments</span><span class="o">.</span><span class="n">hat_rules</span><span class="p">,</span> <span class="n">Rule</span><span class="o">.</span><span class="n">probability_labels</span><span class="p">,</span> <span class="p">[</span><span class="n">labels</span><span class="p">])</span>
+		<span class="k">print</span><span class="p">(</span><span class="n">tree</span><span class="p">)</span>
+		<span class="k">print</span> <span class="n">score</span>
+	</div>
+<div class="viewcode-block" id="ScoreTests.score_test6"><a class="viewcode-back" href="../tests.html#tests_scoring.ScoreTests.score_test6">[docs]</a>	<span class="k">def</span> <span class="nf">score_test6</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		dependencies form no tree</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">sentence</span> <span class="o">=</span> <span class="s">&#39;. ( pt ) we basically agree with the assessment and the thoughts put forward by the rapporteur concerning the sixth periodic report on the social and economic situation and development of the regions of the european union .&#39;</span>
+		<span class="n">alignment</span> <span class="o">=</span> <span class="s">&#39;0-0&#39;</span>
+		<span class="n">dependencies</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;discourse(.-1, pt-3)&#39;</span><span class="p">,</span><span class="s">&#39;nsubj(agree-7, we-5)&#39;</span><span class="p">,</span><span class="s">&#39;advmod(agree-7, basically-6)&#39;</span><span class="p">,</span><span class="s">&#39;rcmod(.-1, agree-7)&#39;</span><span class="p">,</span><span class="s">&#39;prep(agree-7, with-8)&#39;</span><span class="p">,</span><span class="s">&#39;det(assessment-10, the-9)&#39;</span><span class="p">,</span><span class="s">&#39;pobj(with-8, assessment-10)&#39;</span><span class="p">,</span><span class="s">&#39;cc(assessment-10, and-11)&#39;</span><span class="p">,</span><span class="s">&#39;det(thoughts-13, the-12)&#39;</span><span class="p">,</span><span class="s">&#39;conj(assessment-10, thoughts-13)&#39;</span><span class="p">,</span><span class="s">&#39;root(ROOT-0, put-14)&#39;</span><span class="p">,</span><span class="s">&#39;advmod(put-14, forward-15)&#39;</span><span class="p">,</span><span class="s">&#39;prep(put-14, by-16)&#39;</span><span class="p">,</span><span class="s">&#39;det(rapporteur-18, the-17)&#39;</span><span class="p">,</span><span class="s">&#39;pobj(by-16, rapporteur-18)&#39;</span><span class="p">,</span><span class="s">&#39;det(report-23, the-20)&#39;</span><span class="p">,</span><span class="s">&#39;amod(report-23, sixth-21)&#39;</span><span class="p">,</span><span class="s">&#39;amod(report-23, periodic-22)&#39;</span><span class="p">,</span><span class="s">&#39;pobj(concerning-19, report-23)&#39;</span><span class="p">,</span><span class="s">&#39;prep(report-23, on-24)&#39;</span><span class="p">,</span><span class="s">&#39;det(situation-29, the-25)&#39;</span><span class="p">,</span><span class="s">&#39;amod(situation-29, social-26)&#39;</span><span class="p">,</span><span class="s">&#39;cc(social-26, and-27)&#39;</span><span class="p">,</span><span class="s">&#39;conj(social-26, economic-28)&#39;</span><span class="p">,</span><span class="s">&#39;pobj(on-24, situation-29)&#39;</span><span class="p">,</span><span class="s">&#39;cc(situation-29, and-30)&#39;</span><span class="p">,</span><span class="s">&#39;conj(situation-29, development-31)&#39;</span><span class="p">,</span><span class="s">&#39;prep(development-31, of-32)&#39;</span><span class="p">,</span><span class="s">&#39;det(regions-34, the-33)&#39;</span><span class="p">,</span><span class="s">&#39;pobj(of-32, regions-34)&#39;</span><span class="p">,</span><span class="s">&#39;prep(regions-34, of-35)&#39;</span><span class="p">,</span> <span class="s">&#39;det(union-38, the-36)&#39;</span><span class="p">,</span><span class="s">&#39;nn(union-38, european-37)&#39;</span><span class="p">,</span><span class="s">&#39;pobj(of-35, union-38)&#39;</span><span class="p">]</span>
+		<span class="n">deps</span> <span class="o">=</span> <span class="n">Dependencies</span><span class="p">(</span><span class="n">dependencies</span><span class="p">)</span>
+		<span class="n">labels</span> <span class="o">=</span> <span class="n">deps</span><span class="o">.</span><span class="n">labels</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
+		<span class="n">scoring</span> <span class="o">=</span> <span class="n">Scoring</span><span class="p">(</span><span class="n">alignment</span><span class="p">,</span> <span class="n">sentence</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
+		<span class="n">tree</span><span class="p">,</span> <span class="n">score</span> <span class="o">=</span> <span class="n">scoring</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">Alignments</span><span class="o">.</span><span class="n">hat_rules</span><span class="p">,</span> <span class="n">Rule</span><span class="o">.</span><span class="n">probability_labels</span><span class="p">,</span> <span class="p">[</span><span class="n">labels</span><span class="p">])</span>
+		<span class="k">print</span><span class="p">(</span><span class="n">tree</span><span class="p">)</span>
+		<span class="k">print</span> <span class="n">score</span>
+	</div>
+<div class="viewcode-block" id="ScoreTests.score_test7"><a class="viewcode-back" href="../tests.html#tests_scoring.ScoreTests.score_test7">[docs]</a>	<span class="k">def</span> <span class="nf">score_test7</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Test to check workings for interpunction.</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">sentence</span> <span class="o">=</span> <span class="s">&quot;the minutes of the sitting on thursday , 21 september have been distributed .&quot;</span>
+		<span class="n">dependencies</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;det(minutes-2, the-1)&#39;</span><span class="p">,</span><span class="s">&#39;nsubjpass(distributed-13, minutes-2)&#39;</span><span class="p">,</span><span class="s">&#39;prep(minutes-2, of-3)&#39;</span><span class="p">,</span><span class="s">&#39;pobj(of-3, the-4)&#39;</span><span class="p">,</span><span class="s">&#39;amod(the-4, sitting-5)&#39;</span><span class="p">,</span><span class="s">&#39;prep(the-4, on-6)&#39;</span><span class="p">,</span><span class="s">&#39;pobj(on-6, Thursday-7)&#39;</span><span class="p">,</span><span class="s">&#39;num(September-10, 21-9)&#39;</span><span class="p">,</span><span class="s">&#39;nsubjpass(distributed-13, September-10)&#39;</span><span class="p">,</span><span class="s">&#39;aux(distributed-13, have-11)&#39;</span><span class="p">,</span><span class="s">&#39;auxpass(distributed-13, been-12)&#39;</span><span class="p">,</span><span class="s">&#39;root(ROOT-0, distributed-13)&#39;</span><span class="p">]</span>
+		<span class="n">alignment</span> <span class="o">=</span> <span class="s">&#39;3-5 6-8 11-13 1-3 2-4 12-14 10-12 9-10 1-2 5-7 13-15 0-0 1-1 8-9 4-6 10-11&#39;</span>
+		<span class="n">deps</span> <span class="o">=</span> <span class="n">Dependencies</span><span class="p">(</span><span class="n">dependencies</span><span class="p">)</span>
+		<span class="n">scoring</span> <span class="o">=</span> <span class="n">Scoring</span><span class="p">(</span><span class="n">alignment</span><span class="p">,</span><span class="n">sentence</span><span class="p">)</span>
+		<span class="n">relations</span> <span class="o">=</span> <span class="n">deps</span><span class="o">.</span><span class="n">spanrelations</span><span class="p">(</span><span class="bp">True</span><span class="p">,</span><span class="bp">True</span><span class="p">)</span>
+		<span class="n">nr_of_deps</span> <span class="o">=</span> <span class="n">deps</span><span class="o">.</span><span class="n">nr_of_deps</span>
+		<span class="n">tree</span><span class="p">,</span> <span class="n">score</span> <span class="o">=</span> <span class="n">scoring</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">Alignments</span><span class="o">.</span><span class="n">hat_rules</span><span class="p">,</span> <span class="n">Rule</span><span class="o">.</span><span class="n">probability_spanrels</span><span class="p">,</span> <span class="p">[</span><span class="n">relations</span><span class="p">,</span> <span class="n">nr_of_deps</span><span class="p">])</span>
+		<span class="k">return</span> <span class="n">score</span> <span class="o">==</span> <span class="mf">1.0</span>
+	</div>
+<div class="viewcode-block" id="ScoreTests.score_test8"><a class="viewcode-back" href="../tests.html#tests_scoring.ScoreTests.score_test8">[docs]</a>	<span class="k">def</span> <span class="nf">score_test8</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Second interpunction check.</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">sentence</span> <span class="o">=</span> <span class="s">&quot;yes indeed , mrs thors , we shall amend the minutes accordingly .&quot;</span>
+		<span class="n">alignment</span> <span class="o">=</span> <span class="s">&quot;8-7 7-6 6-5 5-4 12-12 4-3 3-2 10-10 10-11 10-9 2-1 1-0 0-0 9-8&quot;</span>
+		<span class="n">dependencies</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;discourse(mrs-4, yes-1)&quot;</span><span class="p">,</span><span class="s">&quot;dep(yes-1, indeed-2)&quot;</span><span class="p">,</span><span class="s">&quot;ccomp(amend-9, mrs-4)&quot;</span><span class="p">,</span><span class="s">&quot;dobj(mrs-4, thors-5)&quot;</span><span class="p">,</span><span class="s">&quot;nsubj(amend-9, we-7)&quot;</span><span class="p">,</span><span class="s">&quot;aux(amend-9, shall-8)&quot;</span><span class="p">,</span><span class="s">&#39;root(ROOT-0, amend-9)&#39;</span><span class="p">,</span><span class="s">&#39;det(minutes-11, the-10)&#39;</span><span class="p">,</span><span class="s">&#39;dobj(amend-9, minutes-11)&#39;</span><span class="p">,</span><span class="s">&#39;advmod(amend-9, accordingly-12)&#39;</span><span class="p">]</span>
+		<span class="n">deps</span> <span class="o">=</span> <span class="n">Dependencies</span><span class="p">(</span><span class="n">dependencies</span><span class="p">)</span>
+		<span class="n">scoring</span> <span class="o">=</span> <span class="n">Scoring</span><span class="p">(</span><span class="n">alignment</span><span class="p">,</span><span class="n">sentence</span><span class="p">)</span>
+		<span class="n">relations</span> <span class="o">=</span> <span class="n">deps</span><span class="o">.</span><span class="n">spanrelations</span><span class="p">(</span><span class="bp">True</span><span class="p">,</span><span class="bp">True</span><span class="p">)</span>
+		<span class="n">nr_of_deps</span> <span class="o">=</span> <span class="n">deps</span><span class="o">.</span><span class="n">nr_of_deps</span>
+		<span class="n">tree</span><span class="p">,</span> <span class="n">score</span> <span class="o">=</span> <span class="n">scoring</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">Alignments</span><span class="o">.</span><span class="n">hat_rules</span><span class="p">,</span> <span class="n">Rule</span><span class="o">.</span><span class="n">probability_spanrels</span><span class="p">,</span> <span class="p">[</span><span class="n">relations</span><span class="p">,</span> <span class="n">nr_of_deps</span><span class="p">])</span>
+		<span class="k">return</span> <span class="n">score</span> <span class="o">==</span> <span class="mf">1.0</span>
+
+	</div></div>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+	<span class="n">x</span> <span class="o">=</span> <span class="n">ScoreTests</span><span class="p">()</span>
+	<span class="k">print</span> <span class="n">x</span><span class="o">.</span><span class="n">score_test_all</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Implementation  documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Dieuwke Hupkes.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+  </body>
+</html>

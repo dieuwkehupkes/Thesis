@@ -1,0 +1,281 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>scoring Module &mdash; Implementation  documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Implementation  documentation" href="index.html" />
+    <link rel="next" title="tests Module" href="tests.html" />
+    <link rel="prev" title="dependencies Module" href="process_hats.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="tests.html" title="tests Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="process_hats.html" title="dependencies Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Implementation  documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-scoring">
+<span id="scoring-module"></span><h1>scoring Module<a class="headerlink" href="#module-scoring" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="scoring.Scoring">
+<em class="property">class </em><tt class="descclassname">scoring.</tt><tt class="descname">Scoring</tt><big>(</big><em>alignment</em>, <em>sentence</em>, <em>labels={}</em><big>)</big><a class="reference internal" href="_modules/scoring.html#Scoring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scoring.Scoring" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class that provides methods for scoring alignments with different
+scoring functions.</p>
+<p>During initialization an alignment, a corresponding
+sentence and a (possibly empty) set of labels are passed.</p>
+<p>string with dependencies are passed.
+A weighted CFG generating all HATs is created, the rules are
+assigned &#8216;probabilities&#8217; according to preferred_relations or
+labels.
+The adapted viterbi parser from the nltk toolkit is
+used to parse the sentence and obtain the score.</p>
+<dl class="method">
+<dt id="scoring.Scoring.grammar">
+<tt class="descname">grammar</tt><big>(</big><em>rules</em><big>)</big><a class="reference internal" href="_modules/scoring.html#Scoring.grammar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scoring.Scoring.grammar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a weighted grammar (NLTK-style) and its rank
+given a generator object with all rules.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">An Weighted grammar object with relaxed probability
+conditions.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="scoring.Scoring.grammar_rank">
+<tt class="descname">grammar_rank</tt><big>(</big><em>rules</em><big>)</big><a class="headerlink" href="#scoring.Scoring.grammar_rank" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine the maximum rank of a set of rules.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="scoring.Scoring.list_productions">
+<tt class="descname">list_productions</tt><big>(</big><em>rules</em><big>)</big><a class="headerlink" href="#scoring.Scoring.list_productions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a generator object with rules, return a list
+with all the productions in it.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>rules</strong> &#8211; A generator with rule objects</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A list with nltk.Production objects</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="scoring.Scoring.make_lexdict">
+<tt class="descname">make_lexdict</tt><big>(</big><big>)</big><a class="headerlink" href="#scoring.Scoring.make_lexdict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a dictionary assigning words to spans.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A dictionary with entries of the form {span: word}</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="scoring.Scoring.parse">
+<tt class="descname">parse</tt><big>(</big><em>grammar</em>, <em>trace=0</em><big>)</big><a class="reference internal" href="_modules/scoring.html#Scoring.parse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scoring.Scoring.parse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse the sentence with the given grammar
+using the nltk viterbi parser.
+Return the best parse and its score.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>grammar</strong> &#8211; the (adapted) WeightedGrammar object to parse with</li>
+<li><strong>trace</strong> &#8211; determines the output of the parser.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="scoring.Scoring.score">
+<tt class="descname">score</tt><big>(</big><em>rule_function</em>, <em>prob_function</em>, <em>args</em>, <em>trace=0</em><big>)</big><a class="reference internal" href="_modules/scoring.html#Scoring.score"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scoring.Scoring.score" title="Permalink to this definition">¶</a></dt>
+<dd><p>Score the sentence with the given rule and probability function.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>rule_function</strong> &#8211; the function to generate rules, choices are
+rule functions from the Alignment class</li>
+<li><strong>prob_function</strong> &#8211; a probability function from the Rule class.</li>
+<li><strong>args</strong> &#8211; arguments for the probability function. If probability
+function is Rule.probability_labels, args = [labels],
+if it is Rule.probability spanrels, then args = [spanrels, normalisation_factor], if it is Rule.uniform_probabilility, then args = [].</li>
+<li><strong>trace</strong> &#8211; determines the amount of output by the parser.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="scoring.Scoring.transform_to_Production">
+<tt class="descname">transform_to_Production</tt><big>(</big><em>rule</em><big>)</big><a class="headerlink" href="#scoring.Scoring.transform_to_Production" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transform rule to Production object (NLTK-style)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="scoring.Scoring.transform_to_WeightedProduction">
+<tt class="descname">transform_to_WeightedProduction</tt><big>(</big><em>rule</em><big>)</big><a class="headerlink" href="#scoring.Scoring.transform_to_WeightedProduction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transform a rule object to a weighted production.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="scoring.demo">
+<tt class="descclassname">scoring.</tt><tt class="descname">demo</tt><big>(</big><big>)</big><a class="headerlink" href="#scoring.demo" title="Permalink to this definition">¶</a></dt>
+<dd><p>A demonstration function showing the workings of the scoring class.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="scoring.demo1">
+<tt class="descclassname">scoring.</tt><tt class="descname">demo1</tt><big>(</big><big>)</big><a class="headerlink" href="#scoring.demo1" title="Permalink to this definition">¶</a></dt>
+<dd><p>Score the sentence &#8216;My dog likes eating sausage&#8217;, with alignment &#8216;0-0 1-1 2-2 2-3 3-5 4-4&#8217; according to its direct similarity with the dependency parse.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="scoring.demo2">
+<tt class="descclassname">scoring.</tt><tt class="descname">demo2</tt><big>(</big><big>)</big><a class="headerlink" href="#scoring.demo2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Score the sentence &#8216;My dog likes eating sausage&#8217;, with alignment &#8216;0-0 1-1 2-2 2-3 3-5 4-4&#8217; according to its dependency parse, deeper similarity.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="scoring.demo3">
+<tt class="descclassname">scoring.</tt><tt class="descname">demo3</tt><big>(</big><big>)</big><a class="headerlink" href="#scoring.demo3" title="Permalink to this definition">¶</a></dt>
+<dd><p>Score the sentence &#8216;approval of the minutes of the previous sitting&#8217;, with alignment &#8216;5-6 4-5 3-4 3-2 2-1 6-8 3-3 1-1 0-0 7-7&#8217; according to its direct similarity with the dependency parse.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="scoring.demo4">
+<tt class="descclassname">scoring.</tt><tt class="descname">demo4</tt><big>(</big><big>)</big><a class="headerlink" href="#scoring.demo4" title="Permalink to this definition">¶</a></dt>
+<dd><p>Score the sentence &#8216;approval of the minutes of the previous sitting&#8217;, with alignment &#8216;5-6 4-5 3-4 3-2 2-1 6</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="process_hats.html"
+                        title="previous chapter">dependencies Module</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="tests.html"
+                        title="next chapter">tests Module</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/scoring.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="tests.html" title="tests Module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="process_hats.html" title="dependencies Module"
+             >previous</a> |</li>
+        <li><a href="index.html">Implementation  documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Dieuwke Hupkes.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+  </body>
+</html>

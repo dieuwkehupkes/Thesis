@@ -1,0 +1,623 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>alignments Module &mdash; Implementation  documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Implementation  documentation" href="index.html" />
+    <link rel="next" title="dependencies Module" href="constituencies.html" />
+    <link rel="prev" title="Welcome to Implementation’s documentation!" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="constituencies.html" title="dependencies Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to Implementation’s documentation!"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Implementation  documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-alignments">
+<span id="alignments-module"></span><h1>alignments Module<a class="headerlink" href="#module-alignments" title="Permalink to this headline">¶</a></h1>
+<p>Module for processing alignments. This module contains three classes. Running alignments.py
+will give a demonstration of te functionality of the classes.</p>
+<dl class="class">
+<dt id="alignments.Alignments">
+<em class="property">class </em><tt class="descclassname">alignments.</tt><tt class="descname">Alignments</tt><big>(</big><em>links</em>, <em>source</em>, <em>target=''</em><big>)</big><a class="reference internal" href="_modules/alignments.html#Alignments"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alignments.Alignments" title="Permalink to this definition">¶</a></dt>
+<dd><p>A class that represents alignments. Important methods in this class
+compute the monolingual source phrases according to this alignment,
+generate all rules or all maximally recursive rules that are
+associated with the alignment and generate a dictionary representing
+all trees that are generated with this rules in a compact fashion.</p>
+<p>Construct a new alignment object with the alignment links
+given by &#8216;links&#8217;, the sourcesentence given by &#8216;source&#8217;, and 
+possibly a target sentence &#8216;target&#8217;. Construct a set-representation
+of the alignment, and compute a lexical dictionary describing
+the spans of the words.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>links</strong> &#8211; a string of the form &#8216;0-1 2-1 ...&#8217; representing
+the alignment links. Word numbering starts at 0.</li>
+<li><strong>source</strong> &#8211; A string representing the source sentence.</li>
+<li><strong>target</strong> &#8211; A string representing the target sentence.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Class is initialized with a string representation of
+the alignment that starts counting at 0 of the form 
+&#8216;0-1 2-1 ...&#8217; and the sentence the alignment represents.
+During intialization, a set-representation of the alignment
+is created.</p>
+<dl class="method">
+<dt id="alignments.Alignments.HAT_dict">
+<tt class="descname">HAT_dict</tt><big>(</big><em>labels={}</em><big>)</big><a class="headerlink" href="#alignments.Alignments.HAT_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transform all HATrules into a dictionary that memory
+efficiently represents the entire forest of HATs.
+As a HAT_dict uniquely represents a HATforest, the labels
+of all spans should be unique avoid amibuity.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>labels</strong> &#8211; A dictionary assigning labels to spans.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A dictionary that represents the HATforest, by describing for
+every allowed span what is allowed expansions are. Entries are of
+the form {lhs: [(rhs_11,...,rhs_1m),...,(rhs_n1,...,rhs_nk)]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="alignments.Alignments._links_fromE">
+<tt class="descname">_links_fromE</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/alignments.html#Alignments._links_fromE"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alignments.Alignments._links_fromE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Precompute values for the function
+E_c(j) = <a href="#id3"><span class="problematic" id="id4">|{(i&#8217;,j&#8217;)\in A | j&#8217; =&lt; j}|</span></a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="alignments.Alignments._links_fromF">
+<tt class="descname">_links_fromF</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/alignments.html#Alignments._links_fromF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alignments.Alignments._links_fromF" title="Permalink to this definition">¶</a></dt>
+<dd><p>Precompute values for the function
+F_c(j) = <a href="#id5"><span class="problematic" id="id6">|{(i&#8217;,j&#8217;)\in A | i&#8217; =&lt; i}|</span></a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="alignments.Alignments._maxspan">
+<tt class="descname">_maxspan</tt><big>(</big><em>(x</em>, <em>y)</em><big>)</big><a class="reference internal" href="_modules/alignments.html#Alignments._maxspan"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alignments.Alignments._maxspan" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the maximum position on the target side
+that are linked to positions [x,y].</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="alignments.Alignments._minspan">
+<tt class="descname">_minspan</tt><big>(</big><em>(x</em>, <em>y)</em><big>)</big><a class="reference internal" href="_modules/alignments.html#Alignments._minspan"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alignments.Alignments._minspan" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the minimum position on the target side
+that are linked to positions [x,y].</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="alignments.Alignments.agreement">
+<tt class="descname">agreement</tt><big>(</big><em>tree</em><big>)</big><a class="headerlink" href="#alignments.Alignments.agreement" title="Permalink to this definition">¶</a></dt>
+<dd><p>Output what percentage of the nodes of an inputted tree
+are consistent with the alignment.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>tree</strong> &#8211; An nltk tree object.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a float that describes the percentage of the nodes
+of tree that were nodes according to the alignment.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="alignments.Alignments.compute_phrases">
+<tt class="descname">compute_phrases</tt><big>(</big><big>)</big><a class="headerlink" href="#alignments.Alignments.compute_phrases" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list with all source phrases of the alignment.
+Similar to Alignments.spans, but returns a list rather
+than a generator, and does not include all one-length units.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A list with all valid source phrases</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="alignments.Alignments.consistent_labels">
+<tt class="descname">consistent_labels</tt><big>(</big><em>labels</em>, <em>label_dict</em><big>)</big><a class="headerlink" href="#alignments.Alignments.consistent_labels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Measures the consistency of the alignment with a dictionary
+that assigns labels to spans.
+Outputs a dictionary with labels, how often
+they occurred in the input set and how often they were preserved.
+Ignore word-labels from dep-parse that end in -h.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="alignments.Alignments.hat_rules">
+<tt class="descname">hat_rules</tt><big>(</big><em>prob_function</em>, <em>args=</em><span class="optional">[</span><span class="optional">]</span>, <em>labels={}</em><big>)</big><a class="reference internal" href="_modules/alignments.html#Alignments.hat_rules"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alignments.Alignments.hat_rules" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a generator with all rules of a PCFG
+uniquely generating all <em>hierarchical</em> alignment trees. The rules
+are assigned probabilities using the input probability function, args
+are the arguments of these function.</p>
+<p>The rules are computed by transforming the alignment into a set
+of Node objects and links between them that together constitute a
+graph whose edges correspond to valid spans and partial
+sets, and using the shortest_path function of the Node class.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>prob_function</strong> &#8211; A probability function from the Rule class, according to which
+probabilities should be assigned.</li>
+<li><strong>args</strong> &#8211; The arguments the probability function needs.</li>
+<li><strong>labels</strong> (<em>A dictionary assigning labels to spans.</em>) &#8211; The labels that should be assigned to the spans.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="alignments.Alignments.lex_dict">
+<tt class="descname">lex_dict</tt><big>(</big><big>)</big><a class="headerlink" href="#alignments.Alignments.lex_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use self.sentence to create a lexical dictionary
+that assigns lexical items to spans.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A dictionary {(0,1) : word1,..,(n-1,n): wordn}</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="alignments.Alignments.lexrules">
+<tt class="descname">lexrules</tt><big>(</big><em>labels={}</em><big>)</big><a class="reference internal" href="_modules/alignments.html#Alignments.lexrules"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alignments.Alignments.lexrules" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns an generator with the terminal rules
+of the grammar. (i.e., the <a href="#id1"><span class="problematic" id="id2">`</span></a>lexicon&#8217;, that tells 
+you the span corresponding to a word).
+If labels are provided for the spans, the rules
+will be labelled accordingly.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="alignments.Alignments.make_set">
+<tt class="descname">make_set</tt><big>(</big><em>alignment</em><big>)</big><a class="reference internal" href="_modules/alignments.html#Alignments.make_set"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alignments.Alignments.make_set" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a set with all alignment links, and keep track of 
+the length of source and target sentence.
+Output a warning when alignment and sentence do not have
+the same number of words.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>alignment</strong> &#8211; A string representing the alignment, as was passed during
+initialisation</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="alignments.Alignments.percentage_labelled">
+<tt class="descname">percentage_labelled</tt><big>(</big><em>labels</em><big>)</big><a class="headerlink" href="#alignments.Alignments.percentage_labelled" title="Permalink to this definition">¶</a></dt>
+<dd><p>Output which percentage of the spans in the alignment
+are labelled by the set of inputted labels.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">total, labelled</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="alignments.Alignments.prune_production">
+<tt class="descname">prune_production</tt><big>(</big><em>rule</em>, <em>lex_dict</em><big>)</big><a class="headerlink" href="#alignments.Alignments.prune_production" title="Permalink to this definition">¶</a></dt>
+<dd><p>Replace all leafnodes that do not constitute
+a valid source phrase with the lexical item the
+leafnode dominates.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>lex_dict</strong> &#8211; a dictionary with spans as keys, and the corresponding
+lexical items as values.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a Rule object in which all nodes are either valid
+source spans or lexical items.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="alignments.Alignments.rules">
+<tt class="descname">rules</tt><big>(</big><em>prob_function</em>, <em>args</em>, <em>labels={}</em><big>)</big><a class="reference internal" href="_modules/alignments.html#Alignments.rules"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alignments.Alignments.rules" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a generator with all rules of a PCFG
+uniquely generating all alignment trees. Rule
+probabilities are assigned according to specified
+input probability function, args should contain a list
+of arguments for this function.</p>
+<p>The rules are computed by transforming the alignment into
+a graph whose edges correspond to valid spans and partial
+sets and using the path function of the Node class.
+This function is not as extensively tested as the hat_rules function,
+as it is rarely used for computational issues.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="alignments.Alignments.spans">
+<tt class="descname">spans</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/alignments.html#Alignments.spans"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alignments.Alignments.spans" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return all a generator with all valid source side 
+spans that are part of a phrase pair, and all one-length
+units that are necessarily part of a tree describing the
+translation.
+Contrary to the convention, also unaligned sequences
+of words are allowed as spans.</p>
+<p>Spans are computed using the first shift-reduce algorithm 
+presented in Chang &amp; Gildea (2006). This is not the most
+efficient algorithm to compute phrase pairs.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="alignments.Alignments.texstring">
+<tt class="descname">texstring</tt><big>(</big><big>)</big><a class="headerlink" href="#alignments.Alignments.texstring" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate latexcode that generates a visual representation
+of the alignment.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="alignments.HAT_demo">
+<tt class="descclassname">alignments.</tt><tt class="descname">HAT_demo</tt><big>(</big><big>)</big><a class="headerlink" href="#alignments.HAT_demo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Demonstration 3. Simple one to many alignment, HATfunctionality.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="alignments.Node">
+<em class="property">class </em><tt class="descclassname">alignments.</tt><tt class="descname">Node</tt><big>(</big><em>value</em><big>)</big><a class="headerlink" href="#alignments.Node" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines a node in a directed graph.
+You can add edges from this node to
+other nodes by using link_to. The
+paths_to method calculates all paths
+from this node to the given node.
+The Node class is used to represent alignments as
+graphs.</p>
+<p>Initializes a new node; value
+can be used for representation</p>
+<dl class="method">
+<dt id="alignments.Node.link_to">
+<tt class="descname">link_to</tt><big>(</big><em>node</em><big>)</big><a class="headerlink" href="#alignments.Node.link_to" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a directed edge from this node to
+the given node.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="alignments.Node.paths_to">
+<tt class="descname">paths_to</tt><big>(</big><em>node</em><big>)</big><a class="headerlink" href="#alignments.Node.paths_to" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a generator that calculates all
+paths to the given node. These paths
+are calculated recursively.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="alignments.Node.remove_link">
+<tt class="descname">remove_link</tt><big>(</big><em>node</em><big>)</big><a class="headerlink" href="#alignments.Node.remove_link" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove the edge to this node, if
+present.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="alignments.Node.shortest_paths_to">
+<tt class="descname">shortest_paths_to</tt><big>(</big><em>node</em><big>)</big><a class="headerlink" href="#alignments.Node.shortest_paths_to" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finds all shortest paths from current node
+to node using an adapted Dijkstra algorithm
+starting from the end.
+The function also stores paths that can be
+used for later(i.e paths longer than 1
+from self to intermediate nodes).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="alignments.Rule">
+<em class="property">class </em><tt class="descclassname">alignments.</tt><tt class="descname">Rule</tt><big>(</big><em>root</em>, <em>path</em>, <em>labels={}</em><big>)</big><a class="headerlink" href="#alignments.Rule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines a rule from one span to a set
+of consecutive spans which&#8217;s union
+forms it.</p>
+<p>A string representation is provided for convenient
+displaying.</p>
+<p>Initialize a new rule as its root span
+and the path in the graph (consisting
+of an array of nodes) that it produces.
+Labels can be provided to annotate the spans
+of a rule.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>root</strong> &#8211; The rootspan of the node.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="alignments.Rule._lhs">
+<tt class="descname">_lhs</tt><big>(</big><em>labels</em><big>)</big><a class="headerlink" href="#alignments.Rule._lhs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the left hand sides of the rule
+and set as an attribute.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="alignments.Rule._rhs">
+<tt class="descname">_rhs</tt><big>(</big><em>labels</em><big>)</big><a class="headerlink" href="#alignments.Rule._rhs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the right hand sight of the rule
+and set as attribute.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="alignments.Rule._str">
+<tt class="descname">_str</tt><big>(</big><em>rhs</em><big>)</big><a class="headerlink" href="#alignments.Rule._str" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="alignments.Rule.lhs">
+<tt class="descname">lhs</tt><big>(</big><big>)</big><a class="headerlink" href="#alignments.Rule.lhs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the left hand side of the rule.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="alignments.Rule.probability_labels">
+<tt class="descname">probability_labels</tt><big>(</big><em>labels</em><big>)</big><a class="headerlink" href="#alignments.Rule.probability_labels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the probability of a rule according
+to how many of the nodes it generates can
+be labelled according to a set of given
+labels.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>labels</strong> &#8211; A list containing a dictionary that
+assigns labels to spans.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="alignments.Rule.probability_spanrels">
+<tt class="descname">probability_spanrels</tt><big>(</big><em>span_relations</em><big>)</big><a class="headerlink" href="#alignments.Rule.probability_spanrels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the probability of a rule according to
+how many span_relations it makes true.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>span_relations</strong> &#8211; A list containing a dictionary
+which describes which
+spanrelations are desired.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="alignments.Rule.rank">
+<tt class="descname">rank</tt><big>(</big><big>)</big><a class="headerlink" href="#alignments.Rule.rank" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the rank of a rule.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="alignments.Rule.rhs">
+<tt class="descname">rhs</tt><big>(</big><big>)</big><a class="headerlink" href="#alignments.Rule.rhs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the right hand side of the rule.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="alignments.Rule.uniform_probability">
+<tt class="descname">uniform_probability</tt><big>(</big><em>args=</em><span class="optional">[</span><span class="optional">]</span><big>)</big><a class="headerlink" href="#alignments.Rule.uniform_probability" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set probability to 1.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="alignments.Waypoint">
+<em class="property">class </em><tt class="descclassname">alignments.</tt><tt class="descname">Waypoint</tt><big>(</big><em>node</em>, <em>link=None</em><big>)</big><a class="headerlink" href="#alignments.Waypoint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines a waypoint in a one-directional path. The class
+Waypoint is used in the representation of paths. Multiple
+paths can be saved more memory efficient as path arrays
+can be shared between paths. As they contain link to other
+Waypoints, Waypoints can represent paths as linked lists.</p>
+<p>Create a waypoint object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>node</strong> (<em>A Node Object.</em>) &#8211; The node it represents.</li>
+<li><strong>link</strong> (<em>A Waypoint object.</em>) &#8211; A link to the next waypoint.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="alignments.demo_basic">
+<tt class="descclassname">alignments.</tt><tt class="descname">demo_basic</tt><big>(</big><big>)</big><a class="headerlink" href="#alignments.demo_basic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Demonstration 1, basic monotone one-to-one alignment.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="alignments.demo_basic2">
+<tt class="descclassname">alignments.</tt><tt class="descname">demo_basic2</tt><big>(</big><big>)</big><a class="headerlink" href="#alignments.demo_basic2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Demonstration 2. Simple one-to-many alignment.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="alignments.demos">
+<tt class="descclassname">alignments.</tt><tt class="descname">demos</tt><big>(</big><big>)</big><a class="headerlink" href="#alignments.demos" title="Permalink to this definition">¶</a></dt>
+<dd><p>A demonstration function showing the workings of the alignments class</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Welcome to Implementation&#8217;s documentation!</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="constituencies.html"
+                        title="next chapter">dependencies Module</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/alignments.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="constituencies.html" title="dependencies Module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to Implementation’s documentation!"
+             >previous</a> |</li>
+        <li><a href="index.html">Implementation  documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Dieuwke Hupkes.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+  </body>
+</html>

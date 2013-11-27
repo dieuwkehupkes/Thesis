@@ -1,0 +1,251 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>labelling Module &mdash; Implementation  documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Implementation  documentation" href="index.html" />
+    <link rel="next" title="dependencies Module" href="process_hats.html" />
+    <link rel="prev" title="file_processing Module" href="file_processing.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="process_hats.html" title="dependencies Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="file_processing.html" title="file_processing Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Implementation  documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-labelling">
+<span id="labelling-module"></span><h1>labelling Module<a class="headerlink" href="#module-labelling" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="labelling.Labels">
+<em class="property">class </em><tt class="descclassname">labelling.</tt><tt class="descname">Labels</tt><big>(</big><em>labels</em><big>)</big><a class="reference internal" href="_modules/labelling.html#Labels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#labelling.Labels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class to create different kinds of labels from a set
+of basic labels. Currently, some set of labels are
+computed multiple times to be used in the computation
+of other labels. Class can be made more efficient by storing
+such sets of labels as attributes of the Labels instance.</p>
+<p>Create a labelling object, with basic labels.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>labels</strong> &#8211; A dictionary assigning labels to spans</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="labelling.Labels.SAMT_labels">
+<tt class="descname">SAMT_labels</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/labelling.html#Labels.SAMT_labels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#labelling.Labels.SAMT_labels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return all SAMT labels based on the basic
+labels of the object. The order if precedence is as follows:</p>
+<ul class="simple">
+<li>Basic labels</li>
+<li>labels A + B, where A and B are basic labels;</li>
+<li>labels A/B or AB where A and B are basic labels;</li>
+<li>labels A + B + C where A,B and C are basic labels;</li>
+</ul>
+</dd></dl>
+
+<dl class="method">
+<dt id="labelling.Labels.annotate_span">
+<tt class="descname">annotate_span</tt><big>(</big><em>labels</em><big>)</big><a class="reference internal" href="_modules/labelling.html#Labels.annotate_span"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#labelling.Labels.annotate_span" title="Permalink to this definition">¶</a></dt>
+<dd><p>Annotate labels with their span, to make the
+grammar unique.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="labelling.Labels.concat">
+<tt class="descname">concat</tt><big>(</big><em>depth</em>, <em>o={}</em>, <em>i=None</em><big>)</big><a class="reference internal" href="_modules/labelling.html#Labels.concat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#labelling.Labels.concat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute all concatenated labels up to inputted depth,
+with basic labels i.
+If an output dictionary o is passed, extend this dictionary
+with the found spans that do not yet have a label in o.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>depth</strong> &#8211; The maximum number of variables in the labels.</li>
+<li><strong>o</strong> &#8211; An output dictionary with already existing labels.</li>
+<li><strong>i</strong> &#8211; A dictionary with basic labels to be concatenated.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="labelling.Labels.label_complexity">
+<tt class="descname">label_complexity</tt><big>(</big><em>label</em><big>)</big><a class="reference internal" href="_modules/labelling.html#Labels.label_complexity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#labelling.Labels.label_complexity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the number of variables in a label.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="labelling.Labels.label_most">
+<tt class="descname">label_most</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/labelling.html#Labels.label_most"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#labelling.Labels.label_most" title="Permalink to this definition">¶</a></dt>
+<dd><p>Label all spans within the range of labels, following the following rules:</p>
+<ul class="simple">
+<li>Labels with a lower depth are always preferred;</li>
+<li>Concatenated labels are preferred over minus and double/minus labels;</li>
+<li>Single minus labels (with concatenated spans) are preferred over double minus labels.</li>
+</ul>
+<p>SAMT labels thus have precedence over other labels.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="labelling.Labels.minus">
+<tt class="descname">minus</tt><big>(</big><em>depth</em>, <em>o={}</em>, <em>i=None</em><big>)</big><a class="reference internal" href="_modules/labelling.html#Labels.minus"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#labelling.Labels.minus" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute all labels of the form AB and B/A
+where B is a basic label, and A a concatenated label that
+contains no more than depth-1 variables.
+If an output dictionary o is passed, extend this dictionary
+with the found spans that do not yet have a label in o.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>depth</strong> &#8211; The maximum number of variables in the labels.</li>
+<li><strong>o</strong> &#8211; An output dictionary that is to be updated with the new labels</li>
+<li><strong>i</strong> &#8211; A dictionary with basic labels.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="labelling.Labels.minus_double">
+<tt class="descname">minus_double</tt><big>(</big><em>depth</em>, <em>o={}</em>, <em>i=None</em><big>)</big><a class="reference internal" href="_modules/labelling.html#Labels.minus_double"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#labelling.Labels.minus_double" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute all labels of the form AB/C, where 
+A is a basic label, and B and C are concatenated
+labels. The outputted labels have a number of variables
+that is no higher than depth.
+If an output dictionary o is passed, extend this dictionary
+with the found spans that do not yet have a label in o.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>depth</strong> &#8211; The maximum number of variables in the labels.</li>
+<li><strong>o</strong> &#8211; An output dictionary that is to be updated with the new labels</li>
+<li><strong>i</strong> &#8211; A dictionary with basic labels.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Return a dictionary with all labels of the form
+, where B is in self.labels or in i if i is provided,
+and A and C are in A1 + A2 + An where A1.. An are in
+self.labels or i and n &lt;= depth.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="labelling.demo">
+<tt class="descclassname">labelling.</tt><tt class="descname">demo</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/labelling.html#demo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#labelling.demo" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="file_processing.html"
+                        title="previous chapter">file_processing Module</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="process_hats.html"
+                        title="next chapter">dependencies Module</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/labelling.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="process_hats.html" title="dependencies Module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="file_processing.html" title="file_processing Module"
+             >previous</a> |</li>
+        <li><a href="index.html">Implementation  documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Dieuwke Hupkes.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+  </body>
+</html>

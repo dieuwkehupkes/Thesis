@@ -1,0 +1,7 @@
+process_HATs Module
+===================
+
+.. automodule:: process_hats
+    :members:
+    :undoc-members:
+    :show-inheritance:

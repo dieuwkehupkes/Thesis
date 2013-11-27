@@ -1,0 +1,54 @@
+tests Module
+======================
+
+.. automodule:: tests
+    :members:
+    :private-members:
+    :undoc-members:
+    :show-inheritance:
+    
+.. automodule:: tests_alignments
+    :members:
+    :private-members:
+    :undoc-members:
+    :show-inheritance:
+ 
+.. automodule:: tests_dependencies
+    :members:
+    :private-members:
+    :undoc-members:
+    :show-inheritance:
+
+.. automodule:: tests_node
+    :members:
+    :private-members:
+    :undoc-members:
+    :show-inheritance:
+ 
+
+.. automodule:: tests_rule
+    :members:
+    :private-members:
+    :undoc-members:
+    :show-inheritance:
+
+
+.. automodule:: tests_scoring
+    :members:
+    :private-members:
+    :undoc-members:
+    :show-inheritance:
+
+.. automodule:: tests_labelling
+    :members:
+    :private-members:
+    :undoc-members:
+    :show-inheritance:
+  
+.. automodule:: tests_HATforest
+    :members:
+    :private-members:
+    :undoc-members:
+    :show-inheritance:
+
+

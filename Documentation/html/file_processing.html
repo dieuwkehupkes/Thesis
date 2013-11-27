@@ -1,0 +1,353 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>file_processing Module &mdash; Implementation  documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Implementation  documentation" href="index.html" />
+    <link rel="next" title="labelling Module" href="labelling.html" />
+    <link rel="prev" title="dependencies Module" href="dependencies.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="labelling.html" title="labelling Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="dependencies.html" title="dependencies Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Implementation  documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-file_processing">
+<span id="file-processing-module"></span><h1>file_processing Module<a class="headerlink" href="#module-file_processing" title="Permalink to this headline">¶</a></h1>
+<p>File_processing is a module for processing sentences, alignments and treestructures.
+It brings together the functions from the other classes, enabeling the user to apply the functions
+using information from three files containing alingments, sentences and parses.</p>
+<dl class="class">
+<dt id="file_processing.ProcessConstituencies">
+<em class="property">class </em><tt class="descclassname">file_processing.</tt><tt class="descname">ProcessConstituencies</tt><big>(</big><em>alignmentfile</em>, <em>sentencefile</em>, <em>treefile</em>, <em>targetfile=False</em><big>)</big><a class="headerlink" href="#file_processing.ProcessConstituencies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#file_processing.ProcessFiles" title="file_processing.ProcessFiles"><tt class="xref py py-class docutils literal"><span class="pre">file_processing.ProcessFiles</span></tt></a></p>
+<p>Subclass adapted for constituencies</p>
+<p>During initialization the files are loaded for reading. Allows to leave empty
+one of more files if they are not needed for functions that will be used</p>
+<dl class="method">
+<dt id="file_processing.ProcessConstituencies.all_rules">
+<tt class="descname">all_rules</tt><big>(</big><em>max_length=40</em><big>)</big><a class="headerlink" href="#file_processing.ProcessConstituencies.all_rules" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return all rules of the trees in the corpus</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="file_processing.ProcessConstituencies.branching_factor">
+<tt class="descname">branching_factor</tt><big>(</big><em>max_length=40</em><big>)</big><a class="headerlink" href="#file_processing.ProcessConstituencies.branching_factor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the average branching factor of all head nodes
+of the dependency parses or the corpus.
+Can be restricted to a sentence length.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="file_processing.ProcessConstituencies.consistent_labels">
+<tt class="descname">consistent_labels</tt><big>(</big><em>label_type</em>, <em>max_length=40</em><big>)</big><a class="headerlink" href="#file_processing.ProcessConstituencies.consistent_labels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determines the consistency of a set of alignments with a type of labels
+over the entire corpus.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="file_processing.ProcessConstituencies.relation_count">
+<tt class="descname">relation_count</tt><big>(</big><em>max_length</em><big>)</big><a class="headerlink" href="#file_processing.ProcessConstituencies.relation_count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Counts occurences of all labels in the
+constituent parse.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="file_processing.ProcessConstituencies.score_all_sentences">
+<tt class="descname">score_all_sentences</tt><big>(</big><em>rule_function</em>, <em>probability_function</em>, <em>prob_function_args</em>, <em>label_args</em>, <em>max_length=40</em>, <em>scorefile=''</em>, <em>treefile=''</em><big>)</big><a class="headerlink" href="#file_processing.ProcessConstituencies.score_all_sentences" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="file_processing.ProcessConstituencies.texstring">
+<tt class="descname">texstring</tt><big>(</big><em>new</em><big>)</big><a class="headerlink" href="#file_processing.ProcessConstituencies.texstring" title="Permalink to this definition">¶</a></dt>
+<dd><p>Output a texstring with the alignment, the constituency tree
+and the alignment.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="file_processing.ProcessDependencies">
+<em class="property">class </em><tt class="descclassname">file_processing.</tt><tt class="descname">ProcessDependencies</tt><big>(</big><em>alignmentfile</em>, <em>sentencefile</em>, <em>treefile</em>, <em>targetfile=False</em><big>)</big><a class="headerlink" href="#file_processing.ProcessDependencies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#file_processing.ProcessFiles" title="file_processing.ProcessFiles"><tt class="xref py py-class docutils literal"><span class="pre">file_processing.ProcessFiles</span></tt></a></p>
+<p>Subclass of ProcessFiles that is focussed on the specific
+occasion in which trees are dependencies.</p>
+<p>During initialization the files are loaded for reading. Allows to leave empty
+one of more files if they are not needed for functions that will be used</p>
+<dl class="method">
+<dt id="file_processing.ProcessDependencies.all_HATs">
+<tt class="descname">all_HATs</tt><big>(</big><em>file_name</em>, <em>labelling=None</em>, <em>max_length=40</em><big>)</big><a class="headerlink" href="#file_processing.ProcessDependencies.all_HATs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute all HATs grammars, represent them as a dictionary and
+and pickle [sentence_nr, rootlabel, HATdict] to a file with 
+the     provided name file_name.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="file_processing.ProcessDependencies.branching_factor">
+<tt class="descname">branching_factor</tt><big>(</big><em>max_length</em><big>)</big><a class="headerlink" href="#file_processing.ProcessDependencies.branching_factor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the average branching factor of all head nodes
+of the dependency parses or the corpus.
+Can be restricted to a sentence length.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="file_processing.ProcessDependencies.check_consistency">
+<tt class="descname">check_consistency</tt><big>(</big><em>sentence</em>, <em>dep_list</em><big>)</big><a class="headerlink" href="#file_processing.ProcessDependencies.check_consistency" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check whether a list with dependencies is
+consistent with a sentence, by comparing the words.
+Some flexibility is allowed, to account for words
+that are spelled differently. Return True if the
+dependency parse contains no more than 3 words not
+present in the sentence and False otherwise.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="file_processing.ProcessDependencies.consistent_labels">
+<tt class="descname">consistent_labels</tt><big>(</big><em>label_type</em>, <em>max_length=40</em><big>)</big><a class="headerlink" href="#file_processing.ProcessDependencies.consistent_labels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determines the consistency of a set of alignments with a type of labels
+over the entire corpus.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="file_processing.ProcessDependencies.percentage_labelled">
+<tt class="descname">percentage_labelled</tt><big>(</big><em>max_length</em>, <em>label_type</em><big>)</big><a class="headerlink" href="#file_processing.ProcessDependencies.percentage_labelled" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the percentage of the spans in the dictionary
+that is labelled by a labelling method</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="file_processing.ProcessDependencies.relation_count">
+<tt class="descname">relation_count</tt><big>(</big><em>max_length</em><big>)</big><a class="headerlink" href="#file_processing.ProcessDependencies.relation_count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Counts occurences of all relations in dependency
+parses of sentences shorter than max_length.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="file_processing.ProcessDependencies.relation_percentage">
+<tt class="descname">relation_percentage</tt><big>(</big><em>all_relations</em>, <em>relations_present</em><big>)</big><a class="headerlink" href="#file_processing.ProcessDependencies.relation_percentage" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="file_processing.ProcessDependencies.sample">
+<tt class="descname">sample</tt><big>(</big><em>samplesize</em>, <em>maxlength=False</em>, <em>display=False</em><big>)</big><a class="headerlink" href="#file_processing.ProcessDependencies.sample" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a sample of sentence from the inputted files.
+Create a file with the sentences, and files with the
+matching alignments, dependencies and targetsentences.
+If display = True, create a texfile that can be ran
+to give a visual representation of the selected sentences.
+Return an array with the list of sentence numbers that
+were selected.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="file_processing.ProcessDependencies.score_all_sentences">
+<tt class="descname">score_all_sentences</tt><big>(</big><em>rule_function</em>, <em>probability_function</em>, <em>prob_function_args</em>, <em>label_type</em>, <em>max_length=40</em>, <em>scorefile=False</em>, <em>treefile=False</em><big>)</big><a class="headerlink" href="#file_processing.ProcessDependencies.score_all_sentences" title="Permalink to this definition">¶</a></dt>
+<dd><p>Score all alignments in the corpus.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>rule_function</strong> &#8211; the type of rules to be used</li>
+<li><strong>probability_function</strong> &#8211; the scoring mechanism to be used</li>
+<li><strong>prob_function_args</strong> &#8211; the arguments for the probability function</li>
+<li><strong>label_type</strong> &#8211; the type of labels to be used</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="file_processing.ProcessDependencies.tex_preamble">
+<tt class="descname">tex_preamble</tt><big>(</big><big>)</big><a class="headerlink" href="#file_processing.ProcessDependencies.tex_preamble" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print the pre-amble of a tex document in which both 
+dependency parses and alignments are printed.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="file_processing.ProcessDependencies.texstring">
+<tt class="descname">texstring</tt><big>(</big><em>new</em><big>)</big><a class="headerlink" href="#file_processing.ProcessDependencies.texstring" title="Permalink to this definition">¶</a></dt>
+<dd><p>Output a texstring with the alignment, the dependency
+and the sentence.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="file_processing.ProcessFiles">
+<em class="property">class </em><tt class="descclassname">file_processing.</tt><tt class="descname">ProcessFiles</tt><big>(</big><em>alignmentfile</em>, <em>sentencefile</em>, <em>treefile</em>, <em>targetfile=False</em><big>)</big><a class="reference internal" href="_modules/file_processing.html#ProcessFiles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#file_processing.ProcessFiles" title="Permalink to this definition">¶</a></dt>
+<dd><p>An object that allows the user to go through a set of linked files containing
+alignments, sentences and parse trees.</p>
+<p>During initialization the files are loaded for reading. Allows to leave empty
+one of more files if they are not needed for functions that will be used</p>
+<dl class="method">
+<dt id="file_processing.ProcessFiles.close_all">
+<tt class="descname">close_all</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/file_processing.html#ProcessFiles.close_all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#file_processing.ProcessFiles.close_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Close all input files.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="file_processing.ProcessFiles.consistent_labels">
+<tt class="descname">consistent_labels</tt><big>(</big><em>label_type</em>, <em>max_length=40</em><big>)</big><a class="reference internal" href="_modules/file_processing.html#ProcessFiles.consistent_labels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#file_processing.ProcessFiles.consistent_labels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determines the consistency of a set of alignments with a type of labels
+over the entire corpus.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="file_processing.ProcessFiles.evaluate_grammar">
+<tt class="descname">evaluate_grammar</tt><big>(</big><em>grammar</em>, <em>max_length</em>, <em>scoref</em><big>)</big><a class="headerlink" href="#file_processing.ProcessFiles.evaluate_grammar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse the corpus with inputted grammar and evaluate
+how well the resulting parses cohere with the
+alignments.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="file_processing.ProcessFiles.next">
+<tt class="descname">next</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/file_processing.html#ProcessFiles.next"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#file_processing.ProcessFiles.next" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the next alignment, sentence and tree_list.
+If the end of one of the files is reached, return False.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="file_processing.ProcessFiles.next_sentence">
+<tt class="descname">next_sentence</tt><big>(</big><big>)</big><a class="headerlink" href="#file_processing.ProcessFiles.next_sentence" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the next sentence. If the end of the file is reached,
+return None.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="file_processing.ProcessFiles.print_dict">
+<tt class="descname">print_dict</tt><big>(</big><em>dictionary</em>, <em>filename</em><big>)</big><a class="reference internal" href="_modules/file_processing.html#ProcessFiles.print_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#file_processing.ProcessFiles.print_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print the contents of a dictionary
+to a file.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="file_processing.ProcessFiles.print_function">
+<tt class="descname">print_function</tt><big>(</big><em>to_print</em>, <em>filename</em><big>)</big><a class="headerlink" href="#file_processing.ProcessFiles.print_function" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print contents to file if filename != False</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="file_processing.ProcessFiles.relation_percentage">
+<tt class="descname">relation_percentage</tt><big>(</big><em>all_relations</em>, <em>relations_present</em><big>)</big><a class="headerlink" href="#file_processing.ProcessFiles.relation_percentage" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="file_processing.ProcessFiles.score_all_sentences">
+<tt class="descname">score_all_sentences</tt><big>(</big><em>rule_function</em>, <em>probability_function</em>, <em>prob_function_args</em>, <em>label_args</em>, <em>max_length=40</em>, <em>scorefile=''</em>, <em>treefile=''</em><big>)</big><a class="headerlink" href="#file_processing.ProcessFiles.score_all_sentences" title="Permalink to this definition">¶</a></dt>
+<dd><p>Not implemented in general class, use from more specific subclasses.
+If not present, raise not implemented error.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="file_processing.ProcessFiles.transform_contents">
+<tt class="descname">transform_contents</tt><big>(</big><em>value</em><big>)</big><a class="headerlink" href="#file_processing.ProcessFiles.transform_contents" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a suitable string representation of
+input</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="dependencies.html"
+                        title="previous chapter">dependencies Module</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="labelling.html"
+                        title="next chapter">labelling Module</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/file_processing.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="labelling.html" title="labelling Module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="dependencies.html" title="dependencies Module"
+             >previous</a> |</li>
+        <li><a href="index.html">Implementation  documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Dieuwke Hupkes.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+  </body>
+</html>

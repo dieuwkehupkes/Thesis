@@ -1,0 +1,242 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>scoring &mdash; Implementation  documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Implementation  documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Implementation  documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for scoring</h1><div class="highlight"><pre>
+<span class="kn">from</span> <span class="nn">dependencies</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">alignments</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">graph_alignment</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">nltk</span> <span class="kn">import</span> <span class="n">ViterbiParser</span>
+<span class="kn">from</span> <span class="nn">nltk.grammar</span> <span class="kn">import</span> <span class="o">*</span>
+
+
+<div class="viewcode-block" id="Scoring"><a class="viewcode-back" href="../scoring.html#scoring.Scoring">[docs]</a><span class="k">class</span> <span class="nc">Scoring</span><span class="p">():</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	Class that provides methods forscoring an alignment according</span>
+<span class="sd">	to a set of preferred relations. The corresponding tree</span>
+<span class="sd">	is created, spanlabels can be entered to label the nodes</span>
+<span class="sd">	in the tree.</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">alignment</span><span class="p">,</span> <span class="n">sentence</span><span class="p">,</span> <span class="n">preferred_relations</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="p">{}):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		During initialization an alignment, a corresponding</span>
+<span class="sd">		sentence and a string with dependencies is passed.</span>
+<span class="sd">		A cfg generating all HATs is created, the dependency</span>
+<span class="sd">		parse is used to score the different rules.</span>
+<span class="sd">		The adapted viterbi parser from the nltk toolkit is</span>
+<span class="sd">		used to parse the sentence and obtain the score.</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">alignment_initialize</span><span class="p">(</span><span class="n">alignment</span><span class="p">,</span> <span class="n">sentence</span><span class="p">)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">relations</span> <span class="o">=</span> <span class="n">preferred_relations</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">labels</span> <span class="o">=</span> <span class="n">labels</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">tokens</span> <span class="o">=</span> <span class="n">sentence</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+
+<div class="viewcode-block" id="Scoring.alignment_initialize"><a class="viewcode-back" href="../scoring.html#scoring.Scoring.alignment_initialize">[docs]</a>	<span class="k">def</span> <span class="nf">alignment_initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">alignment</span><span class="p">,</span> <span class="n">sentence</span><span class="p">):</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">alignment</span> <span class="o">=</span> <span class="n">Alignments</span><span class="p">(</span><span class="n">alignment</span><span class="p">,</span><span class="n">sentence</span><span class="p">)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">sentence</span> <span class="o">=</span> <span class="n">sentence</span>
+	</div>
+<div class="viewcode-block" id="Scoring.grammar"><a class="viewcode-back" href="../scoring.html#scoring.Scoring.grammar">[docs]</a>	<span class="k">def</span> <span class="nf">grammar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rules</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Output grammar productions, given a generator</span>
+<span class="sd">		object iterating over all the possible rules</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="kn">from</span> <span class="nn">nltk</span> <span class="kn">import</span> <span class="n">grammar</span>
+		<span class="c"># Create a list with productions</span>
+		<span class="n">productions</span> <span class="o">=</span> <span class="p">[]</span>
+		<span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="n">rules</span><span class="p">:</span>
+			<span class="c">#create list to transform rhs to Nontemrinals</span>
+			<span class="n">rhs_list</span> <span class="o">=</span> <span class="p">[]</span>
+			<span class="k">for</span> <span class="n">rhs</span> <span class="ow">in</span> <span class="n">rule</span><span class="o">.</span><span class="n">rhs</span><span class="p">:</span>
+				<span class="n">rhs_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Nonterminal</span><span class="p">(</span><span class="n">rhs</span><span class="p">))</span>
+			<span class="n">productions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">WeightedProduction</span><span class="p">(</span><span class="n">Nonterminal</span><span class="p">(</span><span class="n">rule</span><span class="o">.</span><span class="n">lhs</span><span class="p">),</span> <span class="n">rhs_list</span><span class="p">,</span>
+			<span class="n">prob</span> <span class="o">=</span> <span class="n">rule</span><span class="o">.</span><span class="n">probability</span><span class="p">))</span>
+		<span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">alignment</span><span class="o">.</span><span class="n">lexrules</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">):</span>
+			<span class="n">productions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rule</span><span class="p">)</span>
+		<span class="c"># Transform into a grammar to parse</span>
+		<span class="n">startsymbol</span> <span class="o">=</span> <span class="s">&quot;0-&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tokens</span><span class="p">))</span>
+		<span class="n">start</span> <span class="o">=</span> <span class="n">Nonterminal</span><span class="p">(</span><span class="n">startsymbol</span><span class="p">)</span>
+		<span class="k">return</span> <span class="n">WeightedGrammar</span><span class="p">(</span><span class="n">start</span><span class="p">,</span><span class="n">productions</span><span class="p">)</span>
+			</div>
+<div class="viewcode-block" id="Scoring.parse"><a class="viewcode-back" href="../scoring.html#scoring.Scoring.parse">[docs]</a>	<span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grammar</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Parse the sentence with the viterbi parser</span>
+<span class="sd">		from the nltk toolkit.</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">parser</span> <span class="o">=</span> <span class="n">ViterbiParser</span><span class="p">(</span><span class="n">grammar</span><span class="p">)</span>
+		<span class="n">parser</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+		<span class="n">parses</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">nbest_parse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tokens</span><span class="p">)</span>
+		<span class="c">#return the best parse</span>
+		<span class="k">return</span> <span class="n">parses</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</div>
+<div class="viewcode-block" id="Scoring.normalization_factor"><a class="viewcode-back" href="../scoring.html#scoring.Scoring.normalization_factor">[docs]</a>	<span class="k">def</span> <span class="nf">normalization_factor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="n">normalization_factor</span> <span class="o">=</span> <span class="mi">0</span>
+		<span class="k">for</span> <span class="n">head</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">relations</span><span class="p">:</span>
+			<span class="k">for</span> <span class="n">dependent</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">relations</span><span class="p">[</span><span class="n">head</span><span class="p">]:</span>
+				<span class="n">normalization_factor</span> <span class="o">+=</span> <span class="mi">1</span>
+		<span class="k">return</span> <span class="n">normalization_factor</span>
+</div>
+<div class="viewcode-block" id="Scoring.score"><a class="viewcode-back" href="../scoring.html#scoring.Scoring.score">[docs]</a>	<span class="k">def</span> <span class="nf">score</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">parse</span><span class="p">):</span>
+		<span class="kn">import</span> <span class="nn">math</span>
+		<span class="n">probability</span> <span class="o">=</span> <span class="n">parse</span><span class="o">.</span><span class="n">prob</span><span class="p">()</span>
+		<span class="n">rules_used</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">probability</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+		<span class="n">normalization_factor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalization_factor</span><span class="p">()</span>
+		<span class="k">if</span> <span class="n">normalization_factor</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+			<span class="n">score</span> <span class="o">=</span> <span class="n">rules_used</span><span class="o">/</span><span class="n">normalization_factor</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="n">score</span> <span class="o">=</span> <span class="mi">1</span>
+		<span class="k">return</span> <span class="n">score</span>
+
+<span class="c">#Tests</span>
+</div></div>
+<div class="viewcode-block" id="test1"><a class="viewcode-back" href="../scoring.html#scoring.test1">[docs]</a><span class="k">def</span> <span class="nf">test1</span><span class="p">():</span>
+	<span class="n">sentence</span> <span class="o">=</span> <span class="s">&#39;my dog likes eating sausage&#39;</span>
+	<span class="n">alignment</span> <span class="o">=</span> <span class="s">&#39;0-0 1-1 2-2 2-3 3-5 4-4&#39;</span>
+	<span class="n">dependencies</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;poss(dog-2, My-1)&#39;</span><span class="p">,</span><span class="s">&#39;nsubj(likes-3, dog-2)&#39;</span><span class="p">,</span><span class="s">&#39;root(ROOT-0, likes-3)&#39;</span><span class="p">,</span><span class="s">&#39;xcomp(likes-3, eating-4)&#39;</span><span class="p">,</span><span class="s">&#39;dobj(eating-4, sausages-5)&#39;</span><span class="p">]</span>
+	<span class="n">deps</span> <span class="o">=</span> <span class="n">Dependencies</span><span class="p">(</span><span class="n">dependencies</span><span class="p">)</span>
+	<span class="n">relations</span> <span class="o">=</span> <span class="n">deps</span><span class="o">.</span><span class="n">get_spanrels</span><span class="p">()</span>
+	<span class="n">labels</span> <span class="o">=</span> <span class="n">deps</span><span class="o">.</span><span class="n">labels</span><span class="p">()</span>
+	<span class="n">scoring</span> <span class="o">=</span> <span class="n">Scoring</span><span class="p">(</span><span class="n">alignment</span><span class="p">,</span> <span class="n">sentence</span><span class="p">,</span> <span class="n">relations</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
+	<span class="n">productions</span> <span class="o">=</span> <span class="n">scoring</span><span class="o">.</span><span class="n">alignment</span><span class="o">.</span><span class="n">rules</span><span class="p">(</span><span class="n">relations</span><span class="p">,</span><span class="n">labels</span><span class="p">)</span>
+<span class="c">#	for production in productions:</span>
+<span class="c">#		print production</span>
+<span class="c">#	productions = scoring.alignment.rules(relations,labels)	</span>
+	<span class="n">grammar</span> <span class="o">=</span> <span class="n">scoring</span><span class="o">.</span><span class="n">grammar</span><span class="p">(</span><span class="n">productions</span><span class="p">)</span>
+	<span class="n">parse</span> <span class="o">=</span> <span class="n">scoring</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">grammar</span><span class="p">)</span>
+	<span class="n">score</span> <span class="o">=</span> <span class="n">scoring</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">parse</span><span class="p">)</span>
+	<span class="k">return</span> <span class="n">score</span> <span class="o">==</span> <span class="mf">1.0</span>
+</div>
+<div class="viewcode-block" id="test2"><a class="viewcode-back" href="../scoring.html#scoring.test2">[docs]</a><span class="k">def</span> <span class="nf">test2</span><span class="p">():</span>
+	<span class="n">sentence</span> <span class="o">=</span> <span class="s">&quot;european growth is inconceivable without solidarity .&quot;</span>
+	<span class="n">alignment</span> <span class="o">=</span> <span class="s">&quot;0-0 1-1 2-2 3-3 4-4 5-5 6-6&quot;</span>
+	<span class="n">dependencies</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;nn(growth-2, european-1)&#39;</span><span class="p">,</span><span class="s">&#39;nsubj(inconceivable-4, growth-2)&#39;</span><span class="p">,</span><span class="s">&#39;cop(inconceivable-4, is-3)&#39;</span><span class="p">,</span><span class="s">&#39;root(ROOT-0, inconceivable-4)&#39;</span><span class="p">,</span><span class="s">&#39;prep(inconceivable-4, without-5)&#39;</span><span class="p">,</span><span class="s">&#39;pobj(without-5, solidarity-6)&#39;</span><span class="p">]</span>
+	<span class="n">deps</span> <span class="o">=</span> <span class="n">Dependencies</span><span class="p">(</span><span class="n">dependencies</span><span class="p">)</span>
+	<span class="n">relations</span> <span class="o">=</span> <span class="n">deps</span><span class="o">.</span><span class="n">get_spanrels</span><span class="p">()</span>
+	<span class="n">labels</span> <span class="o">=</span> <span class="n">deps</span><span class="o">.</span><span class="n">labels</span><span class="p">()</span>
+	<span class="n">scoring</span> <span class="o">=</span> <span class="n">Scoring</span><span class="p">(</span><span class="n">alignment</span><span class="p">,</span> <span class="n">sentence</span><span class="p">,</span> <span class="n">relations</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
+	<span class="n">productions</span> <span class="o">=</span> <span class="n">scoring</span><span class="o">.</span><span class="n">alignment</span><span class="o">.</span><span class="n">rules</span><span class="p">(</span><span class="n">relations</span><span class="p">,</span><span class="n">labels</span><span class="p">)</span>
+	<span class="n">grammar</span> <span class="o">=</span> <span class="n">scoring</span><span class="o">.</span><span class="n">grammar</span><span class="p">(</span><span class="n">productions</span><span class="p">)</span>
+	<span class="n">parse</span> <span class="o">=</span> <span class="n">scoring</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">grammar</span><span class="p">)</span>
+	<span class="n">score</span> <span class="o">=</span> <span class="n">scoring</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">parse</span><span class="p">)</span>	
+	<span class="k">return</span> <span class="n">score</span> <span class="o">==</span> <span class="mf">1.0</span>
+</div>
+<div class="viewcode-block" id="speed_test1"><a class="viewcode-back" href="../scoring.html#scoring.speed_test1">[docs]</a><span class="k">def</span> <span class="nf">speed_test1</span><span class="p">(</span><span class="n">sentence_length</span><span class="p">):</span>
+	<span class="kn">import</span> <span class="nn">time</span>
+	<span class="n">time1</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+	<span class="n">s</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">sentence_length</span><span class="p">)]</span>
+	<span class="n">sentence</span> <span class="o">=</span> <span class="s">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+	<span class="n">a</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">+</span><span class="s">&#39;-&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">sentence_length</span><span class="p">)]</span>
+	<span class="n">alignment</span> <span class="o">=</span> <span class="s">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+	<span class="n">dependencies</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;root(ROOT-0,let-1)&quot;</span><span class="p">]</span>
+	<span class="n">deps</span> <span class="o">=</span> <span class="n">Dependencies</span><span class="p">(</span><span class="n">dependencies</span><span class="p">)</span>
+	<span class="n">relations</span> <span class="o">=</span> <span class="n">deps</span><span class="o">.</span><span class="n">get_spanrels</span><span class="p">()</span>
+	<span class="n">scoring</span> <span class="o">=</span> <span class="n">Scoring</span><span class="p">(</span><span class="n">alignment</span><span class="p">,</span> <span class="n">sentence</span><span class="p">,</span> <span class="n">relations</span><span class="p">)</span>
+	<span class="n">productions</span> <span class="o">=</span> <span class="n">scoring</span><span class="o">.</span><span class="n">alignment</span><span class="o">.</span><span class="n">hat_rules</span><span class="p">(</span><span class="n">relations</span><span class="p">)</span>
+	<span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="n">productions</span><span class="p">:</span>
+		<span class="k">continue</span>
+	<span class="n">time2</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+	<span class="k">print</span> <span class="s">&quot;processing time:&quot;</span><span class="p">,</span> <span class="n">time2</span><span class="o">-</span><span class="n">time1</span>
+	
+</div>
+<div class="viewcode-block" id="speed_test2"><a class="viewcode-back" href="../scoring.html#scoring.speed_test2">[docs]</a><span class="k">def</span> <span class="nf">speed_test2</span><span class="p">(</span><span class="n">sentence_length</span><span class="p">):</span>
+	<span class="kn">import</span> <span class="nn">time</span>
+	<span class="n">time1</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+	<span class="n">s</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">sentence_length</span><span class="p">)]</span>
+	<span class="n">sentence</span> <span class="o">=</span> <span class="s">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+	<span class="n">a</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">+</span><span class="s">&#39;-&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">j</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">sentence_length</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">sentence_length</span><span class="p">)]</span>
+	<span class="n">alignment</span> <span class="o">=</span> <span class="s">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+	<span class="n">dependencies</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;root(ROOT-0, let-1)&quot;</span><span class="p">]</span>
+	<span class="n">deps</span> <span class="o">=</span> <span class="n">Dependencies</span><span class="p">(</span><span class="n">dependencies</span><span class="p">)</span>
+	<span class="n">relations</span> <span class="o">=</span> <span class="n">deps</span><span class="o">.</span><span class="n">get_spanrels</span><span class="p">()</span>
+	<span class="n">scoring</span> <span class="o">=</span> <span class="n">Scoring</span><span class="p">(</span><span class="n">alignment</span><span class="p">,</span><span class="n">sentence</span><span class="p">,</span> <span class="n">relations</span><span class="p">)</span>
+	<span class="n">productions</span> <span class="o">=</span> <span class="n">scoring</span><span class="o">.</span><span class="n">alignment</span><span class="o">.</span><span class="n">hat_rules</span><span class="p">(</span><span class="n">relations</span><span class="p">)</span>
+	<span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="n">productions</span><span class="p">:</span>
+		<span class="k">continue</span>
+	<span class="n">time2</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+	<span class="k">print</span> <span class="s">&quot;processing time:&quot;</span><span class="p">,</span> <span class="n">time2</span><span class="o">-</span><span class="n">time1</span>
+</pre></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Implementation  documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Dieuwke Hupkes.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,509 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tests Module &mdash; Implementation  documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Implementation  documentation" href="index.html" />
+    <link rel="prev" title="scoring Module" href="scoring.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="scoring.html" title="scoring Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Implementation  documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-tests">
+<span id="tests-module"></span><h1>tests Module<a class="headerlink" href="#module-tests" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="tests.Tests">
+<em class="property">class </em><tt class="descclassname">tests.</tt><tt class="descname">Tests</tt><a class="headerlink" href="#tests.Tests" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test all functionality from the module.</p>
+<dl class="method">
+<dt id="tests.Tests.test_all">
+<tt class="descname">test_all</tt><big>(</big><big>)</big><a class="headerlink" href="#tests.Tests.test_all" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-tests_alignments"></span><dl class="class">
+<dt id="tests_alignments.AlignmentsTests">
+<em class="property">class </em><tt class="descclassname">tests_alignments.</tt><tt class="descname">AlignmentsTests</tt><a class="reference internal" href="_modules/tests_alignments.html#AlignmentsTests"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tests_alignments.AlignmentsTests" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tests Alignments Module</p>
+<dl class="method">
+<dt id="tests_alignments.AlignmentsTests.alignment_test_all">
+<tt class="descname">alignment_test_all</tt><big>(</big><big>)</big><a class="headerlink" href="#tests_alignments.AlignmentsTests.alignment_test_all" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tests_alignments.AlignmentsTests.consistency_test1">
+<tt class="descname">consistency_test1</tt><big>(</big><big>)</big><a class="headerlink" href="#tests_alignments.AlignmentsTests.consistency_test1" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tests_alignments.AlignmentsTests.consistency_test2">
+<tt class="descname">consistency_test2</tt><big>(</big><big>)</big><a class="headerlink" href="#tests_alignments.AlignmentsTests.consistency_test2" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tests_alignments.AlignmentsTests.consistency_test3">
+<tt class="descname">consistency_test3</tt><big>(</big><big>)</big><a class="headerlink" href="#tests_alignments.AlignmentsTests.consistency_test3" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tests_alignments.AlignmentsTests.dict_test">
+<tt class="descname">dict_test</tt><big>(</big><big>)</big><a class="headerlink" href="#tests_alignments.AlignmentsTests.dict_test" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test the function Alignments.HAT_dict()</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tests_alignments.AlignmentsTests.span_test1">
+<tt class="descname">span_test1</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/tests_alignments.html#AlignmentsTests.span_test1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tests_alignments.AlignmentsTests.span_test1" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test if correct spans are found for
+a monotone alignment with no unaligned words</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tests_alignments.AlignmentsTests.span_test2">
+<tt class="descname">span_test2</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/tests_alignments.html#AlignmentsTests.span_test2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tests_alignments.AlignmentsTests.span_test2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test if correct spans are found for a non 
+monotone many-to-many alignment, with no
+unaligned words on source nor targetside.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tests_alignments.AlignmentsTests.span_test3">
+<tt class="descname">span_test3</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/tests_alignments.html#AlignmentsTests.span_test3"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tests_alignments.AlignmentsTests.span_test3" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test if correct spans are found for a 
+one-to-one alignment with some
+unaligned words on source and target side</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tests_alignments.AlignmentsTests.span_test4">
+<tt class="descname">span_test4</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/tests_alignments.html#AlignmentsTests.span_test4"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tests_alignments.AlignmentsTests.span_test4" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test if correct spans are found for 
+a non monotone many-to-many alignment with
+unaligned words on both and target side.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tests_alignments.AlignmentsTests.spans_test_all">
+<tt class="descname">spans_test_all</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/tests_alignments.html#AlignmentsTests.spans_test_all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tests_alignments.AlignmentsTests.spans_test_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return True if all span tests return True</p>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-tests_dependencies"></span><dl class="class">
+<dt id="tests_dependencies.DependencyTests">
+<em class="property">class </em><tt class="descclassname">tests_dependencies.</tt><tt class="descname">DependencyTests</tt><a class="reference internal" href="_modules/tests_dependencies.html#DependencyTests"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tests_dependencies.DependencyTests" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="tests_dependencies.DependencyTests.allr_test1">
+<tt class="descname">allr_test1</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/tests_dependencies.html#DependencyTests.allr_test1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tests_dependencies.DependencyTests.allr_test1" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test left branching relations for sentence &#8216;I give the boy some flowers&#8217;</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tests_dependencies.DependencyTests.allr_test2">
+<tt class="descname">allr_test2</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/tests_dependencies.html#DependencyTests.allr_test2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tests_dependencies.DependencyTests.allr_test2" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tests_dependencies.DependencyTests.dependencies_test_all">
+<tt class="descname">dependencies_test_all</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/tests_dependencies.html#DependencyTests.dependencies_test_all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tests_dependencies.DependencyTests.dependencies_test_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run all dependency tests.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tests_dependencies.DependencyTests.labels_annotation_test">
+<tt class="descname">labels_annotation_test</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/tests_dependencies.html#DependencyTests.labels_annotation_test"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tests_dependencies.DependencyTests.labels_annotation_test" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test annotated labels for a manually constructed sentence</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tests_dependencies.DependencyTests.labels_test1">
+<tt class="descname">labels_test1</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/tests_dependencies.html#DependencyTests.labels_test1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tests_dependencies.DependencyTests.labels_test1" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test functioning plain labelling for sentence
+&#8216;I give the boy some flowers&#8217;</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tests_dependencies.DependencyTests.lr_test">
+<tt class="descname">lr_test</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/tests_dependencies.html#DependencyTests.lr_test"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tests_dependencies.DependencyTests.lr_test" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test left branching relations for sentence &#8216;I give the boy some flowers&#8217;</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tests_dependencies.DependencyTests.rr_test">
+<tt class="descname">rr_test</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/tests_dependencies.html#DependencyTests.rr_test"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tests_dependencies.DependencyTests.rr_test" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test right branching relations for sentence &#8216;I give the boy some flowers&#8217;</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tests_dependencies.DependencyTests.spanrelations_test">
+<tt class="descname">spanrelations_test</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/tests_dependencies.html#DependencyTests.spanrelations_test"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tests_dependencies.DependencyTests.spanrelations_test" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test if spanrelations are extracted correctly
+from a list of dependencies</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tests_dependencies.DependencyTests.test_all_labels">
+<tt class="descname">test_all_labels</tt><big>(</big><big>)</big><a class="headerlink" href="#tests_dependencies.DependencyTests.test_all_labels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test for label all function</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tests_dependencies.DependencyTests.test_samt_labels">
+<tt class="descname">test_samt_labels</tt><big>(</big><big>)</big><a class="headerlink" href="#tests_dependencies.DependencyTests.test_samt_labels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test SAMT labels</p>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-tests_node"></span><dl class="class">
+<dt id="tests_node.NodeTests">
+<em class="property">class </em><tt class="descclassname">tests_node.</tt><tt class="descname">NodeTests</tt><a class="reference internal" href="_modules/tests_node.html#NodeTests"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tests_node.NodeTests" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tests functionality of Node class.</p>
+<dl class="method">
+<dt id="tests_node.NodeTests.path_test1">
+<tt class="descname">path_test1</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/tests_node.html#NodeTests.path_test1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tests_node.NodeTests.path_test1" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test if paths are computed as intended by
+manually constructing a graph with 5 nodes
+and a couple of edges. Output True if correct
+paths are found, False otherwise.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tests_node.NodeTests.path_test2">
+<tt class="descname">path_test2</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/tests_node.html#NodeTests.path_test2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tests_node.NodeTests.path_test2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test if shortest paths are computed as intended 
+by manually constructing a graph with 5 nodes
+and a couple of edges. Output True if correct
+paths are found, False otherwise.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tests_node.NodeTests.path_test3">
+<tt class="descname">path_test3</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/tests_node.html#NodeTests.path_test3"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tests_node.NodeTests.path_test3" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test if shortest paths are computed as intended 
+by manually constructing a  fully connected
+graph with 5 nodes. Output True if correct
+paths are found, False otherwise.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tests_node.NodeTests.path_test_all">
+<tt class="descname">path_test_all</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/tests_node.html#NodeTests.path_test_all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tests_node.NodeTests.path_test_all" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tests_node.NodeTests.worst_case_test">
+<tt class="descname">worst_case_test</tt><big>(</big><em>nr_of_nodes</em><big>)</big><a class="reference internal" href="_modules/tests_node.html#NodeTests.worst_case_test"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tests_node.NodeTests.worst_case_test" title="Permalink to this definition">¶</a></dt>
+<dd><p>Speed test for shortest_paths_to.
+Create a fully connected graph with
+nr_of_nodes nodes and compute the
+shortest_paths between all nodes.
+Output running time.</p>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-tests_rule"></span><dl class="class">
+<dt id="tests_rule.RuleTests">
+<em class="property">class </em><tt class="descclassname">tests_rule.</tt><tt class="descname">RuleTests</tt><a class="reference internal" href="_modules/tests_rule.html#RuleTests"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tests_rule.RuleTests" title="Permalink to this definition">¶</a></dt>
+<dd><p>Testing class for the rule class.</p>
+<dl class="method">
+<dt id="tests_rule.RuleTests.rules_test_all">
+<tt class="descname">rules_test_all</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/tests_rule.html#RuleTests.rules_test_all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tests_rule.RuleTests.rules_test_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return True if all rule tests return True</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tests_rule.RuleTests.test2">
+<tt class="descname">test2</tt><big>(</big><big>)</big><a class="headerlink" href="#tests_rule.RuleTests.test2" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tests_rule.RuleTests.test_hatrules">
+<tt class="descname">test_hatrules</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/tests_rule.html#RuleTests.test_hatrules"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tests_rule.RuleTests.test_hatrules" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test if the correct HATgrammar is generated for
+the sentence &#8216;My dog likes eating sausages&#8217;,
+with alignment &#8216;0-0 1-1 2-2 2-3 3-5 4-4&#8217;.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tests_rule.RuleTests.test_hatrules2">
+<tt class="descname">test_hatrules2</tt><big>(</big><big>)</big><a class="headerlink" href="#tests_rule.RuleTests.test_hatrules2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test if the correct HATgrammar is generated for
+the sentence &#8216;My dog likes eating sausages&#8217;,
+with alignment &#8216;0-0 1-1 2-2 2-3 3-5 4-4&#8217;.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tests_rule.RuleTests.test_rules">
+<tt class="descname">test_rules</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/tests_rule.html#RuleTests.test_rules"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tests_rule.RuleTests.test_rules" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test if the correct grammar is generated for
+the sentence &#8216;My dog likes eating sausages&#8217;,
+with alignment &#8216;0-0 1-1 2-2 2-3 3-5 4-4&#8217;.</p>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-tests_scoring"></span><dl class="class">
+<dt id="tests_scoring.ScoreTests">
+<em class="property">class </em><tt class="descclassname">tests_scoring.</tt><tt class="descname">ScoreTests</tt><a class="reference internal" href="_modules/tests_scoring.html#ScoreTests"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tests_scoring.ScoreTests" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test Scoring Class</p>
+<dl class="method">
+<dt id="tests_scoring.ScoreTests.score_test1">
+<tt class="descname">score_test1</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/tests_scoring.html#ScoreTests.score_test1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tests_scoring.ScoreTests.score_test1" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sentence: &#8216;my dog likes eating sausage&#8217;
+Alignment: &#8216;0-0 1-1 2-2 2-3 3-5 4-4&#8217;
+Dependencies: &#8216;nsubj(likes-3, dog-2)&#8217;, &#8216;root(ROOT-0, likes-3)&#8217;,
+&#8216;xcomp(likes-3, eating-4)&#8217; and &#8216;dobj(eating-4, sausages-5)&#8217;.</p>
+<p>Manual score normal rules spanrels: 1.0
+Manual score hatrules spanrels: 0.75
+Manual score hatrules spanrels deep: 1.0</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tests_scoring.ScoreTests.score_test2">
+<tt class="descname">score_test2</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/tests_scoring.html#ScoreTests.score_test2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tests_scoring.ScoreTests.score_test2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sentence: &#8216;european growth is inconceivable without solidarity .&#8217;
+Alignment: &#8216;0-0 1-1 2-2 3-3 4-4 5-5 6-6&#8217;
+Dependencies: &#8216;nn(growth-2, european-1)&#8217;, &#8216;nsubj(inconceivable-4, growth-2)&#8217;,
+&#8216;cop(inconceivable-4, is-3)&#8217;, &#8216;root(ROOT-0, inconceivable-4)&#8217;, 
+&#8216;prep(inconceivable-4, without-5)&#8217; and &#8216;pobj(without-5, solidarity-6)&#8217;</p>
+<p>Manual score all rules spanrels: 1.0
+Manual score hat rules spanrels: 0.6
+Manual score hat rules spanrels deep: 1.0</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tests_scoring.ScoreTests.score_test3">
+<tt class="descname">score_test3</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/tests_scoring.html#ScoreTests.score_test3"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tests_scoring.ScoreTests.score_test3" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sentence: &#8216;approval of the minutes of the previous sitting&#8217;
+Alignment: &#8216;5-6 4-5 3-4 3-2 2-1 6-8 3-3 1-1 0-0 7-7&#8217;
+Dependencies: &#8216;root(ROOT-0, approval-1)&#8217;,&#8217;prep(approval-1, of-2)&#8217;, &#8216;det(minutes-4, the-3)&#8217;,&#8217;pobj(of-2, minutes-4)&#8217;,&#8217;prep(approval-1, of-5)&#8217;,&#8217;det(sitting-8, the-6)&#8217;,&#8217;amod(sitting-8, previous-7)&#8217;,&#8217;pobj(of-5, sitting-8)&#8217;</p>
+<p>Manual score all rules spanrels: 6/7
+Manual score hat rules spanrels: 3/7
+Manual score hat rules spanrels deep: 5/7</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tests_scoring.ScoreTests.score_test4">
+<tt class="descname">score_test4</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/tests_scoring.html#ScoreTests.score_test4"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tests_scoring.ScoreTests.score_test4" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sentence: &#8216;resumption of the session&#8217;
+Alignment: &#8216;3-3 2-2 1-1 0-0&#8217;
+Dependencies: &#8216;root(ROOT-0, resumption-1)&#8217;,&#8217;prep(resumption-1, of-2)&#8217;,&#8217;det(session-4, the-3)&#8217;,&#8217;pobj(of-2, session-4)&#8217;</p>
+<p>Manual score all rules spanrels: 1.0
+Manual score hat rules spanrels: 1.0
+Manual score hat rules spanrels deep: 1.0</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tests_scoring.ScoreTests.score_test5">
+<tt class="descname">score_test5</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/tests_scoring.html#ScoreTests.score_test5"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tests_scoring.ScoreTests.score_test5" title="Permalink to this definition">¶</a></dt>
+<dd><p>no dependencies</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tests_scoring.ScoreTests.score_test6">
+<tt class="descname">score_test6</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/tests_scoring.html#ScoreTests.score_test6"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tests_scoring.ScoreTests.score_test6" title="Permalink to this definition">¶</a></dt>
+<dd><p>dependencies form no tree</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tests_scoring.ScoreTests.score_test7">
+<tt class="descname">score_test7</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/tests_scoring.html#ScoreTests.score_test7"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tests_scoring.ScoreTests.score_test7" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test to check workings for interpunction.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tests_scoring.ScoreTests.score_test8">
+<tt class="descname">score_test8</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/tests_scoring.html#ScoreTests.score_test8"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tests_scoring.ScoreTests.score_test8" title="Permalink to this definition">¶</a></dt>
+<dd><p>Second interpunction check.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tests_scoring.ScoreTests.score_test9">
+<tt class="descname">score_test9</tt><big>(</big><big>)</big><a class="headerlink" href="#tests_scoring.ScoreTests.score_test9" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tests_scoring.ScoreTests.score_test_all">
+<tt class="descname">score_test_all</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/tests_scoring.html#ScoreTests.score_test_all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tests_scoring.ScoreTests.score_test_all" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-tests_labelling"></span><dl class="class">
+<dt id="tests_labelling.LabelsTests">
+<em class="property">class </em><tt class="descclassname">tests_labelling.</tt><tt class="descname">LabelsTests</tt><a class="reference internal" href="_modules/tests_labelling.html#LabelsTests"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tests_labelling.LabelsTests" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class to test functionality of the class Labels</p>
+<dl class="method">
+<dt id="tests_labelling.LabelsTests.SAMT_test">
+<tt class="descname">SAMT_test</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/tests_labelling.html#LabelsTests.SAMT_test"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tests_labelling.LabelsTests.SAMT_test" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test Labels.SAMT</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tests_labelling.LabelsTests.base_test">
+<tt class="descname">base_test</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/tests_labelling.html#LabelsTests.base_test"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tests_labelling.LabelsTests.base_test" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tests_labelling.LabelsTests.concat_test">
+<tt class="descname">concat_test</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/tests_labelling.html#LabelsTests.concat_test"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tests_labelling.LabelsTests.concat_test" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test Labels.concat for different depths.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tests_labelling.LabelsTests.label_all_test">
+<tt class="descname">label_all_test</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/tests_labelling.html#LabelsTests.label_all_test"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tests_labelling.LabelsTests.label_all_test" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test Labels.label_most()</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tests_labelling.LabelsTests.minus_double_test">
+<tt class="descname">minus_double_test</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/tests_labelling.html#LabelsTests.minus_double_test"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tests_labelling.LabelsTests.minus_double_test" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test Labels.minus_double for different depths</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tests_labelling.LabelsTests.minus_test">
+<tt class="descname">minus_test</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/tests_labelling.html#LabelsTests.minus_test"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tests_labelling.LabelsTests.minus_test" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test Labels.minus for different depths</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tests_labelling.LabelsTests.test_all">
+<tt class="descname">test_all</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/tests_labelling.html#LabelsTests.test_all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tests_labelling.LabelsTests.test_all" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-tests_HATforest"></span><dl class="class">
+<dt id="tests_HATforest.HATsTests">
+<em class="property">class </em><tt class="descclassname">tests_HATforest.</tt><tt class="descname">HATsTests</tt><a class="reference internal" href="_modules/tests_HATforest.html#HATsTests"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tests_HATforest.HATsTests" title="Permalink to this definition">¶</a></dt>
+<dd><p>Contains tests for the HATforest class.</p>
+<dl class="method">
+<dt id="tests_HATforest.HATsTests.grammar_test">
+<tt class="descname">grammar_test</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/tests_HATforest.html#HATsTests.grammar_test"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tests_HATforest.HATsTests.grammar_test" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test function for Alignments.compute_weights with span adjusted labels.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tests_HATforest.HATsTests.probs_test">
+<tt class="descname">probs_test</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/tests_HATforest.html#HATsTests.probs_test"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tests_HATforest.HATsTests.probs_test" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test the function HATs.probmass()</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tests_HATforest.HATsTests.test_all">
+<tt class="descname">test_all</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/tests_HATforest.html#HATsTests.test_all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tests_HATforest.HATsTests.test_all" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tests_HATforest.HATsTests.update_test">
+<tt class="descname">update_test</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/tests_HATforest.html#HATsTests.update_test"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tests_HATforest.HATsTests.update_test" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test the function HATs.update()</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tests_HATforest.HATsTests.update_test2">
+<tt class="descname">update_test2</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/tests_HATforest.html#HATsTests.update_test2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tests_HATforest.HATsTests.update_test2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test the function Alignments.update() with input PCFG</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="scoring.html"
+                        title="previous chapter">scoring Module</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/tests.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="scoring.html" title="scoring Module"
+             >previous</a> |</li>
+        <li><a href="index.html">Implementation  documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Dieuwke Hupkes.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+  </body>
+</html>

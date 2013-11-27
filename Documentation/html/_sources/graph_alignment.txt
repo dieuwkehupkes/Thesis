@@ -1,0 +1,7 @@
+graph_alignment Module
+======================
+
+.. automodule:: graph_alignment
+    :members:
+    :undoc-members:
+    :show-inheritance:

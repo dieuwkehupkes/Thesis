@@ -1,0 +1,365 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>labelling &mdash; Implementation  documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Implementation  documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Implementation  documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for labelling</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">re</span>
+
+<div class="viewcode-block" id="Labels"><a class="viewcode-back" href="../labelling.html#labelling.Labels">[docs]</a><span class="k">class</span> <span class="nc">Labels</span><span class="p">():</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	Class to create different kinds of labels from a set</span>
+<span class="sd">	of basic labels. Currently, some set of labels are</span>
+<span class="sd">	computed multiple times to be used in the computation</span>
+<span class="sd">	of other labels. Class can be made more efficient by storing</span>
+<span class="sd">	such sets of labels as attributes of the Labels instance.</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">labels</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Create a labelling object, with basic labels.</span>
+<span class="sd">		:param labels:	A dictionary assigning labels to spans</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">labels</span> <span class="o">=</span> <span class="n">labels</span>
+
+<div class="viewcode-block" id="Labels.concat"><a class="viewcode-back" href="../labelling.html#labelling.Labels.concat">[docs]</a>	<span class="k">def</span> <span class="nf">concat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">depth</span><span class="p">,</span> <span class="n">o</span> <span class="o">=</span> <span class="p">{},</span> <span class="n">i</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Compute all concatenated labels up to inputted depth,</span>
+<span class="sd">		with basic labels i.</span>
+<span class="sd">		If an output dictionary o is passed, extend this dictionary</span>
+<span class="sd">		with the found spans that do not yet have a label in o.</span>
+<span class="sd">		</span>
+<span class="sd">		:param depth:	The maximum number of variables in the labels.</span>
+<span class="sd">		:param o:	An output dictionary with already existing labels.</span>
+<span class="sd">		:param i:	A dictionary with basic labels to be concatenated.</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="k">assert</span> <span class="n">depth</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#39;depth of input labels cannot be negative&#39;</span>
+		<span class="n">i</span> <span class="o">=</span> <span class="n">i</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span>
+		<span class="k">if</span> <span class="n">i</span> <span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+			<span class="k">return</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">o</span><span class="p">)</span>
+		<span class="n">output</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">o</span><span class="p">)</span>
+		<span class="n">output</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+		<span class="c">#if depth is 1, return basic labels</span>
+		<span class="n">d</span> <span class="o">=</span> <span class="mi">2</span>
+		<span class="n">concat_cur</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+		<span class="k">while</span> <span class="n">d</span> <span class="o">&lt;=</span> <span class="n">depth</span><span class="p">:</span>
+			<span class="c">#Create new labels by combining current concatenated labels with basic labels</span>
+			<span class="n">concat_new</span> <span class="o">=</span> <span class="p">{}</span>
+			<span class="n">concat_list</span> <span class="o">=</span> <span class="p">[(</span><span class="n">span1</span><span class="p">,</span><span class="n">span2</span><span class="p">)</span> <span class="k">for</span> <span class="n">span1</span> <span class="ow">in</span> <span class="n">concat_cur</span> <span class="k">for</span> <span class="n">span2</span> <span class="ow">in</span> <span class="n">i</span> <span class="k">if</span> <span class="n">span1</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">span2</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+			<span class="k">for</span> <span class="n">span</span> <span class="ow">in</span> <span class="n">concat_list</span><span class="p">:</span>
+				<span class="n">new_span</span> <span class="o">=</span> <span class="p">(</span><span class="n">span</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span><span class="n">span</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+				<span class="n">new_label</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">+</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">concat_cur</span><span class="p">[</span><span class="n">span</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="n">i</span><span class="p">[</span><span class="n">span</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
+				<span class="n">concat_new</span><span class="p">[</span><span class="n">new_span</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_label</span>
+				<span class="n">output</span><span class="p">[</span><span class="n">new_span</span><span class="p">]</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">new_span</span><span class="p">,</span><span class="n">new_label</span><span class="p">)</span>
+			<span class="n">concat_cur</span> <span class="o">=</span> <span class="n">concat_new</span>
+			<span class="n">d</span> <span class="o">+=</span> <span class="mi">1</span>
+		<span class="k">return</span> <span class="n">output</span>
+</div>
+<div class="viewcode-block" id="Labels.minus"><a class="viewcode-back" href="../labelling.html#labelling.Labels.minus">[docs]</a> 	<span class="k">def</span> <span class="nf">minus</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">depth</span><span class="p">,</span> <span class="n">o</span> <span class="o">=</span> <span class="p">{},</span> <span class="n">i</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+ 		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd"> 		Compute all labels of the form A\B and B/A</span>
+<span class="sd"> 		where B is a basic label, and A a concatenated label that</span>
+<span class="sd"> 		contains no more than depth-1 variables.</span>
+<span class="sd"> 		If an output dictionary o is passed, extend this dictionary</span>
+<span class="sd">		with the found spans that do not yet have a label in o.	</span>
+<span class="sd"> 		</span>
+<span class="sd"> 		:param depth: The maximum number of variables in the labels.</span>
+<span class="sd"> 		:param o:	An output dictionary that is to be updated with the new labels</span>
+<span class="sd"> 		:param i:	A dictionary with basic labels.</span>
+<span class="sd"> 		&quot;&quot;&quot;</span>
+ 		<span class="n">i</span> <span class="o">=</span> <span class="n">i</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span>
+ 		<span class="n">output</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">o</span><span class="p">)</span>
+ 		<span class="n">output</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+ 		<span class="k">if</span> <span class="n">depth</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+ 			<span class="k">return</span> <span class="n">output</span>
+ 		<span class="n">concat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">depth</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+		<span class="n">minus_left</span> <span class="o">=</span> <span class="p">[(</span><span class="n">span1</span><span class="p">,</span><span class="n">span2</span><span class="p">)</span> <span class="k">for</span> <span class="n">span1</span> <span class="ow">in</span> <span class="n">concat</span> <span class="k">for</span> <span class="n">span2</span> <span class="ow">in</span> <span class="n">i</span> <span class="k">if</span> <span class="n">span1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">span2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">and</span> <span class="n">span1</span> <span class="o">&lt;</span> <span class="n">span2</span><span class="p">]</span>
+		<span class="k">for</span> <span class="n">span</span> <span class="ow">in</span> <span class="n">minus_left</span><span class="p">:</span>
+			<span class="n">new_span</span> <span class="o">=</span> <span class="p">(</span><span class="n">span</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">span</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+<span class="c">#			print new_span</span>
+			<span class="n">new_label</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">\</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">concat</span><span class="p">[</span><span class="n">span</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="n">i</span><span class="p">[</span><span class="n">span</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
+<span class="c">#			print new_label</span>
+			<span class="n">output</span><span class="p">[</span><span class="n">new_span</span><span class="p">]</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">new_span</span><span class="p">,</span><span class="n">new_label</span><span class="p">)</span>
+			<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">label_complexity</span><span class="p">(</span><span class="n">output</span><span class="p">[</span><span class="n">new_span</span><span class="p">])</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">label_complexity</span><span class="p">(</span><span class="n">new_label</span><span class="p">):</span>
+				<span class="n">output</span><span class="p">[</span><span class="n">new_span</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_label</span>
+		<span class="n">minus_right</span> <span class="o">=</span> <span class="p">[(</span><span class="n">span1</span><span class="p">,</span><span class="n">span2</span><span class="p">)</span> <span class="k">for</span> <span class="n">span1</span> <span class="ow">in</span> <span class="n">i</span> <span class="k">for</span> <span class="n">span2</span> <span class="ow">in</span> <span class="n">concat</span> <span class="k">if</span> <span class="n">span1</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">span2</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">and</span> <span class="n">span1</span> <span class="o">&lt;</span> <span class="n">span2</span><span class="p">]</span>
+		<span class="k">for</span> <span class="n">span</span> <span class="ow">in</span> <span class="n">minus_right</span><span class="p">:</span>
+			<span class="n">new_span</span> <span class="o">=</span> <span class="p">(</span><span class="n">span</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span><span class="n">span</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+			<span class="n">new_label</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">/</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span><span class="p">[</span><span class="n">span</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="n">concat</span><span class="p">[</span><span class="n">span</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
+			<span class="n">output</span><span class="p">[</span><span class="n">new_span</span><span class="p">]</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">new_span</span><span class="p">,</span><span class="n">new_label</span><span class="p">)</span>
+			<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">label_complexity</span><span class="p">(</span><span class="n">output</span><span class="p">[</span><span class="n">new_span</span><span class="p">])</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">label_complexity</span><span class="p">(</span><span class="n">new_label</span><span class="p">):</span>
+				<span class="n">output</span><span class="p">[</span><span class="n">new_span</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_label</span>
+		<span class="k">return</span> <span class="n">output</span>
+</div>
+<div class="viewcode-block" id="Labels.minus_double"><a class="viewcode-back" href="../labelling.html#labelling.Labels.minus_double">[docs]</a>	<span class="k">def</span> <span class="nf">minus_double</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">depth</span><span class="p">,</span> <span class="n">o</span> <span class="o">=</span> <span class="p">{},</span> <span class="n">i</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+ 		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd"> 		Compute all labels of the form A\B/C, where </span>
+<span class="sd"> 		A is a basic label, and B and C are concatenated</span>
+<span class="sd"> 		labels. The outputted labels have a number of variables</span>
+<span class="sd"> 		that is no higher than depth.</span>
+<span class="sd"> 		If an output dictionary o is passed, extend this dictionary</span>
+<span class="sd">		with the found spans that do not yet have a label in o.	</span>
+<span class="sd"> 		</span>
+<span class="sd"> 		:param depth: The maximum number of variables in the labels.</span>
+<span class="sd"> 		:param o:	An output dictionary that is to be updated with the new labels</span>
+<span class="sd"> 		:param i:	A dictionary with basic labels.</span>
+<span class="sd"> 		</span>
+<span class="sd">		Return a dictionary with all labels of the form</span>
+<span class="sd">		, where B is in self.labels or in i if i is provided,</span>
+<span class="sd">		and A and C are in A1 + A2 + An where A1.. An are in</span>
+<span class="sd">		self.labels or i and n &lt;= depth.</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="k">assert</span> <span class="n">depth</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#39;depth of input labels must be positive&#39;</span>
+		<span class="n">i</span> <span class="o">=</span> <span class="n">i</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span>
+		<span class="n">output</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">o</span><span class="p">)</span>
+		<span class="n">output</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+		<span class="k">if</span> <span class="n">depth</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+			<span class="k">return</span> <span class="n">output</span>
+		<span class="n">concat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">depth</span><span class="p">,</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">))</span>
+		<span class="n">spanlist</span> <span class="o">=</span> <span class="p">[(</span><span class="n">span0</span><span class="p">,</span><span class="n">span1</span><span class="p">,</span><span class="n">span2</span><span class="p">)</span> <span class="k">for</span> <span class="n">span0</span> <span class="ow">in</span> <span class="n">concat</span> <span class="k">for</span> <span class="n">span1</span> <span class="ow">in</span> <span class="n">concat</span> <span class="k">for</span> <span class="n">span2</span> <span class="ow">in</span> <span class="n">i</span> <span class="k">if</span> <span class="n">span0</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">span2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">and</span> <span class="n">span1</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">span2</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">and</span> <span class="n">span0</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">span1</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+		<span class="k">for</span> <span class="n">span</span> <span class="ow">in</span> <span class="n">spanlist</span><span class="p">:</span>
+			<span class="n">new_span</span> <span class="o">=</span> <span class="p">(</span><span class="n">span</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span><span class="n">span</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+			<span class="n">new_label</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">\</span><span class="si">%s</span><span class="s">/</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">concat</span><span class="p">[</span><span class="n">span</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="n">i</span><span class="p">[</span><span class="n">span</span><span class="p">[</span><span class="mi">2</span><span class="p">]],</span> <span class="n">concat</span><span class="p">[</span><span class="n">span</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
+			<span class="c">#add new label if the added depth of the minus labels is no larger than depth</span>
+			<span class="k">if</span> <span class="n">new_label</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s">&#39;+&#39;</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">depth</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+				<span class="n">output</span><span class="p">[</span><span class="n">new_span</span><span class="p">]</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">new_span</span><span class="p">,</span><span class="n">new_label</span><span class="p">)</span>
+				<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">label_complexity</span><span class="p">(</span><span class="n">output</span><span class="p">[</span><span class="n">new_span</span><span class="p">])</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">label_complexity</span><span class="p">(</span><span class="n">new_label</span><span class="p">):</span>
+					<span class="n">output</span><span class="p">[</span><span class="n">new_span</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_label</span>
+		<span class="k">return</span> <span class="n">output</span>
+</div>
+<div class="viewcode-block" id="Labels.SAMT_labels"><a class="viewcode-back" href="../labelling.html#labelling.Labels.SAMT_labels">[docs]</a>	<span class="k">def</span> <span class="nf">SAMT_labels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Return all SAMT labels based on the basic</span>
+<span class="sd">		labels of the object. The order if precedence is as follows:</span>
+<span class="sd"> 		</span>
+<span class="sd"> 		* Basic labels</span>
+<span class="sd"> 		</span>
+<span class="sd"> 		* labels A + B, where A and B are basic labels;</span>
+<span class="sd"> 		</span>
+<span class="sd"> 		* labels A/B or A\B where A and B are basic labels;</span>
+<span class="sd"> 		</span>
+<span class="sd"> 		* labels A + B + C where A,B and C are basic labels;</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+ 		<span class="c">#update with concat2 labels</span>
+ 		<span class="n">labels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">)</span>
+		<span class="c">#update with &#39;minus&#39;-labels</span>
+		<span class="n">labels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">minus</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">labels</span><span class="p">)</span>
+		<span class="c">#update with concat3 labels</span>
+		<span class="n">labels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="n">labels</span><span class="p">)</span>
+		<span class="c">#set SAMT labels as attribute</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">SAMT</span> <span class="o">=</span> <span class="n">labels</span>
+		<span class="k">return</span> <span class="n">labels</span>	
+
+</div>
+<div class="viewcode-block" id="Labels.label_most"><a class="viewcode-back" href="../labelling.html#labelling.Labels.label_most">[docs]</a>	<span class="k">def</span> <span class="nf">label_most</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Label all spans within the range of labels, following the following rules:</span>
+<span class="sd">		</span>
+<span class="sd">		* Labels with a lower depth are always preferred;</span>
+<span class="sd">		</span>
+<span class="sd">		* Concatenated labels are preferred over minus and double/minus labels;</span>
+<span class="sd">		</span>
+<span class="sd">		* Single minus labels (with concatenated spans) are preferred over double minus labels.</span>
+<span class="sd">		</span>
+<span class="sd">		SAMT labels thus have precedence over other labels.</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="c"># find the largest spans to determine which spans should be labelled</span>
+		<span class="n">s_max</span> <span class="o">=</span> <span class="nb">max</span><span class="p">([</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="o">.</span><span class="n">keys</span><span class="p">()])</span>
+		<span class="n">s_min</span> <span class="o">=</span> <span class="nb">min</span><span class="p">([</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="o">.</span><span class="n">keys</span><span class="p">()])</span>		
+<span class="c">#		#create SAMT labels</span>
+		<span class="n">labels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">SAMT_labels</span><span class="p">()</span>
+		<span class="c">#update with minus labels with 3 variables</span>
+		<span class="n">labels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">minus</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="n">labels</span><span class="p">)</span>
+		<span class="c">#update with double minus labels with 3 variables</span>
+		<span class="n">labels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">minus_double</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="n">labels</span><span class="p">)</span>
+		<span class="c">#Add labels of higher depth until dictionary does not grow anymore</span>
+		<span class="n">cur_depth</span> <span class="o">=</span> <span class="mi">4</span>
+		<span class="n">old_labels</span> <span class="o">=</span> <span class="p">{}</span>
+		<span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">old_labels</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">labels</span><span class="p">):</span>
+			<span class="n">old_labels</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span>
+			<span class="n">labels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">cur_depth</span><span class="p">,</span><span class="n">labels</span><span class="p">)</span>
+			<span class="n">labels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">minus</span><span class="p">(</span><span class="n">cur_depth</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">labels</span><span class="p">)</span>
+			<span class="n">labels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">minus_double</span><span class="p">(</span><span class="n">cur_depth</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">labels</span><span class="p">)</span>
+			<span class="n">cur_depth</span> <span class="o">+=</span> <span class="mi">1</span>
+		<span class="k">return</span> <span class="n">labels</span>		
+
+	</div>
+<div class="viewcode-block" id="Labels.annotate_span"><a class="viewcode-back" href="../labelling.html#labelling.Labels.annotate_span">[docs]</a>	<span class="k">def</span> <span class="nf">annotate_span</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">labels</span><span class="p">):</span>
+ 		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd"> 		Annotate labels with their span, to make the</span>
+<span class="sd"> 		grammar unique.</span>
+<span class="sd"> 		&quot;&quot;&quot;</span>
+ 		<span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">labels</span><span class="p">:</span>
+ 			<span class="n">span</span> <span class="o">=</span> <span class="s">&quot;-[</span><span class="si">%s</span><span class="s">-</span><span class="si">%s</span><span class="s">]&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">key</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">key</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+ 			<span class="n">new_label</span> <span class="o">=</span> <span class="n">labels</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">+</span> <span class="n">span</span>
+ 			<span class="n">labels</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_label</span>
+ 		<span class="k">return</span> <span class="n">labels</span>
+	</div>
+<div class="viewcode-block" id="Labels.label_complexity"><a class="viewcode-back" href="../labelling.html#labelling.Labels.label_complexity">[docs]</a>	<span class="k">def</span> <span class="nf">label_complexity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">label</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Return the number of variables in a label.</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\\\\</span><span class="s">|/|\+&#39;</span><span class="p">,</span><span class="n">label</span><span class="p">))</span>
+
+		
+<span class="c">####################################################################################</span>
+<span class="c">#DEMONSTRATION</span>
+<span class="c">####################################################################################</span>
+
+</div></div>
+<div class="viewcode-block" id="demo"><a class="viewcode-back" href="../labelling.html#labelling.demo">[docs]</a><span class="k">def</span> <span class="nf">demo</span><span class="p">():</span>
+	
+	<span class="n">basic_labels</span> <span class="o">=</span> <span class="p">{(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">):</span> <span class="s">&#39;poss&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">):</span> <span class="s">&#39;nsubj-h&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">):</span> <span class="s">&#39;xvmod&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">):</span> <span class="s">&#39;root&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">):</span> <span class="s">&#39;xcomp-h&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">):</span> <span class="s">&#39;dobj&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">):</span> <span class="s">&#39;nsubj&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">6</span><span class="p">):</span> <span class="s">&#39;xcomp&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">6</span><span class="p">):</span> <span class="s">&#39;ROOT&#39;</span><span class="p">}</span>
+	<span class="n">l</span> <span class="o">=</span> <span class="n">Labels</span><span class="p">(</span><span class="n">basic_labels</span><span class="p">)</span>
+	<span class="n">L</span> <span class="o">=</span>  <span class="n">l</span><span class="o">.</span><span class="n">label_most</span><span class="p">()</span>
+	<span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">L</span><span class="p">:</span>
+		<span class="k">print</span> <span class="s">&#39;</span><span class="si">%s</span><span class="se">\t</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">L</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+	<span class="k">return</span>
+
+	<span class="n">i</span> <span class="o">=</span> <span class="nb">raw_input</span><span class="p">(</span><span class="s">&quot;Press enter to go through demo, q can be pressed at any stage to quit the demo.</span><span class="se">\t</span><span class="s">&quot;</span><span class="p">)</span>
+	<span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">==</span> <span class="s">&#39;q&#39;</span> <span class="ow">or</span> <span class="n">i</span> <span class="o">==</span> <span class="s">&#39;Q&#39;</span><span class="p">):</span> <span class="k">return</span>
+	
+	<span class="k">print</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">Initialise a Labelling object with a set of basic Labels: (the example labels are abstracted from the dependency parse for the sentence I give the boy some flowers).&#39;</span>
+	<span class="k">if</span> <span class="p">(</span><span class="nb">raw_input</span><span class="p">(</span><span class="s">&quot;&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s">&#39;q&#39;</span> <span class="ow">or</span> <span class="n">i</span> <span class="o">==</span> <span class="s">&#39;Q&#39;</span><span class="p">):</span> <span class="k">return</span>
+	<span class="k">print</span> <span class="s">&quot;&gt;&gt;&gt; l = Labels({(1, 2): &#39;root&#39;, (0, 1): &#39;nsubj&#39;, (4, 6): &#39;dobj&#39;, (5, 6): &#39;dobj-h&#39;, (0, 6): &#39;ROOT&#39;, (2, 3): &#39;det&#39;, (4, 5): &#39;det&#39;, (3, 4): &#39;iobj-h&#39;, (2, 4): &#39;iobj&#39;}&quot;</span>
+	<span class="n">l</span> <span class="o">=</span> <span class="n">Labels</span><span class="p">({(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span> <span class="s">&#39;root&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span> <span class="s">&#39;nsubj&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">):</span> <span class="s">&#39;dobj&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">):</span> <span class="s">&#39;dobj-h&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">6</span><span class="p">):</span> <span class="s">&#39;ROOT&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">):</span> <span class="s">&#39;det&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">):</span> <span class="s">&#39;det&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">):</span> <span class="s">&#39;iobj-h&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">):</span> <span class="s">&#39;iobj&#39;</span><span class="p">})</span>	
+	
+	<span class="k">if</span> <span class="p">(</span><span class="nb">raw_input</span><span class="p">(</span><span class="s">&quot;&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s">&#39;q&#39;</span> <span class="ow">or</span> <span class="n">i</span> <span class="o">==</span> <span class="s">&#39;Q&#39;</span><span class="p">):</span> <span class="k">return</span>
+
+	<span class="k">print</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">Compute all concatenated labels up to depth 2:&#39;</span>
+	<span class="k">if</span> <span class="p">(</span><span class="nb">raw_input</span><span class="p">(</span><span class="s">&quot;&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s">&#39;q&#39;</span> <span class="ow">or</span> <span class="n">i</span> <span class="o">==</span> <span class="s">&#39;Q&#39;</span><span class="p">):</span> <span class="k">return</span>
+	<span class="k">print</span> <span class="s">&#39;&gt;&gt;&gt; l.concat(2)&#39;</span>
+	<span class="k">print</span> <span class="n">l</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+
+	<span class="k">if</span> <span class="p">(</span><span class="nb">raw_input</span><span class="p">(</span><span class="s">&quot;&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s">&#39;q&#39;</span> <span class="ow">or</span> <span class="n">i</span> <span class="o">==</span> <span class="s">&#39;Q&#39;</span><span class="p">):</span> <span class="k">return</span>
+	<span class="k">print</span> <span class="s">&#39;Compute all concatenated labels up to depth 3:&#39;</span>
+	<span class="k">if</span> <span class="p">(</span><span class="nb">raw_input</span><span class="p">(</span><span class="s">&quot;&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s">&#39;q&#39;</span> <span class="ow">or</span> <span class="n">i</span> <span class="o">==</span> <span class="s">&#39;Q&#39;</span><span class="p">):</span> <span class="k">return</span>
+	<span class="k">print</span> <span class="s">&#39;&gt;&gt;&gt; l.concat(3)&#39;</span>
+	<span class="k">print</span> <span class="n">l</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+
+	<span class="k">if</span> <span class="p">(</span><span class="nb">raw_input</span><span class="p">(</span><span class="s">&quot;&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s">&#39;q&#39;</span> <span class="ow">or</span> <span class="n">i</span> <span class="o">==</span> <span class="s">&#39;Q&#39;</span><span class="p">):</span> <span class="k">return</span>
+	<span class="k">print</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">Compute all minus labels up to depth 2:&#39;</span>
+	<span class="k">if</span> <span class="p">(</span><span class="nb">raw_input</span><span class="p">(</span><span class="s">&quot;&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s">&#39;q&#39;</span> <span class="ow">or</span> <span class="n">i</span> <span class="o">==</span> <span class="s">&#39;Q&#39;</span><span class="p">):</span> <span class="k">return</span>
+	<span class="k">print</span> <span class="s">&#39;&gt;&gt;&gt; l.minus(2)&#39;</span>
+	<span class="k">print</span> <span class="n">l</span><span class="o">.</span><span class="n">minus</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>	
+
+	<span class="k">if</span> <span class="p">(</span><span class="nb">raw_input</span><span class="p">(</span><span class="s">&quot;&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s">&#39;q&#39;</span> <span class="ow">or</span> <span class="n">i</span> <span class="o">==</span> <span class="s">&#39;Q&#39;</span><span class="p">):</span> <span class="k">return</span>
+	<span class="k">print</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">Extend concat(2) with all minus labels:&#39;</span>
+	<span class="k">if</span> <span class="p">(</span><span class="nb">raw_input</span><span class="p">(</span><span class="s">&quot;&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s">&#39;q&#39;</span> <span class="ow">or</span> <span class="n">i</span> <span class="o">==</span> <span class="s">&#39;Q&#39;</span><span class="p">):</span> <span class="k">return</span>
+	<span class="k">print</span> <span class="s">&#39;&gt;&gt;&gt; l.minus(2, l.concat(2))&#39;</span>
+	<span class="k">print</span> <span class="n">l</span><span class="o">.</span><span class="n">minus</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">l</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>	
+
+	<span class="k">if</span> <span class="p">(</span><span class="nb">raw_input</span><span class="p">(</span><span class="s">&quot;&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s">&#39;q&#39;</span> <span class="ow">or</span> <span class="n">i</span> <span class="o">==</span> <span class="s">&#39;Q&#39;</span><span class="p">):</span> <span class="k">return</span>
+	<span class="k">print</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">Compute SAMT labels:&#39;</span>
+	<span class="k">if</span> <span class="p">(</span><span class="nb">raw_input</span><span class="p">(</span><span class="s">&quot;&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s">&#39;q&#39;</span> <span class="ow">or</span> <span class="n">i</span> <span class="o">==</span> <span class="s">&#39;Q&#39;</span><span class="p">):</span> <span class="k">return</span>
+	<span class="k">print</span> <span class="s">&#39;&gt;&gt;&gt; l.SAMT_labels()&#39;</span>
+	<span class="k">print</span> <span class="n">l</span><span class="o">.</span><span class="n">SAMT_labels</span><span class="p">()</span>
+
+	<span class="k">if</span> <span class="p">(</span><span class="nb">raw_input</span><span class="p">(</span><span class="s">&quot;&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s">&#39;q&#39;</span> <span class="ow">or</span> <span class="n">i</span> <span class="o">==</span> <span class="s">&#39;Q&#39;</span><span class="p">):</span> <span class="k">return</span>	
+	<span class="k">print</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">Annotate basic labels with their span:&#39;</span>
+	<span class="k">if</span> <span class="p">(</span><span class="nb">raw_input</span><span class="p">(</span><span class="s">&quot;&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s">&#39;q&#39;</span> <span class="ow">or</span> <span class="n">i</span> <span class="o">==</span> <span class="s">&#39;Q&#39;</span><span class="p">):</span> <span class="k">return</span>
+	<span class="k">print</span> <span class="s">&#39;&gt;&gt;&gt; l.annotate_span(l.labels)&#39;</span>
+	<span class="k">print</span> <span class="n">l</span><span class="o">.</span><span class="n">annotate_span</span><span class="p">(</span><span class="n">l</span><span class="o">.</span><span class="n">labels</span><span class="p">)</span>
+	
+	
+	<span class="k">if</span> <span class="p">(</span><span class="nb">raw_input</span><span class="p">(</span><span class="s">&quot;&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s">&#39;q&#39;</span> <span class="ow">or</span> <span class="n">i</span> <span class="o">==</span> <span class="s">&#39;Q&#39;</span><span class="p">):</span> <span class="k">return</span>
+	<span class="k">print</span> <span class="s">&quot;End of demonstration</span><span class="se">\n</span><span class="s">&quot;</span>
+	<span class="k">return</span>
+
+
+</div>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+	<span class="k">print</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">A demonstration showing how a ``Labels`` object can be created and how some of the class methods can be used.</span><span class="se">\n</span><span class="s">&quot;</span>
+	<span class="n">demo</span><span class="p">()</span>
+
+
+	
+
+	<span class="n">l</span> <span class="o">=</span> <span class="n">Labels</span><span class="p">({(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span> <span class="s">&#39;root&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span> <span class="s">&#39;nsubj&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">):</span> <span class="s">&#39;PUNCT&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">):</span> <span class="s">&#39;dobj&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">):</span> <span class="s">&#39;dobj-h&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">6</span><span class="p">):</span> <span class="s">&#39;ROOT&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">):</span> <span class="s">&#39;det&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">):</span> <span class="s">&#39;det&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">):</span> <span class="s">&#39;iobj-h&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">):</span> <span class="s">&#39;iobj&#39;</span><span class="p">})</span>
+<span class="c">#	print l.label_most()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Implementation  documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Dieuwke Hupkes.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+  </body>
+</html>

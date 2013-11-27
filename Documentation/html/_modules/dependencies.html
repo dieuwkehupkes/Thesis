@@ -1,0 +1,389 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>dependencies &mdash; Implementation  documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Implementation  documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Implementation  documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for dependencies</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">re</span>
+
+<div class="viewcode-block" id="Dependencies"><a class="viewcode-back" href="../dependencies.html#dependencies.Dependencies">[docs]</a><span class="k">class</span> <span class="nc">Dependencies</span><span class="p">():</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	A class representing the dependencies of a sentence in a dictionary.</span>
+<span class="sd">	The dependencies are created from a file with dependencies as outputed</span>
+<span class="sd">	by the Stanford dependency parser, i.e. every line will contain a</span>
+<span class="sd">	dependency of the form:</span>
+
+<span class="sd">		reltype(head-pos_head, dependent-pos_dependent)</span>
+
+<span class="sd">	The first position in the sentence is 1.</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+
+	<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dependency_list</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Initializes a dictionary with the dependencies</span>
+<span class="sd">		from an inputed list of dependencies. Entries</span>
+<span class="sd">		of the dictionary will be of the form:</span>
+
+<span class="sd">			pos_head: [pos_dependent, reltype]</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">nr_of_deps</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">deps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_dependencies</span><span class="p">(</span><span class="n">dependency_list</span><span class="p">)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">set_wordspans</span><span class="p">()</span>
+
+<div class="viewcode-block" id="Dependencies.set_dependencies"><a class="viewcode-back" href="../dependencies.html#dependencies.Dependencies.set_dependencies">[docs]</a>	<span class="k">def</span> <span class="nf">set_dependencies</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">dependency_list</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Read in a file and create a dictionary</span>
+<span class="sd">		with its dependencies</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">deps</span> <span class="o">=</span> <span class="p">{}</span>
+		<span class="k">for</span> <span class="n">relation</span> <span class="ow">in</span> <span class="n">dependency_list</span><span class="p">:</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">nr_of_deps</span> <span class="o">+=</span> <span class="mi">1</span>
+			<span class="c"># Find the type of relation</span>
+			<span class="n">rel</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s">&#39;[a-z\_]*(?=\()&#39;</span><span class="p">,</span><span class="n">relation</span><span class="p">)</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+			<span class="c"># Find head and dependent</span>
+			<span class="n">head</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s">&#39;(?&lt;=-)[0-9]*(?=, )&#39;</span><span class="p">,</span><span class="n">relation</span><span class="p">)</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+			<span class="n">dep</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s">&#39;(?&lt;=-)[0-9]*(?=\)$)&#39;</span><span class="p">,</span> <span class="n">relation</span><span class="p">)</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+			<span class="c"># Set head position and create</span>
+			<span class="c">#dictinary entries</span>
+			<span class="k">if</span> <span class="n">head</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">head_pos</span> <span class="o">=</span> <span class="n">dep</span>
+			<span class="k">else</span><span class="p">:</span>
+				<span class="n">deps</span><span class="p">[</span><span class="n">head</span><span class="p">]</span> <span class="o">=</span> <span class="n">deps</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">head</span><span class="p">,[])</span>
+				<span class="n">deps</span><span class="p">[</span><span class="n">head</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">dep</span><span class="p">,</span><span class="n">rel</span><span class="p">])</span>
+		<span class="k">return</span> <span class="n">deps</span>
+</div>
+<div class="viewcode-block" id="Dependencies.comp_score"><a class="viewcode-back" href="../dependencies.html#dependencies.Dependencies.comp_score">[docs]</a>	<span class="k">def</span> <span class="nf">comp_score</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Returns the number of words that is head</span>
+<span class="sd">		of another word, thereby giving a measure of</span>
+<span class="sd">		the level of compositionality of the parse</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">nr_heads</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">deps</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+		<span class="n">comp_score</span> <span class="o">=</span> <span class="n">nr_heads</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nr_of_deps</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+		<span class="k">return</span> <span class="n">comp_score</span>
+</div>
+<div class="viewcode-block" id="Dependencies.set_wordspans"><a class="viewcode-back" href="../dependencies.html#dependencies.Dependencies.set_wordspans">[docs]</a>	<span class="k">def</span> <span class="nf">set_wordspans</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Compute the span of each word and store it in a</span>
+<span class="sd">		dictionary with word positions and a tuple that</span>
+<span class="sd">		represents their span as key and value, respectively.</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">wordspans</span> <span class="o">=</span> <span class="p">{}</span>
+		<span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">deps</span><span class="p">:</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">get_span</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Dependencies.get_span"><a class="viewcode-back" href="../dependencies.html#dependencies.Dependencies.get_span">[docs]</a>	<span class="k">def</span> <span class="nf">get_span</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">key</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Recursively compute the span of a word. </span>
+<span class="sd">		The span of a word is constituted by the minimum and</span>
+<span class="sd">		maximum position that can be reached from the word by</span>
+<span class="sd">		following the directed dependency arrows. The spans are</span>
+<span class="sd">		left exclusive and right inclusive. I.e. if positions</span>
+<span class="sd">		i and j are the minimum and maximum positions that can</span>
+<span class="sd">		be reached from a word, its span will be [i-1,j]. Every</span>
+<span class="sd">		word necessarily spans itself, a word at position i</span>
+<span class="sd">		without dependents will thus have span [i-1,i].</span>
+<span class="sd">		The dependency from root to head of the sentence is not</span>
+<span class="sd">		considered.</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">wordspans</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="n">key</span><span class="p">):</span>
+			<span class="c"># span of this word already computed</span>
+			<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">wordspans</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+		<span class="k">elif</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">deps</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="n">key</span><span class="p">):</span>
+			<span class="c">#The word has no dependents</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">wordspans</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">key</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">key</span><span class="p">)</span>
+			<span class="k">return</span> <span class="p">(</span><span class="n">key</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">key</span><span class="p">)</span>
+		<span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">deps</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="n">key</span><span class="p">):</span>
+			<span class="c"># make a list with its dependents</span>
+			<span class="n">deplist</span> <span class="o">=</span> <span class="p">[(</span><span class="n">key</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">key</span><span class="p">)]</span>
+			<span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">deps</span><span class="p">[</span><span class="n">key</span><span class="p">]:</span>
+				<span class="n">deplist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_span</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">wordspans</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">deplist</span><span class="p">)),</span><span class="nb">max</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">deplist</span><span class="p">)))</span>
+			<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">wordspans</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+</div>
+<div class="viewcode-block" id="Dependencies.get_spanrels"><a class="viewcode-back" href="../dependencies.html#dependencies.Dependencies.get_spanrels">[docs]</a>	<span class="k">def</span> <span class="nf">get_spanrels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Create a dictionary of dependencies between</span>
+<span class="sd">		word-positions and word spans. Go through the</span>
+<span class="sd">		dependency dictionary and replace heads by the</span>
+<span class="sd">		span that constitutes their position and dependents</span>
+<span class="sd">		by their wordspan. I.e., if </span>
+
+<span class="sd">			pos_head: [pos_dependent, reltype]</span>
+
+<span class="sd">		was in the dependency dictionary, then</span>
+
+<span class="sd">			(pos_head-1, pos_head): span(pos_dependent)</span>
+
+<span class="sd">		will be in the dictionary returned by this function.</span>
+<span class="sd">		&quot;&quot;&quot;</span>	
+		<span class="n">spanrels</span> <span class="o">=</span> <span class="p">{}</span>
+		<span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">deps</span><span class="p">:</span>
+			<span class="n">spanrels</span><span class="p">[(</span><span class="n">key</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">key</span><span class="p">)]</span> <span class="o">=</span> <span class="p">[]</span>
+			<span class="k">for</span> <span class="n">dependent</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">deps</span><span class="p">[</span><span class="n">key</span><span class="p">]:</span>
+				<span class="n">spanrels</span><span class="p">[(</span><span class="n">key</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">key</span><span class="p">)]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wordspans</span><span class="p">[</span><span class="n">dependent</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+		<span class="k">return</span> <span class="n">spanrels</span>
+ </div>
+<div class="viewcode-block" id="Dependencies.get_comp_spanrels"><a class="viewcode-back" href="../dependencies.html#dependencies.Dependencies.get_comp_spanrels">[docs]</a> 	<span class="k">def</span> <span class="nf">get_comp_spanrels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+ 		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd"> 		Create a dictionary of dependencies between word positions</span>
+<span class="sd"> 		and word spans. Go through the dependency dictionary, but</span>
+<span class="sd"> 		select only the relations that display compositionality</span>
+<span class="sd"> 		(i.e. no relations between words)</span>
+<span class="sd"> 		&quot;&quot;&quot;</span>
+		<span class="n">comp_spanrels</span> <span class="o">=</span> <span class="p">{}</span>
+		<span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">deps</span><span class="p">:</span>
+			<span class="n">comp_spanrels</span><span class="p">[(</span><span class="n">key</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">key</span><span class="p">)]</span> <span class="o">=</span> <span class="p">[]</span>
+			<span class="k">for</span> <span class="n">dependent</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">deps</span><span class="p">[</span><span class="n">key</span><span class="p">]:</span>
+				<span class="k">if</span> <span class="n">dependent</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">deps</span><span class="p">:</span>
+					<span class="n">comp_spanrels</span><span class="p">[(</span><span class="n">key</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">key</span><span class="p">)]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wordspans</span><span class="p">[</span><span class="n">dependent</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+					<span class="n">has_compositionality</span> <span class="o">=</span> <span class="bp">True</span>
+			<span class="c"># Check if any relations are stored</span>
+			<span class="k">if</span> <span class="n">comp_spanrels</span><span class="p">[(</span><span class="n">key</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">key</span><span class="p">)]</span> <span class="o">==</span> <span class="p">[]:</span>
+				<span class="k">del</span> <span class="n">comp_spanrels</span><span class="p">[(</span><span class="n">key</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">key</span><span class="p">)]</span>
+		<span class="k">return</span> <span class="n">comp_spanrels</span>
+	</div>
+<div class="viewcode-block" id="Dependencies.labels"><a class="viewcode-back" href="../dependencies.html#dependencies.Dependencies.labels">[docs]</a> 	<span class="k">def</span> <span class="nf">labels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+ 		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd"> 		Create a dictionary that assigns labels to spans</span>
+<span class="sd"> 		according to their dependency relation. The labels</span>
+<span class="sd"> 		are annotated with the span they are modifying</span>
+<span class="sd"> 		&quot;&quot;&quot;</span>
+ 		<span class="n">labels</span> <span class="o">=</span> <span class="p">{}</span>
+ 		<span class="n">labels</span><span class="p">[(</span><span class="bp">self</span><span class="o">.</span><span class="n">head_pos</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">head_pos</span><span class="p">)]</span> <span class="o">=</span> <span class="s">&#39;HEAD&#39;</span>
+ 		<span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">deps</span><span class="p">:</span>
+ 			<span class="k">for</span> <span class="n">dependent</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">deps</span><span class="p">[</span><span class="n">key</span><span class="p">]:</span>
+ 				<span class="n">span_dependent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wordspans</span><span class="p">[</span><span class="n">dependent</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+ 				<span class="n">span_string</span> <span class="o">=</span> <span class="s">&quot;-[</span><span class="si">%s</span><span class="s">,</span><span class="si">%s</span><span class="s">]&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">span_dependent</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">span_dependent</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+ 				<span class="n">labels</span><span class="p">[</span><span class="n">span_dependent</span><span class="p">]</span> <span class="o">=</span> <span class="n">dependent</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="n">span_string</span>
+ 		<span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">deps</span><span class="p">:</span>
+ 			<span class="k">for</span> <span class="n">dependent</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">deps</span><span class="p">[</span><span class="n">key</span><span class="p">]:</span>
+ 				<span class="n">span_string</span> <span class="o">=</span> <span class="s">&quot;-[</span><span class="si">%s</span><span class="s">,</span><span class="si">%s</span><span class="s">]&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">span_dependent</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">span_dependent</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+ 				<span class="n">span_dependent</span> <span class="o">=</span> <span class="p">(</span><span class="n">dependent</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">dependent</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+ 				<span class="n">labels</span><span class="p">[</span><span class="n">span_dependent</span><span class="p">]</span> <span class="o">=</span> <span class="n">labels</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">span_dependent</span><span class="p">,</span> <span class="n">dependent</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="s">&#39;-head&#39;</span><span class="o">+</span><span class="n">span_string</span><span class="p">)</span>
+ 		<span class="k">return</span> <span class="n">labels</span>
+ 	</div>
+<div class="viewcode-block" id="Dependencies.pure_labels"><a class="viewcode-back" href="../dependencies.html#dependencies.Dependencies.pure_labels">[docs]</a> 	<span class="k">def</span> <span class="nf">pure_labels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+ 		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  		Create a dictionary that assigns labels to spans</span>
+<span class="sd"> 		according to their dependency relation.</span>
+<span class="sd"> 		&quot;&quot;&quot;</span>
+ 		<span class="n">labels</span> <span class="o">=</span> <span class="p">{}</span>
+ 		<span class="n">labels</span><span class="p">[(</span><span class="bp">self</span><span class="o">.</span><span class="n">head_pos</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">head_pos</span><span class="p">)]</span> <span class="o">=</span> <span class="s">&#39;HEAD&#39;</span>
+ 		<span class="c"># Assign labels to dependents</span>
+ 		<span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">deps</span><span class="p">:</span>
+ 			<span class="k">for</span> <span class="n">dependent</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">deps</span><span class="p">[</span><span class="n">key</span><span class="p">]:</span>
+ 				<span class="n">span_dependent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wordspans</span><span class="p">[</span><span class="n">dependent</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+ 				<span class="n">labels</span><span class="p">[</span><span class="n">span_dependent</span><span class="p">]</span> <span class="o">=</span> <span class="n">dependent</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+ 		<span class="c"># Assign labels to words-spans that do not have a label yet</span>
+ 		<span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">deps</span><span class="p">:</span>
+ 			<span class="k">for</span> <span class="n">dependent</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">deps</span><span class="p">[</span><span class="n">key</span><span class="p">]:</span>
+ 				<span class="n">span_dependent</span> <span class="o">=</span> <span class="p">(</span><span class="n">dependent</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">dependent</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+ 				<span class="n">labels</span><span class="p">[</span><span class="n">span_dependent</span><span class="p">]</span> <span class="o">=</span> <span class="n">labels</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">span_dependent</span><span class="p">,</span> <span class="n">dependent</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="s">&#39;-head&#39;</span><span class="p">)</span>
+ 		<span class="k">return</span> <span class="n">labels</span>	
+ 	
+ 	</div>
+<div class="viewcode-block" id="Dependencies.samt_labels"><a class="viewcode-back" href="../dependencies.html#dependencies.Dependencies.samt_labels">[docs]</a> 	<span class="k">def</span> <span class="nf">samt_labels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+ 		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd"> 		Create a dictionary that assigns labels to spans</span>
+<span class="sd"> 		according to their dependency relations, but also</span>
+<span class="sd"> 		assigns labels to spans forming conjunctions of</span>
+<span class="sd"> 		relations</span>
+<span class="sd"> 		&quot;&quot;&quot;</span>
+ 		<span class="n">labels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pure_labels</span><span class="p">()</span>
+ 		<span class="k">for</span> <span class="n">head</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">deps</span><span class="p">:</span>
+ 			<span class="k">print</span> <span class="n">head</span>
+ 			<span class="n">word_span</span> <span class="o">=</span> <span class="p">(</span><span class="n">head</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">head</span><span class="p">)</span>
+ 			<span class="n">labels</span><span class="p">[</span><span class="n">word_span</span><span class="p">]</span> <span class="o">=</span> <span class="n">labels</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">word_span</span><span class="p">,</span> <span class="s">&#39;ROOT&#39;</span><span class="p">)</span>
+ 			<span class="n">head_span</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wordspans</span><span class="p">[</span><span class="n">head</span><span class="p">]</span>
+ 			<span class="n">head_label</span> <span class="o">=</span> <span class="n">labels</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">head_span</span><span class="p">,</span> <span class="s">&#39;ROOT&#39;</span><span class="p">)</span>
+ 			<span class="n">dep_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">word_span</span><span class="p">]</span>
+ 			<span class="k">for</span> <span class="n">dependent</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">deps</span><span class="p">[</span><span class="n">head</span><span class="p">]:</span>
+ 				<span class="n">dep_span</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wordspans</span><span class="p">[</span><span class="n">dependent</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+ 				<span class="n">dep_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dep_span</span><span class="p">)</span>
+ 			<span class="n">dep_list</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+ 			<span class="n">begin</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="n">dep_list</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">dep_list</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+ 			<span class="c"># Locate position head</span>
+			<span class="n">head_pos</span> <span class="o">=</span> <span class="n">dep_list</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">word_span</span><span class="p">)</span>
+			<span class="c">#create all labels with \ and /</span>
+			<span class="n">root_label</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">head_label</span><span class="p">)</span>
+			<span class="n">cur_label</span> <span class="o">=</span> <span class="n">root_label</span>
+			<span class="n">left_emitted</span> <span class="o">=</span> <span class="p">[]</span>
+			<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">head_pos</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+				<span class="n">right_emitted</span> <span class="o">=</span> <span class="p">[]</span>
+				<span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="nb">xrange</span><span class="p">(</span><span class="n">head_pos</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">dep_list</span><span class="p">))):</span>
+					<span class="n">begin_span</span><span class="p">,</span> <span class="n">end_span</span> <span class="o">=</span> <span class="n">dep_list</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span><span class="n">dep_list</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+					<span class="n">samt_span</span> <span class="o">=</span> <span class="p">(</span><span class="n">begin_span</span><span class="p">,</span> <span class="n">end_span</span><span class="p">)</span>
+					<span class="n">labels</span><span class="p">[</span><span class="n">samt_span</span><span class="p">]</span> <span class="o">=</span> <span class="n">labels</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">samt_span</span><span class="p">,</span> <span class="n">cur_label</span><span class="p">)</span>
+					<span class="n">right_emitted</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">labels</span><span class="p">[</span><span class="n">dep_list</span><span class="p">[</span><span class="n">j</span><span class="p">]])</span>
+					<span class="c">#update concatenated labels</span>
+					<span class="n">r_label</span> <span class="o">=</span> <span class="s">&#39;+&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="n">right_emitted</span><span class="p">))</span>
+					<span class="n">l_label</span> <span class="o">=</span> <span class="s">&#39;+&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">left_emitted</span><span class="p">)</span>					
+					<span class="k">if</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+						<span class="n">labels</span><span class="p">[(</span><span class="n">begin</span><span class="p">,</span><span class="n">begin_span</span><span class="p">)]</span> <span class="o">=</span> <span class="n">labels</span><span class="o">.</span><span class="n">get</span><span class="p">((</span><span class="n">begin</span><span class="p">,</span><span class="n">begin_span</span><span class="p">),</span> <span class="n">l_label</span><span class="p">)</span>
+						<span class="n">labels</span><span class="p">[(</span><span class="n">dep_list</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">end</span><span class="p">)]</span> <span class="o">=</span> <span class="n">labels</span><span class="o">.</span><span class="n">get</span><span class="p">((</span><span class="n">dep_list</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span><span class="n">end</span><span class="p">),</span> <span class="n">r_label</span><span class="p">)</span>
+					<span class="c">#update label for the next span</span>
+					<span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+						<span class="n">cur_label</span> <span class="o">=</span> <span class="n">l_label</span> <span class="o">+</span> <span class="n">root_label</span> <span class="o">+</span> <span class="s">&quot;/&quot;</span> <span class="o">+</span> <span class="n">r_label</span>
+					<span class="k">else</span><span class="p">:</span>
+						<span class="n">cur_label</span> <span class="o">=</span> <span class="n">l_label</span> <span class="o">+</span> <span class="s">&quot;</span><span class="se">\\</span><span class="s">&quot;</span> <span class="o">+</span> <span class="n">root_label</span> <span class="o">+</span> <span class="s">&quot;/&quot;</span> <span class="o">+</span> <span class="n">r_label</span>
+				<span class="n">left_emitted</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">labels</span><span class="p">[</span><span class="n">dep_list</span><span class="p">[</span><span class="n">i</span><span class="p">]])</span>
+			<span class="k">return</span> <span class="n">labels</span>					
+</div>
+<div class="viewcode-block" id="Dependencies.print_labels"><a class="viewcode-back" href="../dependencies.html#dependencies.Dependencies.print_labels">[docs]</a>	<span class="k">def</span> <span class="nf">print_labels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">labels</span><span class="p">):</span>
+		<span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">labels</span><span class="p">:</span>
+			<span class="k">print</span> <span class="n">key</span><span class="p">,</span> <span class="s">&#39;:</span><span class="se">\t</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">labels</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+ 		
+ 	</div>
+<div class="viewcode-block" id="Dependencies.update_labels"><a class="viewcode-back" href="../dependencies.html#dependencies.Dependencies.update_labels">[docs]</a> 	<span class="k">def</span> <span class="nf">update_labels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">label_dict</span><span class="p">):</span>
+ 		<span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">deps</span><span class="p">:</span>
+ 			<span class="k">for</span> <span class="n">dependent</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">deps</span><span class="p">[</span><span class="n">key</span><span class="p">]:</span>
+ 				<span class="n">label</span> <span class="o">=</span> <span class="n">dependent</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+ 				<span class="n">label_dict</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="n">label_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">label</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+ 		<span class="k">return</span> <span class="n">label_dict</span>
+ </div>
+<div class="viewcode-block" id="Dependencies.print_spans"><a class="viewcode-back" href="../dependencies.html#dependencies.Dependencies.print_spans">[docs]</a>	<span class="k">def</span> <span class="nf">print_spans</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="k">print</span> <span class="bp">self</span><span class="o">.</span><span class="n">wordspans</span><span class="p">,</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span>
+</div>
+<div class="viewcode-block" id="Dependencies.print_deps"><a class="viewcode-back" href="../dependencies.html#dependencies.Dependencies.print_deps">[docs]</a>	<span class="k">def</span> <span class="nf">print_deps</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="k">print</span> <span class="bp">self</span><span class="o">.</span><span class="n">deps</span><span class="p">,</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span>
+		
+</div></div>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Testing</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="test1"><a class="viewcode-back" href="../dependencies.html#dependencies.test1">[docs]</a><span class="k">def</span> <span class="nf">test1</span><span class="p">():</span>
+	<span class="n">dependencies</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;nn(President-2, Mr-1)&#39;</span><span class="p">,</span><span class="s">&#39;nsubj(welcome-6, President-2)&#39;</span><span class="p">,</span><span class="s">&#39;nsubj(welcome-6, I-4)&#39;</span><span class="p">,</span><span class="s">&#39;aux(welcome-6, would-5)&#39;</span><span class="p">,</span><span class="s">&#39;root(ROOT-0, welcome-6)&#39;</span><span class="p">,</span><span class="s">&#39;det(action-8, some-7)&#39;</span><span class="p">,</span><span class="s">&#39;dobj(welcome-6, action-8)&#39;</span><span class="p">,</span><span class="s">&#39;prep(action-8, in-9)&#39;</span><span class="p">,</span><span class="s">&#39;det(area-11, this-10)&#39;</span><span class="p">,</span><span class="s">&#39;pobj(in-9, area-11)&#39;</span><span class="p">]</span>
+	<span class="n">d</span> <span class="o">=</span> <span class="n">Dependencies</span><span class="p">(</span><span class="n">dependencies</span><span class="p">)</span>
+	<span class="n">spanrels</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_spanrels</span><span class="p">()</span>
+	<span class="n">manual_spanrels</span><span class="o">=</span> <span class="p">{(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">):</span> <span class="p">[(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">)],(</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">):</span> <span class="p">[(</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">),(</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">),(</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span> <span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="mi">11</span><span class="p">)],</span> <span class="p">(</span><span class="mi">7</span><span class="p">,</span><span class="mi">8</span><span class="p">):[(</span><span class="mi">6</span><span class="p">,</span><span class="mi">7</span><span class="p">),(</span><span class="mi">8</span><span class="p">,</span><span class="mi">11</span><span class="p">)],(</span><span class="mi">8</span><span class="p">,</span><span class="mi">9</span><span class="p">):</span> <span class="p">[(</span><span class="mi">9</span><span class="p">,</span><span class="mi">11</span><span class="p">)],</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">11</span><span class="p">):</span> <span class="p">[(</span><span class="mi">9</span><span class="p">,</span><span class="mi">10</span><span class="p">)]}</span>
+	<span class="k">print</span> <span class="s">&quot;spanrels test: &quot;</span><span class="p">,</span> <span class="n">spanrels</span> <span class="o">==</span> <span class="n">manual_spanrels</span>
+	<span class="n">comp_spanrels</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_comp_spanrels</span><span class="p">()</span>
+	<span class="n">manual_comp_spanrels</span> <span class="o">=</span> <span class="p">{(</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">):</span> <span class="p">[(</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="mi">11</span><span class="p">)],</span> <span class="p">(</span><span class="mi">7</span><span class="p">,</span><span class="mi">8</span><span class="p">):[(</span><span class="mi">8</span><span class="p">,</span><span class="mi">11</span><span class="p">)],(</span><span class="mi">8</span><span class="p">,</span><span class="mi">9</span><span class="p">):</span> <span class="p">[(</span><span class="mi">9</span><span class="p">,</span><span class="mi">11</span><span class="p">)]}</span>
+	<span class="k">print</span> <span class="s">&quot;comp_spanrels test: &quot;</span><span class="p">,</span> <span class="n">comp_spanrels</span> <span class="o">==</span> <span class="n">manual_comp_spanrels</span>
+	<span class="n">manual_label_count</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;nn&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&#39;nsubj&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&#39;det&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&#39;dobj&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&#39;pobj&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&#39;aux&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&#39;prep&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
+	<span class="n">comp_label_count</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">update_labels</span><span class="p">({})</span>
+	<span class="k">print</span> <span class="s">&quot;label_count test: &quot;</span><span class="p">,</span> <span class="n">manual_label_count</span> <span class="o">==</span> <span class="n">comp_label_count</span>
+	<span class="n">labels</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">pure_labels</span><span class="p">()</span>
+	<span class="n">d</span><span class="o">.</span><span class="n">print_labels</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span>
+	<span class="n">labels2</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">labels</span><span class="p">()</span>
+	<span class="n">d</span><span class="o">.</span><span class="n">print_labels</span><span class="p">(</span><span class="n">labels2</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="test2"><a class="viewcode-back" href="../dependencies.html#dependencies.test2">[docs]</a><span class="k">def</span> <span class="nf">test2</span><span class="p">():</span>
+	<span class="s">&quot;labels&quot;</span>
+	<span class="n">dependencies</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;nsubj(give-2, I-1)&#39;</span><span class="p">,</span><span class="s">&#39;root(ROOT-0, give-2)&#39;</span><span class="p">,</span><span class="s">&#39;det(boy-4, the-3)&#39;</span><span class="p">,</span><span class="s">&#39;iobj(give-2, boy-4)&#39;</span><span class="p">,</span><span class="s">&#39;det(flowers-6, some-5)&#39;</span><span class="p">,</span><span class="s">&#39;dobj(give-2, flowers-6)&#39;</span><span class="p">]</span>
+	<span class="n">d</span> <span class="o">=</span> <span class="n">Dependencies</span><span class="p">(</span><span class="n">dependencies</span><span class="p">)</span>
+<span class="c">#	print d.deps</span>
+<span class="c">#	labels = d.samt_labels()</span>
+<span class="c">#	d.print_labels(labels)</span>
+	<span class="n">labels</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">pure_labels</span><span class="p">()</span>
+	<span class="n">d</span><span class="o">.</span><span class="n">print_labels</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="print_scores"><a class="viewcode-back" href="../dependencies.html#dependencies.print_scores">[docs]</a><span class="k">def</span> <span class="nf">print_scores</span><span class="p">():</span>
+	<span class="n">dependencies</span> <span class="o">=</span> <span class="s">&#39;Data/europarl-v7.dependencies.head100&#39;</span>
+	<span class="n">scores</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s">&#39;Testing/europarl-v7.dependencies.head100.compositionality_score&#39;</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>
+	<span class="n">deps</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">dependencies</span><span class="p">,</span> <span class="s">&#39;r&#39;</span><span class="p">)</span>
+	<span class="n">new_line</span> <span class="o">=</span> <span class="n">deps</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+	<span class="n">total_score</span> <span class="o">=</span> <span class="mi">0</span>
+	<span class="n">nr_of_deps</span> <span class="o">=</span> <span class="mi">0</span>
+	<span class="k">while</span> <span class="n">new_line</span> <span class="o">!=</span> <span class="s">&#39;&#39;</span><span class="p">:</span>
+		<span class="n">nr_of_deps</span> <span class="o">+=</span> <span class="mi">1</span>
+		<span class="n">dependency_list</span> <span class="o">=</span> <span class="p">[]</span>
+		<span class="k">while</span> <span class="n">new_line</span> <span class="o">!=</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">:</span>
+			<span class="n">dependency_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_line</span><span class="p">)</span>
+			<span class="n">new_line</span> <span class="o">=</span> <span class="n">deps</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+		<span class="n">d</span> <span class="o">=</span> <span class="n">Dependencies</span><span class="p">(</span><span class="n">dependency_list</span><span class="p">)</span>
+		<span class="n">score</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">comp_score</span><span class="p">()</span>
+		<span class="n">total_score</span> <span class="o">+=</span> <span class="n">score</span>
+		<span class="n">scores</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">score</span><span class="p">)</span> <span class="o">+</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+		<span class="n">new_line</span> <span class="o">=</span> <span class="n">deps</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+	<span class="n">scores</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+	<span class="k">print</span> <span class="n">nr_of_deps</span>
+	<span class="k">print</span> <span class="n">total_score</span><span class="o">/</span><span class="n">nr_of_deps</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Implementation  documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Dieuwke Hupkes.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+  </body>
+</html>

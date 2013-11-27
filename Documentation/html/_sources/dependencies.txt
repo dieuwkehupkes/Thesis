@@ -1,0 +1,7 @@
+dependencies Module
+===================
+
+.. automodule:: dependencies
+    :members:
+    :undoc-members:
+    :show-inheritance:

@@ -1,0 +1,212 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>constituencies &mdash; Implementation  documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Implementation  documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Implementation  documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for constituencies</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">nltk.tree</span>
+
+<div class="viewcode-block" id="ConstituencyTree"><a class="viewcode-back" href="../constituencies.html#constituencies.ConstituencyTree">[docs]</a><span class="k">class</span> <span class="nc">ConstituencyTree</span><span class="p">():</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	A class representing a constuency tree. The classes uses</span>
+<span class="sd">	the nltk class nltk.Tree, but adds some functionality that</span>
+<span class="sd">	is useful with respects to alignments.</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tree</span><span class="p">,</span> <span class="n">sentence</span><span class="o">=</span> <span class="bp">False</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Create a ConstituencyTree object.</span>
+<span class="sd">		</span>
+<span class="sd">		:param tree:		A constituency tree.</span>
+<span class="sd">		:type tree:		str or nltk.Tree object.</span>
+<span class="sd">		:param sentence:	The sentence that the leafnodes of the tree constitute.	</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="n">nltk</span><span class="o">.</span><span class="n">Tree</span><span class="p">):</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">tree</span> <span class="o">=</span> <span class="n">tree</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">tree</span> <span class="o">=</span> <span class="n">nltk</span><span class="o">.</span><span class="n">Tree</span><span class="p">(</span><span class="n">tree</span><span class="p">)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">sentence</span> <span class="o">=</span> <span class="n">sentence</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">labels</span> <span class="o">=</span> <span class="p">{}</span>
+	
+<div class="viewcode-block" id="ConstituencyTree.reconstruct_sentence"><a class="viewcode-back" href="../constituencies.html#constituencies.ConstituencyTree.reconstruct_sentence">[docs]</a>	<span class="k">def</span> <span class="nf">reconstruct_sentence</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Reconstruct the sentence from the leaf nodes of the</span>
+<span class="sd">		tree. If a sentence was passed in initalisation, return</span>
+<span class="sd">		this sentence.</span>
+<span class="sd">		:type return:	str</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sentence</span><span class="p">:</span>
+			<span class="k">return</span> <span class="n">sentence</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="k">return</span> <span class="s">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tree</span><span class="o">.</span><span class="n">leaves</span><span class="p">())</span>
+	</div>
+<div class="viewcode-block" id="ConstituencyTree.root_span"><a class="viewcode-back" href="../constituencies.html#constituencies.ConstituencyTree.root_span">[docs]</a>	<span class="k">def</span> <span class="nf">root_span</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">subtree</span><span class="p">,</span><span class="n">startpos</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Recursively compute the span a node covers</span>
+<span class="sd">		:param subtree:		a subtree of self.tree</span>
+<span class="sd">		:param startpos:	the first position the subtree dominates</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">cur_startpos</span> <span class="o">=</span> <span class="n">startpos</span>
+		<span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">subtree</span><span class="p">:</span>
+			<span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span><span class="nb">str</span><span class="p">):</span>
+				<span class="n">span</span> <span class="o">=</span> <span class="p">(</span><span class="n">cur_startpos</span><span class="p">,</span><span class="n">cur_startpos</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+			<span class="k">else</span><span class="p">:</span>
+				<span class="n">span</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">root_span</span><span class="p">(</span><span class="n">child</span><span class="p">,</span><span class="n">cur_startpos</span><span class="p">)</span>
+			<span class="n">cur_startpos</span> <span class="o">=</span> <span class="n">span</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+		<span class="n">root_span</span> <span class="o">=</span> <span class="p">(</span><span class="n">startpos</span><span class="p">,</span> <span class="n">span</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+		<span class="k">return</span> <span class="n">root_span</span>
+</div>
+<div class="viewcode-block" id="ConstituencyTree.nr_of_nonterminals"><a class="viewcode-back" href="../constituencies.html#constituencies.ConstituencyTree.nr_of_nonterminals">[docs]</a>	<span class="k">def</span> <span class="nf">nr_of_nonterminals</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Return the number of nonterminals in self.tree.</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tree</span><span class="o">.</span><span class="n">treepositions</span><span class="p">())</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tree</span><span class="o">.</span><span class="n">leaves</span><span class="p">())</span>
+</div>
+<div class="viewcode-block" id="ConstituencyTree.phrases_consistent"><a class="viewcode-back" href="../constituencies.html#constituencies.ConstituencyTree.phrases_consistent">[docs]</a>	<span class="k">def</span> <span class="nf">phrases_consistent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subtree</span><span class="p">,</span> <span class="n">startpos</span><span class="p">,</span> <span class="n">phrase_list</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Return the number of non-terminal nodes in the tree</span>
+<span class="sd">		that occur in the provided list of phrases.</span>
+<span class="sd">		:param subtree:		A subtree of self.tree.</span>
+<span class="sd">		:param startpos:	The left-most word position the subtree dominates.</span>
+<span class="sd">		:param phrase_list:	A list of allowed phrases.</span>
+<span class="sd">		:return:	the number of nodes in the tree that is in phrase_list.</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">nr_consistent</span> <span class="o">=</span> <span class="mi">0</span>
+		<span class="c">#Add one if rootnode is in phraselist</span>
+		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">root_span</span><span class="p">(</span><span class="n">subtree</span><span class="p">,</span><span class="n">startpos</span><span class="p">)</span> <span class="ow">in</span> <span class="n">phrase_list</span><span class="p">:</span>
+			<span class="n">nr_consistent</span><span class="o">+=</span><span class="mi">1</span>
+		<span class="n">cur_startpos</span> <span class="o">=</span> <span class="n">startpos</span>
+		<span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">subtree</span><span class="p">:</span>
+			<span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span><span class="nb">str</span><span class="p">):</span>
+				<span class="n">cur_startpos</span> <span class="o">+=</span> <span class="mi">1</span>
+			<span class="k">else</span><span class="p">:</span>
+				<span class="n">nr_consistent</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">phrases_consistent</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">cur_startpos</span><span class="p">,</span> <span class="n">phrase_list</span><span class="p">)</span>
+				<span class="n">cur_startpos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">root_span</span><span class="p">(</span><span class="n">child</span><span class="p">,</span><span class="n">cur_startpos</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+		<span class="k">return</span> <span class="n">nr_consistent</span>
+	</div>
+<div class="viewcode-block" id="ConstituencyTree.branching_factor"><a class="viewcode-back" href="../constituencies.html#constituencies.ConstituencyTree.branching_factor">[docs]</a>	<span class="k">def</span> <span class="nf">branching_factor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">branching_dict</span> <span class="o">=</span> <span class="p">{}):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Return a dictionary that summaries the different </span>
+<span class="sd">		branching factors of the trees. If initialised with</span>
+<span class="sd">		a dictionary, update this dictionary with the</span>
+<span class="sd">		valeus of the current tree.</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">b_factor</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tree</span><span class="p">)</span>
+		<span class="k">if</span> <span class="n">b_factor</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">b_factor</span> <span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+			<span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tree</span><span class="p">,</span><span class="nb">str</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tree</span><span class="p">)</span> <span class="o">==</span><span class="mi">0</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tree</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="nb">str</span><span class="p">):</span>
+				<span class="c">#instance is a terminal or a pre terminal</span>
+				<span class="k">return</span> <span class="n">branching_dict</span>
+			<span class="k">else</span><span class="p">:</span>
+				<span class="c">#instance is a higher node in the tree that expands unary</span>
+				<span class="k">print</span> <span class="bp">self</span><span class="o">.</span><span class="n">tree</span>
+				<span class="n">branching_dict</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">branching_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span>
+				<span class="k">return</span> <span class="n">ConstituencyTree</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tree</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">branching_factor</span><span class="p">(</span><span class="n">branching_dict</span><span class="p">)</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="c">#update dict with branching factor</span>
+			<span class="n">branching_dict</span><span class="p">[</span><span class="n">b_factor</span><span class="p">]</span> <span class="o">=</span> <span class="n">branching_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">b_factor</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span><span class="mi">1</span>
+			<span class="c">#update dictionary with branching factor of all the children</span>
+			<span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tree</span><span class="p">:</span>
+				<span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span><span class="nb">str</span><span class="p">):</span>
+					<span class="k">return</span> <span class="n">branching_dict</span>
+				<span class="k">else</span><span class="p">:</span>
+					<span class="n">branching_dict</span> <span class="o">=</span> <span class="n">ConstituencyTree</span><span class="p">(</span><span class="n">child</span><span class="p">)</span><span class="o">.</span><span class="n">branching_factor</span><span class="p">(</span><span class="n">branching_dict</span><span class="p">)</span>
+		<span class="k">return</span> <span class="n">branching_dict</span>
+
+
+
+<span class="c">####################################################################################</span>
+<span class="c">#DEMONSTRATION</span>
+<span class="c">####################################################################################</span>
+
+</div></div>
+<div class="viewcode-block" id="demo"><a class="viewcode-back" href="../constituencies.html#constituencies.demo">[docs]</a><span class="k">def</span> <span class="nf">demo</span><span class="p">():</span>
+	<span class="k">print</span> <span class="s">&#39;implement demo&#39;</span>
+</div>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+	<span class="n">demo</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Implementation  documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Dieuwke Hupkes.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+  </body>
+</html>
