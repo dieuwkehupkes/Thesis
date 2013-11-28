@@ -486,7 +486,7 @@ class ProcessDependencies(ProcessFiles):
 		return tex_preamble	
 
 	
-	def all_HATs(self, file_name, max_length = 40):
+	def all_HATs(self, file_name, labelling = None, max_length = 40):
 		"""
 		Compute all HATs grammars, represent them as a dictionary and
 		and pickle [sentence_nr, rootlabel, HATdict] to a file with 
@@ -501,17 +501,21 @@ class ProcessDependencies(ProcessFiles):
 			if len(sentence.split()) < max_length:
 				dependencies = Dependencies(new[2],sentence)
 				a = Alignments(new[0],sentence)
-				l = Labels(dependencies.dependency_labels())
-#				print l.labels
-				if not l.labels:
-					print 'sentence skipped because of inconsistency with dependency parse'
-					new = self.next()
-					sentence_nr +=1
-					continue
-				labels = l.label_most()
-				labels = l.annotate_span(labels)
+				labels = {}
+				if labelling:
+					l = Labels(dependencies.labels(labelling))
+					if not l.labels:
+						print 'sentence skipped because of inconsistency with dependency parse'
+						new = self.next()
+						sentence_nr +=1
+						continue
+					labels = l.label_most()
+					labels = l.annotate_span(labels)
 				print "Creating HATforest for sentence ", sentence_nr
-				root = labels[(0,len(sentence.split()))]
+				try:
+					root = labels[(0,len(sentence.split()))]
+				except KeyError:
+					root = '0-%i' % len(sentence.split())
 				HAT_dict = a.HAT_dict(labels)
 				pickle.dump([sentence_nr,root,HAT_dict],f)
 			new = self.next()
